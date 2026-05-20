@@ -2,22 +2,19 @@
 //  ypromptApp.swift
 //  yprompt
 //
-//  Created by Giuseppe Cosenza on 30/04/2026.
-//
 
 import SwiftUI
 import SwiftData
 
 @main
 struct ypromptApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    @StateObject private var storeKit = StoreKitService()
 
+    var sharedModelContainer: ModelContainer = {
+        let schema = Schema([Script.self, AppSettings.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -26,7 +23,22 @@ struct ypromptApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(storeKit)
         }
         .modelContainer(sharedModelContainer)
+
+        #if os(macOS)
+        Settings {
+            SettingsView()
+                .environmentObject(storeKit)
+                .modelContainer(sharedModelContainer)
+        }
+
+        MenuBarExtra("YPrompt", systemImage: "scroll") {
+            MenuBarView()
+                .modelContainer(sharedModelContainer)
+        }
+        .menuBarExtraStyle(.window)
+        #endif
     }
 }
