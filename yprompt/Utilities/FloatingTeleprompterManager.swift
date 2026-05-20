@@ -18,12 +18,16 @@ final class FloatingTeleprompterManager: ObservableObject {
     @Published var blurAmount: Double = 0.0
     let viewModel = TeleprompterViewModel()
 
+    var storeKit: StoreKitService?
+    var isPremium: Bool { storeKit?.isPremium ?? false }
+
     private var panel: NSPanel?
 
     private init() {}
 
-    func show(script: Script) {
+    func show(script: Script, storeKit: StoreKitService? = nil) {
         currentScript = script
+        if let storeKit { self.storeKit = storeKit }
         viewModel.resetToTop()
         if panel == nil { buildPanel() }
         panel?.orderFront(nil)
@@ -46,7 +50,6 @@ final class FloatingTeleprompterManager: ObservableObject {
         let panelWidth: CGFloat = 780
         let panelHeight: CGFloat = 116
         let originX = sf.minX + (sf.width - panelWidth) / 2
-        // Position just below the menu bar (near the FaceTime camera area)
         let originY = sf.maxY - panelHeight - menuBarThickness - 2
 
         let newPanel = NSPanel(

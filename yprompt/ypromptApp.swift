@@ -24,6 +24,9 @@ struct ypromptApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(storeKit)
+                #if os(macOS)
+                .onAppear { FloatingTeleprompterManager.shared.storeKit = storeKit }
+                #endif
         }
         .modelContainer(sharedModelContainer)
 

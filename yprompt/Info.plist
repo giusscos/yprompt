@@ -7,5 +7,7 @@
 		<string>audio</string>
 		<string>remote-notification</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Voice Scroll uses the microphone to detect when you are speaking and automatically scroll the teleprompter.</string>
 </dict>
 </plist>

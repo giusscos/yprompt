@@ -15,6 +15,13 @@ class TeleprompterViewModel: ObservableObject {
     @Published var transparency: Double = 1.0
     @Published var showControls: Bool = true
     @Published var isTapToAdvance: Bool = false
+    @Published var voiceScrollEnabled: Bool = false
+    @Published var showVoiceMeter: Bool = true
+    @Published var micPermissionDenied: Bool = false
+
+    #if !os(watchOS)
+    let voiceScrollService = VoiceScrollService()
+    #endif
 
     var contentHeight: CGFloat = 0
     var screenHeight: CGFloat = 0
@@ -27,6 +34,9 @@ class TeleprompterViewModel: ObservableObject {
     func play() {
         guard !isPlaying else { return }
         isPlaying = true
+        #if !os(watchOS)
+        if voiceScrollEnabled { voiceScrollService.start() }
+        #endif
         startScrollTask()
         scheduleHideControls()
     }
@@ -35,6 +45,9 @@ class TeleprompterViewModel: ObservableObject {
         isPlaying = false
         scrollTask?.cancel()
         scrollTask = nil
+        #if !os(watchOS)
+        voiceScrollService.stop()
+        #endif
     }
 
     func togglePlayPause() {
@@ -43,9 +56,7 @@ class TeleprompterViewModel: ObservableObject {
 
     func resetToTop() {
         pause()
-        withAnimation(.easeOut(duration: 0.4)) {
-            contentOffset = 0
-        }
+        withAnimation(.easeOut(duration: 0.4)) { contentOffset = 0 }
         showControls = true
         hideControlsTask?.cancel()
     }
@@ -60,6 +71,26 @@ class TeleprompterViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Voice Scroll
+
+    #if !os(watchOS)
+    func toggleVoiceScroll() async {
+        if voiceScrollEnabled {
+            voiceScrollEnabled = false
+            pause()
+        } else {
+            let granted = await voiceScrollService.requestPermission()
+            if granted {
+                voiceScrollEnabled = true
+                showVoiceMeter = true
+                play()
+            } else {
+                micPermissionDenied = true
+            }
+        }
+    }
+    #endif
+
     // MARK: - Controls Visibility
 
     func showControlsTemporarily() {
@@ -73,9 +104,14 @@ class TeleprompterViewModel: ObservableObject {
         scrollTask?.cancel()
         scrollTask = Task { @MainActor in
             while !Task.isCancelled {
-                // ~60 fps
                 try? await Task.sleep(nanoseconds: 16_666_667)
                 guard !Task.isCancelled else { break }
+
+                #if !os(watchOS)
+                // In voice scroll mode, only advance while the user is speaking
+                if voiceScrollEnabled && !voiceScrollService.isSpeaking { continue }
+                #endif
+
                 let pixelsPerTick = AppConstants.basePixelsPerSecond * scrollSpeed / 60.0
                 let maxOffset = max(0, contentHeight - screenHeight + 80)
                 if contentOffset < maxOffset {

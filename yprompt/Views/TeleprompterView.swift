@@ -17,13 +17,16 @@ struct TeleprompterView: View {
     #if os(iOS)
     @ObservedObject private var pipManager = TeleprompterPiPManager.shared
     #endif
+    #if !os(watchOS)
+    @EnvironmentObject private var storeKit: StoreKitService
+    @State private var showingPaywall = false
+    #endif
 
     private var customization: TextCustomization { script.customization }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Text scrolling area — GeometryReader gives the correct available height
                 GeometryReader { geo in
                     scrollingContent(screenSize: geo.size)
                         .clipped()
@@ -40,7 +43,16 @@ struct TeleprompterView: View {
                     if viewModel.isTapToAdvance { viewModel.tapAdvance() }
                 }
 
-                // Permanent control bar — always visible
+                #if !os(watchOS)
+                Group {
+                    if viewModel.voiceScrollEnabled && viewModel.showVoiceMeter {
+                        voiceMeterRow
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: viewModel.voiceScrollEnabled && viewModel.showVoiceMeter)
+                #endif
+
                 controlBar
             }
             .background(Color(hex: customization.backgroundColorHex))
@@ -75,6 +87,15 @@ struct TeleprompterView: View {
                 return .handled
             }
             .onKeyPress(KeyEquivalent("r")) { viewModel.resetToTop(); return .handled }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView().environmentObject(storeKit)
+            }
+            .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
+                Button("Open Settings") { openMicSettings() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Voice Scroll needs microphone access to detect when you are speaking.")
+            }
             #endif
         }
     }
@@ -102,6 +123,36 @@ struct TeleprompterView: View {
             .offset(y: -viewModel.contentOffset)
             .onPreferenceChange(ContentHeightKey.self) { viewModel.contentHeight = $0 }
     }
+
+    // MARK: - Voice meter row
+
+    #if !os(watchOS)
+    private var voiceMeterRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "waveform")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.6))
+
+            VoiceLevelMeterView(service: viewModel.voiceScrollService)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { viewModel.showVoiceMeter = false }
+            } label: {
+                Image(systemName: "eye.slash")
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Hide level meter")
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial, in: Rectangle())
+        .overlay(alignment: .top) {
+            Rectangle().fill(.white.opacity(0.18)).frame(height: 0.5)
+        }
+    }
+    #endif
 
     // MARK: - Control bar
 
@@ -137,15 +188,37 @@ struct TeleprompterView: View {
 
             #if os(iOS)
             if pipManager.isPiPAvailable {
-                Button {
-                    pipManager.togglePiP()
-                } label: {
-                    Image(systemName: pipManager.isPiPActive
-                          ? "pip.exit"
-                          : "pip.enter")
-                    .font(.footnote)
+                Button { pipManager.togglePiP() } label: {
+                    Image(systemName: pipManager.isPiPActive ? "pip.exit" : "pip.enter")
+                        .font(.footnote)
                 }
                 .accessibilityLabel(pipManager.isPiPActive ? "Exit Picture in Picture" : "Picture in Picture")
+            }
+            #endif
+
+            #if !os(watchOS)
+            Button {
+                if storeKit.isPremium {
+                    Task { await viewModel.toggleVoiceScroll() }
+                } else {
+                    showingPaywall = true
+                }
+            } label: {
+                Image(systemName: viewModel.voiceScrollEnabled ? "mic.fill" : "mic")
+                    .font(.footnote)
+                    .foregroundStyle(viewModel.voiceScrollEnabled ? Color.green : Color.white)
+            }
+            .accessibilityLabel(viewModel.voiceScrollEnabled ? "Disable Voice Scroll" : "Enable Voice Scroll")
+
+            if viewModel.voiceScrollEnabled {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.showVoiceMeter.toggle() }
+                } label: {
+                    Image(systemName: viewModel.showVoiceMeter ? "waveform" : "waveform.slash")
+                        .font(.footnote)
+                        .foregroundStyle(.white.opacity(viewModel.showVoiceMeter ? 1.0 : 0.5))
+                }
+                .accessibilityLabel(viewModel.showVoiceMeter ? "Hide level meter" : "Show level meter")
             }
             #endif
         }
@@ -154,9 +227,23 @@ struct TeleprompterView: View {
         .padding(.vertical, 14)
         .background(.ultraThinMaterial, in: Rectangle())
         .overlay(alignment: .top) {
-            Rectangle()
-                .fill(.white.opacity(0.18))
-                .frame(height: 0.5)
+            Rectangle().fill(.white.opacity(0.18)).frame(height: 0.5)
         }
     }
+
+    // MARK: - Helpers
+
+    #if !os(watchOS)
+    private func openMicSettings() {
+        #if os(iOS)
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+        #elseif os(macOS)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
+    }
+    #endif
 }

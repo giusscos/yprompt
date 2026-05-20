@@ -10,6 +10,7 @@ struct FloatingTeleprompterView: View {
     @ObservedObject private var manager: FloatingTeleprompterManager
     @ObservedObject private var viewModel: TeleprompterViewModel
     @State private var isHovering = false
+    @State private var showUpgradeAlert = false
 
     init() {
         let mgr = FloatingTeleprompterManager.shared
@@ -23,16 +24,13 @@ struct FloatingTeleprompterView: View {
 
     var body: some View {
         ZStack {
-            // Layer 1: glass blur (ultraThinMaterial blurs content behind the panel)
             RoundedRectangle(cornerRadius: 18)
                 .fill(.ultraThinMaterial)
                 .opacity(manager.blurAmount)
 
-            // Layer 2: solid black overlay — opacity controlled separately
             RoundedRectangle(cornerRadius: 18)
                 .fill(.black.opacity(manager.backgroundOpacity))
 
-            // Layer 3: scrolling text
             GeometryReader { geo in
                 scrollableText
                     .frame(width: geo.size.width)
@@ -41,7 +39,6 @@ struct FloatingTeleprompterView: View {
                     .onChange(of: geo.size.height) { _, h in viewModel.screenHeight = h }
             }
 
-            // Layer 4: top/bottom fade — matches the solid background opacity
             VStack(spacing: 0) {
                 LinearGradient(
                     colors: [.black.opacity(manager.backgroundOpacity), .clear],
@@ -58,7 +55,6 @@ struct FloatingTeleprompterView: View {
                 .allowsHitTesting(false)
             }
 
-            // Layer 5: hover controls
             if isHovering {
                 controlsBar
                     .transition(.opacity.animation(.easeInOut(duration: 0.15)))
@@ -69,6 +65,21 @@ struct FloatingTeleprompterView: View {
             withAnimation(.easeInOut(duration: 0.15)) { isHovering = hovering }
         }
         .onChange(of: manager.currentScript?.id) { viewModel.resetToTop() }
+        .alert("Premium Feature", isPresented: $showUpgradeAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Voice Scroll is available with YPrompt Premium. Open the main app to upgrade.")
+        }
+        .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Voice Scroll needs microphone access to detect when you are speaking.")
+        }
     }
 
     // MARK: - Scrolling text
@@ -95,11 +106,11 @@ struct FloatingTeleprompterView: View {
             .offset(y: -viewModel.contentOffset)
     }
 
-    // MARK: - Hover controls (two rows)
+    // MARK: - Hover controls
 
     private var controlsBar: some View {
         VStack(spacing: 6) {
-            // Row 1 — playback
+            // Row 1 — playback + voice scroll
             HStack(spacing: 12) {
                 Button { viewModel.resetToTop() } label: {
                     Image(systemName: "backward.end.fill").font(.caption)
@@ -131,6 +142,33 @@ struct FloatingTeleprompterView: View {
                     .foregroundStyle(.white.opacity(0.65))
                     .frame(width: 28)
 
+                // Voice scroll toggle (premium)
+                Button {
+                    if manager.isPremium {
+                        Task { await viewModel.toggleVoiceScroll() }
+                    } else {
+                        showUpgradeAlert = true
+                    }
+                } label: {
+                    Image(systemName: viewModel.voiceScrollEnabled ? "mic.fill" : "mic")
+                        .font(.caption)
+                        .foregroundStyle(viewModel.voiceScrollEnabled ? Color.green : Color.white)
+                }
+                .buttonStyle(.plain)
+                .help(viewModel.voiceScrollEnabled ? "Disable Voice Scroll" : "Voice Scroll (Premium)")
+
+                if viewModel.voiceScrollEnabled {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) { viewModel.showVoiceMeter.toggle() }
+                    } label: {
+                        Image(systemName: viewModel.showVoiceMeter ? "waveform" : "waveform.slash")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(viewModel.showVoiceMeter ? 1.0 : 0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .help(viewModel.showVoiceMeter ? "Hide level meter" : "Show level meter")
+                }
+
                 Spacer()
 
                 Button { FloatingTeleprompterManager.shared.hide() } label: {
@@ -143,7 +181,6 @@ struct FloatingTeleprompterView: View {
 
             // Row 2 — appearance
             HStack(spacing: 8) {
-                // Solid background opacity
                 Image(systemName: "circle.lefthalf.filled")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.55))
@@ -156,7 +193,6 @@ struct FloatingTeleprompterView: View {
                     .fill(.white.opacity(0.25))
                     .frame(width: 1, height: 10)
 
-                // Glass blur
                 Image(systemName: "camera.filters")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.55))
@@ -165,7 +201,31 @@ struct FloatingTeleprompterView: View {
                 Slider(value: $manager.blurAmount, in: 0.0...1.0, step: 0.05)
                     .controlSize(.mini)
             }
+
+            // Row 3 — voice level meter (only when voice scroll is enabled and meter is visible)
+            if viewModel.voiceScrollEnabled && viewModel.showVoiceMeter {
+                HStack(spacing: 8) {
+                    Image(systemName: "waveform")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.55))
+                        .help("Drag yellow marker to set speaking threshold")
+
+                    VoiceLevelMeterView(service: viewModel.voiceScrollService)
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) { viewModel.showVoiceMeter = false }
+                    } label: {
+                        Image(systemName: "eye.slash")
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.55))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Hide level meter")
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.15), value: viewModel.voiceScrollEnabled && viewModel.showVoiceMeter)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(.black.opacity(0.85), in: RoundedRectangle(cornerRadius: 12))

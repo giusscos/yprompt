@@ -38,6 +38,7 @@ struct EditorView: View {
         #if os(iOS)
         .fullScreenCover(isPresented: $showingTeleprompter) {
             TeleprompterView(script: script)
+                .environmentObject(storeKit)
         }
         #endif
     }
@@ -93,7 +94,7 @@ struct EditorView: View {
         ToolbarItem(placement: .primaryAction) {
             Button {
                 #if os(macOS)
-                FloatingTeleprompterManager.shared.show(script: script)
+                FloatingTeleprompterManager.shared.show(script: script, storeKit: storeKit)
                 #else
                 showingTeleprompter = true
                 #endif
