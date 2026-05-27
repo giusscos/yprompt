@@ -88,7 +88,7 @@ struct FloatingTeleprompterView: View {
         let content = manager.currentScript?.content ?? ""
         let text = content.isEmpty ? "[ No script — pick one from the menu bar ]" : content
         return Text(text)
-            .font(.custom(customization.fontName, size: 19))
+            .font(.custom(customization.fontName, size: manager.floatingFontSize))
             .foregroundStyle(.white)
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing(4)

@@ -30,10 +30,14 @@ struct MenuBarView: View {
             Divider()
             VStack(alignment: .leading, spacing: 14) {
                 scriptPicker
+                modeSelector
                 launchButton
                 if manager.isVisible {
                     playbackControls
-                    appearanceControls
+                    fontSizeControl
+                    if !manager.notchMode {
+                        appearanceControls
+                    }
                 }
             }
             .padding(14)
@@ -100,6 +104,28 @@ struct MenuBarView: View {
         }
     }
 
+    // MARK: - Mode selector
+
+    private var modeSelector: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Mode")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            Picker("Mode", selection: $manager.notchMode) {
+                Label("Floating", systemImage: "rectangle.on.rectangle").tag(false)
+                Label("Notch", systemImage: "camera").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .onChange(of: manager.notchMode) { _, _ in
+                if manager.isVisible, let script = manager.currentScript {
+                    manager.hide()
+                    manager.show(script: script)
+                }
+            }
+        }
+    }
+
     // MARK: - Launch / close button
 
     private var launchButton: some View {
@@ -154,6 +180,57 @@ struct MenuBarView: View {
                 Text(String(format: "%.1fx", viewModel.scrollSpeed))
                     .font(.caption2.monospacedDigit())
                     .frame(width: 30, alignment: .trailing)
+            }
+        }
+    }
+
+    // MARK: - Font size control (visible when teleprompter is open)
+
+    private var currentFontSize: CGFloat {
+        manager.notchMode ? manager.notchFontSize : manager.floatingFontSize
+    }
+
+    private var fontSizeControl: some View {
+        VStack(spacing: 10) {
+            Divider()
+            HStack(spacing: 8) {
+                Image(systemName: "textformat.size")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 14)
+                Text("Font Size")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    if manager.notchMode {
+                        manager.notchFontSize = max(8, manager.notchFontSize - 1)
+                    } else {
+                        manager.floatingFontSize = max(12, manager.floatingFontSize - 1)
+                    }
+                } label: {
+                    Image(systemName: "minus")
+                        .frame(width: 16, height: 16)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+                Text("\(Int(currentFontSize))")
+                    .font(.caption.monospacedDigit())
+                    .frame(width: 26, alignment: .center)
+
+                Button {
+                    if manager.notchMode {
+                        manager.notchFontSize = min(16, manager.notchFontSize + 1)
+                    } else {
+                        manager.floatingFontSize = min(40, manager.floatingFontSize + 1)
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .frame(width: 16, height: 16)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
         }
     }

@@ -19,16 +19,12 @@ struct PaywallView: View {
                 VStack(spacing: 28) {
                     headerSection
                     featuresSection
-
                     if storeKit.isLoading {
-                        ProgressView("Loading products…")
-                            .padding()
+                        ProgressView("Loading products…").padding()
                     } else {
                         productsSection
                     }
-
-                    restoreButton
-                    footerNote
+                    legalSection
                 }
                 .padding()
             }
@@ -58,51 +54,48 @@ struct PaywallView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "mic.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
-
-            Text("Unlock YPrompt Pro")
-                .font(.largeTitle.bold())
-
-            Text("Professional teleprompter tools for creators, speakers, and broadcasters.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+        VStack(spacing: 14) {
+            Image(systemName: "crown.fill")
+                .font(.system(size: 60))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.yellow)
+            VStack(spacing: 6) {
+                Text("Unlock YPrompt Pro")
+                    .font(.title2.bold())
+                Text("Professional tools for every presenter.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
+        .padding(.top, 8)
     }
 
     // MARK: - Features
 
     private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            featureRow("Unlimited Scripts",
-                       icon: "doc.fill",
-                       detail: "No limit on the number of scripts")
-            featureRow("Custom Colors",
-                       icon: "paintpalette.fill",
-                       detail: "Full color picker for text & background")
-            featureRow("iCloud Sync",
-                       icon: "icloud.fill",
-                       detail: "Access your scripts on all devices")
-            featureRow("All Future Features",
-                       icon: "sparkles",
-                       detail: "Lifetime: includes every new feature")
+        VStack(alignment: .leading, spacing: 20) {
+            featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice")
+            featureRow("video.fill",        .red,    "Camera Mode",           "Record while the teleprompter rolls")
+            featureRow("doc.fill",          .blue,   "Unlimited Scripts",     "No cap on how many you can create")
+            featureRow("paintpalette.fill", .pink,   "Custom Fonts & Colors", "Full visual control over your scripts")
+            featureRow("icloud.fill",       .cyan,   "iCloud Sync",           "Access your scripts on all your devices")
+            featureRow("sparkles",          .orange, "All Future Features",   "Lifetime includes every new feature")
         }
         .padding(16)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private func featureRow(_ title: String, icon: String, detail: String) -> some View {
-        HStack(spacing: 14) {
+    private func featureRow(_ icon: String, _ color: Color, _ title: String, _ desc: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(.tint)
-                .frame(width: 36)
-            VStack(alignment: .leading, spacing: 2) {
+                .font(.title3)
+                .foregroundStyle(color)
+                .frame(width: 36, height: 36)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.headline)
-                Text(detail).font(.caption).foregroundStyle(.secondary)
+                Text(desc).font(.subheadline).foregroundStyle(.secondary)
             }
         }
     }
@@ -112,13 +105,13 @@ struct PaywallView: View {
     private var productsSection: some View {
         VStack(spacing: 12) {
             if let p = storeKit.lifetimeProduct {
-                purchaseButton(product: p, badge: "Best Value", highlighted: true)
+                productCard(p, badge: "Best Value", highlighted: true)
             }
             if let p = storeKit.yearlyProduct {
-                purchaseButton(product: p, badge: nil, highlighted: false)
+                productCard(p, badge: nil, highlighted: false)
             }
             if let p = storeKit.monthlyProduct {
-                purchaseButton(product: p, badge: nil, highlighted: false)
+                productCard(p, badge: nil, highlighted: false)
             }
             if storeKit.products.isEmpty {
                 Text("Products unavailable. Check your connection.")
@@ -129,40 +122,36 @@ struct PaywallView: View {
         }
     }
 
-    private func purchaseButton(product: Product, badge: String?, highlighted: Bool) -> some View {
+    private func productCard(_ product: Product, badge: String?, highlighted: Bool) -> some View {
         Button {
             Task {
                 isPurchasing = true
-                do {
-                    try await storeKit.purchase(product)
-                } catch {
-                    errorMessage = error.localizedDescription
-                }
+                do { try await storeKit.purchase(product) } catch { errorMessage = error.localizedDescription }
                 isPurchasing = false
             }
         } label: {
-            ZStack(alignment: .topTrailing) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(product.displayName).font(.headline)
-                        Text(product.description).font(.caption).opacity(0.8)
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(product.displayPrice).font(.title3.bold())
-                    }
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(product.displayName).font(.headline)
+                    Text(product.description)
+                        .font(.caption)
+                        .foregroundStyle(highlighted ? .white.opacity(0.75) : .secondary)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity)
-                .background(
-                    highlighted ? Color.accentColor : Color.gray.opacity(0.4),
-                    in: RoundedRectangle(cornerRadius: 14)
-                )
-                .foregroundStyle(highlighted ? .white : .primary)
-
+                Spacer()
+                Text(product.displayPrice).font(.title3.bold())
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(
+                highlighted ? Color.accentColor : Color.secondary.opacity(0.1),
+                in: RoundedRectangle(cornerRadius: 14)
+            )
+            .foregroundStyle(highlighted ? .white : .primary)
+            .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)
                         .font(.caption2.bold())
+                        .foregroundStyle(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(.yellow, in: Capsule())
@@ -174,26 +163,26 @@ struct PaywallView: View {
         .disabled(isPurchasing)
     }
 
-    // MARK: - Restore & Footer
+    // MARK: - Legal
 
-    private var restoreButton: some View {
-        Button {
-            Task {
-                await storeKit.restorePurchases()
-                if storeKit.isPremium { dismiss() }
+    private var legalSection: some View {
+        VStack(spacing: 12) {
+            Button {
+                Task {
+                    await storeKit.restorePurchases()
+                    if storeKit.isPremium { dismiss() }
+                }
+            } label: {
+                Text("Restore Purchases")
+                    .font(.subheadline)
             }
-        } label: {
-            Text("Restore Purchases")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-    }
+            .buttonStyle(.borderless)
 
-    private var footerNote: some View {
-        Text("Payment charged to your Apple ID. Subscription renews automatically. Cancel anytime.")
-            .font(.caption2)
-            .foregroundStyle(.tertiary)
-            .multilineTextAlignment(.center)
-            .padding(.bottom, 8)
+            Text("Payment is charged to your Apple ID. Subscriptions renew automatically until cancelled.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.bottom, 8)
     }
 }

@@ -25,7 +25,10 @@ struct ypromptApp: App {
             ContentView()
                 .environmentObject(storeKit)
                 #if os(macOS)
-                .onAppear { FloatingTeleprompterManager.shared.storeKit = storeKit }
+                .onAppear {
+                    FloatingTeleprompterManager.shared.storeKit = storeKit
+                    RemoteControlService.shared.startAdvertising()
+                }
                 #endif
         }
         .modelContainer(sharedModelContainer)

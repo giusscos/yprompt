@@ -4,10 +4,20 @@
 <dict>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>audio</string>
 		<string>remote-notification</string>
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Voice Scroll uses the microphone to detect when you are speaking and automatically scroll the teleprompter.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera mode lets you record yourself reading the teleprompter.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Recordings are saved to your photo library.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>YPrompt needs local network access to connect your iPhone as a teleprompter remote control.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_yprmpt-ctrl._tcp</string>
+		<string>_yprmpt-ctrl._udp</string>
+	</array>
 </dict>
 </plist>

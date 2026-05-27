@@ -9,6 +9,7 @@ import SwiftData
 struct ContentView: View {
     @EnvironmentObject private var storeKit: StoreKitService
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     #if os(macOS)
     @State private var selectedScript: Script?
@@ -17,10 +18,19 @@ struct ContentView: View {
     var body: some View {
         #if os(macOS)
         macOSContent
+            .sheet(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
+                OnboardingView()
+                    .environmentObject(storeKit)
+                    .frame(width: 520, height: 700)
+            }
         #elseif os(watchOS)
         watchOSContent
         #else
         iOSContent
+            .fullScreenCover(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
+                OnboardingView()
+                    .environmentObject(storeKit)
+            }
         #endif
     }
 
@@ -82,6 +92,11 @@ struct ContentView: View {
                 ScriptsListView()
             }
             .tabItem { Label("Scripts", systemImage: "doc.text") }
+
+            NavigationStack {
+                RemoteControlView()
+            }
+            .tabItem { Label("Remote", systemImage: "appletvremote.gen4.fill") }
 
             NavigationStack {
                 SettingsView()

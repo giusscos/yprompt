@@ -50,7 +50,7 @@ final class VoiceScrollService: ObservableObject {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .measurement,
-                                    options: [.defaultToSpeaker, .mixWithOthers, .allowBluetooth])
+                                    options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
             try session.setActive(true)
         } catch {
             return false

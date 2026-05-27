@@ -11,6 +11,7 @@ struct SettingsView: View {
     @EnvironmentObject private var storeKit: StoreKitService
     @Query private var settingsArray: [AppSettings]
 
+    @State private var showingOnboarding = false
     @State private var showingResetConfirm = false
     @State private var showingPaywall = false
 
@@ -22,12 +23,21 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        #if os(macOS)
-        macOSSettings
-            .frame(minWidth: 400, minHeight: 460)
-        #else
-        iOSSettings
-        #endif
+        Group {
+            #if os(macOS)
+            macOSSettings
+                .frame(minWidth: 400, minHeight: 460)
+            #else
+            iOSSettings
+            #endif
+        }
+        .sheet(isPresented: $showingOnboarding) {
+            OnboardingView(isOnDemand: true)
+                .environmentObject(storeKit)
+                #if os(macOS)
+                .frame(width: 520, height: 700)
+                #endif
+        }
     }
 
     // MARK: - macOS Settings Window
@@ -139,6 +149,11 @@ struct SettingsView: View {
                 Button("Send Feedback") { sendFeedback() }
                 Spacer()
             }
+            Divider()
+            HStack {
+                Button("Show App Tour") { showingOnboarding = true }
+                Spacer()
+            }
         }
     }
 
@@ -244,6 +259,7 @@ struct SettingsView: View {
                 Text("\(appVersion) (\(buildNumber))").foregroundStyle(.secondary)
             }
             Button("Send Feedback") { sendFeedback() }
+            Button("Show App Tour") { showingOnboarding = true }
         }
     }
 

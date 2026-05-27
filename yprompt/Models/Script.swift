@@ -7,7 +7,7 @@ import Foundation
 import SwiftData
 
 // MARK: - TextCustomization
-struct TextCustomization: Codable, Sendable {
+struct TextCustomization: Sendable {
     var fontName: String = "Menlo"
     var fontSize: CGFloat = 28
     var textColorHex: String = "#000000"
@@ -18,6 +18,41 @@ struct TextCustomization: Codable, Sendable {
     var scrollSpeed: Double = 1.0
     var isMirrored: Bool = false
     var isAutoScroll: Bool = true
+}
+
+extension TextCustomization: Codable {
+    enum CodingKeys: String, CodingKey {
+        case fontName, fontSize, textColorHex, backgroundColorHex, lineHeight
+        case textAlignmentIndex, transparency, scrollSpeed, isMirrored, isAutoScroll
+    }
+
+    nonisolated init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        fontName = (try? c.decode(String.self, forKey: .fontName)) ?? "Menlo"
+        fontSize = (try? c.decode(CGFloat.self, forKey: .fontSize)) ?? 28
+        textColorHex = (try? c.decode(String.self, forKey: .textColorHex)) ?? "#000000"
+        backgroundColorHex = (try? c.decode(String.self, forKey: .backgroundColorHex)) ?? "#FFFFFF"
+        lineHeight = (try? c.decode(CGFloat.self, forKey: .lineHeight)) ?? 1.4
+        textAlignmentIndex = (try? c.decode(Int.self, forKey: .textAlignmentIndex)) ?? 0
+        transparency = (try? c.decode(Double.self, forKey: .transparency)) ?? 1.0
+        scrollSpeed = (try? c.decode(Double.self, forKey: .scrollSpeed)) ?? 1.0
+        isMirrored = (try? c.decode(Bool.self, forKey: .isMirrored)) ?? false
+        isAutoScroll = (try? c.decode(Bool.self, forKey: .isAutoScroll)) ?? true
+    }
+
+    nonisolated func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(fontName, forKey: .fontName)
+        try c.encode(fontSize, forKey: .fontSize)
+        try c.encode(textColorHex, forKey: .textColorHex)
+        try c.encode(backgroundColorHex, forKey: .backgroundColorHex)
+        try c.encode(lineHeight, forKey: .lineHeight)
+        try c.encode(textAlignmentIndex, forKey: .textAlignmentIndex)
+        try c.encode(transparency, forKey: .transparency)
+        try c.encode(scrollSpeed, forKey: .scrollSpeed)
+        try c.encode(isMirrored, forKey: .isMirrored)
+        try c.encode(isAutoScroll, forKey: .isAutoScroll)
+    }
 }
 
 // MARK: - CloudSyncState

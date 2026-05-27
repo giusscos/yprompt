@@ -28,6 +28,7 @@ class TeleprompterViewModel: ObservableObject {
 
     private var scrollTask: Task<Void, Never>?
     private var hideControlsTask: Task<Void, Never>?
+    private var remoteScrollTask: Task<Void, Never>?
 
     // MARK: - Playback
 
@@ -61,6 +62,21 @@ class TeleprompterViewModel: ObservableObject {
         hideControlsTask?.cancel()
     }
 
+    // MARK: - Progress
+
+    var progress: Double {
+        guard contentHeight > screenHeight else { return 0 }
+        let maxOffset = max(1, contentHeight - screenHeight + 80)
+        return min(1.0, Double(contentOffset) / Double(maxOffset))
+    }
+
+    func seek(to fraction: Double) {
+        let maxOffset = max(0, contentHeight - screenHeight + 80)
+        withAnimation(.easeOut(duration: 0.2)) {
+            contentOffset = maxOffset * CGFloat(fraction)
+        }
+    }
+
     // MARK: - Tap to Advance
 
     func tapAdvance() {
@@ -90,6 +106,33 @@ class TeleprompterViewModel: ObservableObject {
         }
     }
     #endif
+
+    // MARK: - Remote Scroll
+
+    enum RemoteScrollDirection { case forward, backward }
+
+    func startContinuousScroll(direction: RemoteScrollDirection) {
+        stopContinuousScroll()
+        remoteScrollTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 16_666_667)
+                guard !Task.isCancelled else { break }
+                let pixelsPerTick = AppConstants.basePixelsPerSecond * max(scrollSpeed, 1.0) / 60.0
+                let maxOffset = max(0, contentHeight - screenHeight + 80)
+                switch direction {
+                case .forward:
+                    contentOffset = min(contentOffset + pixelsPerTick, maxOffset)
+                case .backward:
+                    contentOffset = max(contentOffset - pixelsPerTick, 0)
+                }
+            }
+        }
+    }
+
+    func stopContinuousScroll() {
+        remoteScrollTask?.cancel()
+        remoteScrollTask = nil
+    }
 
     // MARK: - Controls Visibility
 
@@ -136,5 +179,6 @@ class TeleprompterViewModel: ObservableObject {
     deinit {
         scrollTask?.cancel()
         hideControlsTask?.cancel()
+        remoteScrollTask?.cancel()
     }
 }
