@@ -19,24 +19,61 @@ final class FloatingTeleprompterManager: ObservableObject {
     @Published var notchMode: Bool = false
     @Published var notchFontSize: CGFloat = 11
     @Published var floatingFontSize: CGFloat = 19
+    @Published var showQueueBanner: Bool = false
+    @Published var queueCountdown: Int = 5
+    @Published var floatingWindowWidth: CGFloat = 780
+    @Published var floatingWindowHeight: CGFloat = 116
     let viewModel = TeleprompterViewModel()
 
     var storeKit: StoreKitService?
     var isPremium: Bool { storeKit?.isPremium ?? false }
 
+    private var queue: [Script] = []
+    private var queueIndex: Int = 0
+    var nextInQueue: Script? { queueIndex + 1 < queue.count ? queue[queueIndex + 1] : nil }
+
     // Published to NotchTeleprompterView for remote horizontal scroll
     let notchScrollDelta = PassthroughSubject<CGFloat, Never>()
+
+    /// All scripts on the Mac — kept in sync by ContentView so the remote can list and select them.
+    var registeredScripts: [Script] = [] {
+        didSet {
+            let infos = registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
+            let remote = RemoteControlService.shared
+            for peer in remote.connectedPeers {
+                remote.sendScriptList(infos, currentID: currentScript?.id, notchMode: notchMode, to: peer)
+            }
+        }
+    }
+
+    /// Set true before changing notchMode from the remote so MenuBarView.onChange skips hide/show.
+    var suppressModeRestart = false
 
     private var panel: NSPanel?
     private var notchPanel: NSPanel?
     private var cancellables = Set<AnyCancellable>()
     private var notchRemoteScrollTask: Task<Void, Never>?
+    private var queueCountdownTask: Task<Void, Never>?
 
     private init() {
         $notchFontSize
             .dropFirst()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.updateNotchPanelFrame() }
+            .store(in: &cancellables)
+        Publishers.CombineLatest($floatingWindowWidth, $floatingWindowHeight)
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] w, h in self?.resizeFloatingPanel(width: w, height: h) }
+            .store(in: &cancellables)
+        viewModel.$isFinished
+            .filter { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.nextInQueue != nil else { return }
+                self.showQueueBanner = true
+                self.startQueueCountdown()
+            }
             .store(in: &cancellables)
         setupRemoteControlCallbacks()
     }
@@ -65,6 +102,57 @@ final class FloatingTeleprompterManager: ObservableObject {
         isVisible = true
     }
 
+    func showQueue(scripts: [Script], storeKit: StoreKitService? = nil) {
+        guard !scripts.isEmpty else { return }
+        queue = scripts
+        queueIndex = 0
+        show(script: scripts[0], storeKit: storeKit)
+    }
+
+    func advanceQueue() {
+        queueCountdownTask?.cancel()
+        showQueueBanner = false
+        queueIndex += 1
+        guard queueIndex < queue.count else { return }
+        currentScript = queue[queueIndex]
+        viewModel.resetForNext()
+        viewModel.play()
+    }
+
+    func cancelQueueBanner() {
+        queueCountdownTask?.cancel()
+        showQueueBanner = false
+    }
+
+    private func startQueueCountdown() {
+        queueCountdown = 5
+        queueCountdownTask?.cancel()
+        queueCountdownTask = Task { @MainActor in
+            for i in stride(from: 4, through: 0, by: -1) {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard !Task.isCancelled else { return }
+                queueCountdown = i
+            }
+            guard !Task.isCancelled else { return }
+            advanceQueue()
+        }
+    }
+
+    func switchDisplayMode(notch: Bool) {
+        suppressModeRestart = true
+        notchMode = notch
+        guard isVisible else { return }
+        if notch {
+            panel?.orderOut(nil)
+            if notchPanel == nil { buildNotchPanel() }
+            notchPanel?.orderFront(nil)
+        } else {
+            notchPanel?.orderOut(nil)
+            if panel == nil { buildPanel() }
+            panel?.orderFront(nil)
+        }
+    }
+
     func hide() {
         viewModel.pause()
         viewModel.stopContinuousScroll()
@@ -78,6 +166,11 @@ final class FloatingTeleprompterManager: ObservableObject {
 
     private func setupRemoteControlCallbacks() {
         let remote = RemoteControlService.shared
+        remote.onPeerConnected = { [weak self] peer in
+            guard let self else { return }
+            let infos = self.registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
+            remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: self.notchMode, to: peer)
+        }
         remote.onCommandReceived = { [weak self] command in
             guard let self else { return }
             switch command {
@@ -94,6 +187,18 @@ final class FloatingTeleprompterManager: ObservableObject {
                 self.viewModel.togglePlayPause()
             case .reset:
                 self.viewModel.resetToTop()
+            case .setSpeed(let speed):
+                self.viewModel.scrollSpeed = max(AppConstants.minScrollSpeed, min(AppConstants.maxScrollSpeed, speed))
+            case .selectScript(let id):
+                if let script = self.registeredScripts.first(where: { $0.id == id }) {
+                    self.show(script: script)
+                }
+            case .setNotchMode(let isNotch):
+                self.switchDisplayMode(notch: isNotch)
+                let infos = self.registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
+                for peer in remote.connectedPeers {
+                    remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: isNotch, to: peer)
+                }
             }
         }
         remote.onLastPeerDisconnected = { [weak self] in
@@ -127,8 +232,8 @@ final class FloatingTeleprompterManager: ObservableObject {
         let sf = screen.frame
         let menuBarThickness = NSStatusBar.system.thickness
 
-        let panelWidth: CGFloat = 780
-        let panelHeight: CGFloat = 116
+        let panelWidth = floatingWindowWidth
+        let panelHeight = floatingWindowHeight
         let originX = sf.minX + (sf.width - panelWidth) / 2
         let originY = sf.maxY - panelHeight - menuBarThickness - 2
 
@@ -192,6 +297,15 @@ final class FloatingTeleprompterManager: ObservableObject {
     private func updateNotchPanelFrame() {
         guard let panel = notchPanel else { return }
         panel.setFrame(notchPanelFrame(), display: true, animate: false)
+    }
+
+    private func resizeFloatingPanel(width: CGFloat, height: CGFloat) {
+        guard let panel, let screen = NSScreen.main else { return }
+        let sf = screen.frame
+        let menuBarThickness = NSStatusBar.system.thickness
+        let originX = sf.minX + (sf.width - width) / 2
+        let originY = sf.maxY - height - menuBarThickness - 2
+        panel.setFrame(CGRect(x: originX, y: originY, width: width, height: height), display: true, animate: true)
     }
 }
 #endif

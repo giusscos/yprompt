@@ -9,6 +9,7 @@ import SwiftData
 struct ContentView: View {
     @EnvironmentObject private var storeKit: StoreKitService
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
+    @Query private var settingsArray: [AppSettings]
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     #if os(macOS)
@@ -48,6 +49,23 @@ struct ContentView: View {
                 emptyDetail
             }
         }
+        .onAppear {
+            FloatingTeleprompterManager.shared.registeredScripts = scripts
+            applySettingsToManager()
+        }
+        .onChange(of: scripts) { _, newScripts in
+            FloatingTeleprompterManager.shared.registeredScripts = newScripts
+        }
+    }
+
+    private func applySettingsToManager() {
+        guard let settings = settingsArray.first else { return }
+        let mgr = FloatingTeleprompterManager.shared
+        mgr.floatingFontSize = settings.floatingFontSize
+        mgr.notchFontSize = settings.notchFontSize
+        mgr.floatingWindowWidth = settings.floatingWindowWidth
+        mgr.floatingWindowHeight = settings.floatingWindowHeight
+        mgr.notchMode = settings.displayMode == .notch
     }
 
     private var emptyDetail: some View {

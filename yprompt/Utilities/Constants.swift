@@ -20,11 +20,10 @@ enum AppConstants {
     static let defaultScrollSpeed: Double = 1.0
     static let basePixelsPerSecond: CGFloat = 60
 
-    // MARK: - Font
+    // MARK: - Font Size
     static let minFontSize: CGFloat = 8
     static let maxFontSize: CGFloat = 120
     static let defaultFontSize: CGFloat = 28
-    static let defaultFontName = "Menlo"
 
     // MARK: - Line Height
     static let minLineHeight: CGFloat = 1.0
@@ -34,21 +33,6 @@ enum AppConstants {
     // MARK: - Default Colors
     static let defaultTextColorHex = "#000000"
     static let defaultBackgroundColorHex = "#FFFFFF"
-
-    // MARK: - Available Fonts
-    static let availableFonts: [String] = [
-        "Menlo",
-        "Courier New",
-        "Georgia",
-        "Times New Roman",
-        "Helvetica Neue",
-        "Arial",
-        "Trebuchet MS",
-        "Palatino",
-        "Futura",
-        "Didot",
-        "American Typewriter"
-    ]
 
     // MARK: - Text Color Presets
     static let textColorPresets: [(name: String, hex: String)] = [

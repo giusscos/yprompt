@@ -5,10 +5,10 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 // MARK: - TextCustomization
 struct TextCustomization: Sendable {
-    var fontName: String = "Menlo"
     var fontSize: CGFloat = 28
     var textColorHex: String = "#000000"
     var backgroundColorHex: String = "#FFFFFF"
@@ -22,13 +22,12 @@ struct TextCustomization: Sendable {
 
 extension TextCustomization: Codable {
     enum CodingKeys: String, CodingKey {
-        case fontName, fontSize, textColorHex, backgroundColorHex, lineHeight
+        case fontSize, textColorHex, backgroundColorHex, lineHeight
         case textAlignmentIndex, transparency, scrollSpeed, isMirrored, isAutoScroll
     }
 
     nonisolated init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        fontName = (try? c.decode(String.self, forKey: .fontName)) ?? "Menlo"
         fontSize = (try? c.decode(CGFloat.self, forKey: .fontSize)) ?? 28
         textColorHex = (try? c.decode(String.self, forKey: .textColorHex)) ?? "#000000"
         backgroundColorHex = (try? c.decode(String.self, forKey: .backgroundColorHex)) ?? "#FFFFFF"
@@ -42,7 +41,6 @@ extension TextCustomization: Codable {
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(fontName, forKey: .fontName)
         try c.encode(fontSize, forKey: .fontSize)
         try c.encode(textColorHex, forKey: .textColorHex)
         try c.encode(backgroundColorHex, forKey: .backgroundColorHex)
@@ -69,11 +67,30 @@ final class Script: Hashable {
     var id: UUID = UUID()
     var title: String = "Untitled Script"
     var content: String = ""
+    var richContent: Data?
     var createdAt: Date = Date()
     var modifiedAt: Date = Date()
     var customizationData: Data?
     var cloudSyncStateRaw: String = CloudSyncState.notSynced.rawValue
     var isFavorite: Bool = false
+
+    var attributedContent: AttributedString {
+        get {
+            if let data = richContent,
+               let decoded = try? JSONDecoder().decode(
+                   AttributedString.self, from: data,
+                   configuration: AttributeScopes.SwiftUIAttributes.self) {
+                return decoded
+            }
+            return AttributedString(content)
+        }
+        set {
+            richContent = try? JSONEncoder().encode(
+                newValue,
+                configuration: AttributeScopes.SwiftUIAttributes.self)
+            content = String(newValue.characters)
+        }
+    }
 
     var customization: TextCustomization {
         get {

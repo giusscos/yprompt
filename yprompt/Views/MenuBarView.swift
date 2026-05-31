@@ -118,6 +118,10 @@ struct MenuBarView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .onChange(of: manager.notchMode) { _, _ in
+                if manager.suppressModeRestart {
+                    manager.suppressModeRestart = false
+                    return
+                }
                 if manager.isVisible, let script = manager.currentScript {
                     manager.hide()
                     manager.show(script: script)

@@ -29,7 +29,7 @@ struct CustomizationView: View {
             #endif
         }
         #if os(macOS)
-        .frame(minWidth: 540, minHeight: 700)
+        .frame(minWidth: 540, minHeight: 600)
         #endif
         .sheet(isPresented: $showingPaywall) {
             PaywallView().environmentObject(storeKit)
@@ -40,7 +40,6 @@ struct CustomizationView: View {
     #if !os(macOS)
     private var iOSLayout: some View {
         Form {
-            fontSection
             colorsSection
             layoutSection
             teleprompterSection
@@ -56,7 +55,7 @@ struct CustomizationView: View {
         }
     }
     #endif
-    
+
     // MARK: - macOS Layout
 
     #if os(macOS)
@@ -67,7 +66,6 @@ struct CustomizationView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
 
-                macOSSection("Font") { fontControls }
                 macOSSection("Colors") { colorControls }
                 macOSSection("Layout") { layoutControls }
                 macOSSection("Teleprompter") { teleprompterControls }
@@ -108,7 +106,7 @@ struct CustomizationView: View {
             Color(hex: customization.backgroundColorHex)
                 .opacity(customization.transparency)
             Text("The quick brown fox jumps over the lazy dog.")
-                .font(.custom(customization.fontName, size: min(customization.fontSize, 24)))
+                .font(.system(size: min(customization.fontSize, 24)))
                 .foregroundStyle(Color(hex: customization.textColorHex))
                 .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
                 .lineSpacing((customization.lineHeight - 1.0) * 14)
@@ -123,22 +121,6 @@ struct CustomizationView: View {
 
     // MARK: - iOS Form Sections
 
-    private var fontSection: some View {
-        Section("Font") {
-            Picker("Typeface", selection: $customization.fontName) {
-                ForEach(AppConstants.availableFonts, id: \.self) { name in
-                    Text(name).font(.custom(name, size: 16)).tag(name)
-                }
-            }
-            sliderRow("Size", value: $customization.fontSize,
-                      range: AppConstants.minFontSize...AppConstants.maxFontSize, step: 1,
-                      display: "\(Int(customization.fontSize))pt")
-            sliderRow("Line Height", value: $customization.lineHeight,
-                      range: AppConstants.minLineHeight...AppConstants.maxLineHeight, step: 0.1,
-                      display: String(format: "%.1f", customization.lineHeight))
-        }
-    }
-
     private var colorsSection: some View {
         Section("Colors") {
             colorPickerRow("Text Color", presets: AppConstants.textColorPresets,
@@ -150,6 +132,12 @@ struct CustomizationView: View {
 
     private var layoutSection: some View {
         Section("Layout") {
+            sliderRow("Font Size", value: $customization.fontSize,
+                      range: AppConstants.minFontSize...AppConstants.maxFontSize, step: 1,
+                      display: "\(Int(customization.fontSize))pt")
+            sliderRow("Line Height", value: $customization.lineHeight,
+                      range: AppConstants.minLineHeight...AppConstants.maxLineHeight, step: 0.1,
+                      display: String(format: "%.1f", customization.lineHeight))
             Picker("Alignment", selection: $customization.textAlignmentIndex) {
                 Label("Left", systemImage: "text.alignleft").tag(0)
                 Label("Center", systemImage: "text.aligncenter").tag(1)
@@ -179,26 +167,6 @@ struct CustomizationView: View {
     // MARK: - macOS Inline Controls
 
     #if os(macOS)
-    private var fontControls: some View {
-        VStack(spacing: 10) {
-            HStack {
-                Text("Typeface").frame(width: 100, alignment: .leading)
-                Picker("", selection: $customization.fontName) {
-                    ForEach(AppConstants.availableFonts, id: \.self) { name in
-                        Text(name).font(.custom(name, size: 14)).tag(name)
-                    }
-                }
-                .labelsHidden()
-            }
-            macSliderRow("Size", value: $customization.fontSize,
-                         range: AppConstants.minFontSize...AppConstants.maxFontSize, step: 1,
-                         display: "\(Int(customization.fontSize))pt")
-            macSliderRow("Line Height", value: $customization.lineHeight,
-                         range: AppConstants.minLineHeight...AppConstants.maxLineHeight, step: 0.1,
-                         display: String(format: "%.1f", customization.lineHeight))
-        }
-    }
-
     private var colorControls: some View {
         VStack(alignment: .leading, spacing: 14) {
             colorPickerRow("Text Color", presets: AppConstants.textColorPresets,
@@ -211,6 +179,12 @@ struct CustomizationView: View {
 
     private var layoutControls: some View {
         VStack(spacing: 10) {
+            macSliderRow("Font Size", value: $customization.fontSize,
+                         range: AppConstants.minFontSize...AppConstants.maxFontSize, step: 1,
+                         display: "\(Int(customization.fontSize))pt")
+            macSliderRow("Line Height", value: $customization.lineHeight,
+                         range: AppConstants.minLineHeight...AppConstants.maxLineHeight, step: 0.1,
+                         display: String(format: "%.1f", customization.lineHeight))
             HStack {
                 Text("Alignment").frame(width: 100, alignment: .leading)
                 Picker("", selection: $customization.textAlignmentIndex) {

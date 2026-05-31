@@ -18,6 +18,7 @@ class TeleprompterViewModel: ObservableObject {
     @Published var voiceScrollEnabled: Bool = false
     @Published var showVoiceMeter: Bool = true
     @Published var micPermissionDenied: Bool = false
+    @Published var isFinished: Bool = false
 
     #if !os(watchOS)
     let voiceScrollService = VoiceScrollService()
@@ -57,9 +58,22 @@ class TeleprompterViewModel: ObservableObject {
 
     func resetToTop() {
         pause()
+        isFinished = false
         withAnimation(.easeOut(duration: 0.4)) { contentOffset = 0 }
         showControls = true
         hideControlsTask?.cancel()
+    }
+
+    func prepareForNext(customization: TextCustomization) {
+        isFinished = false
+        contentOffset = 0
+        scrollSpeed = customization.scrollSpeed
+        transparency = customization.transparency
+    }
+
+    func resetForNext() {
+        isFinished = false
+        contentOffset = 0
     }
 
     // MARK: - Progress
@@ -155,12 +169,17 @@ class TeleprompterViewModel: ObservableObject {
                 if voiceScrollEnabled && !voiceScrollService.isSpeaking { continue }
                 #endif
 
+                // contentHeight == 0 means dimensions aren't set (e.g. notch mode, which
+                // scrolls horizontally via its own timer and doesn't use contentOffset).
+                guard contentHeight > 0 else { continue }
+
                 let pixelsPerTick = AppConstants.basePixelsPerSecond * scrollSpeed / 60.0
                 let maxOffset = max(0, contentHeight - screenHeight + 80)
                 if contentOffset < maxOffset {
                     contentOffset += pixelsPerTick
                 } else {
                     pause()
+                    isFinished = true
                     break
                 }
             }

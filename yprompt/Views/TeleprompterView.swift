@@ -33,7 +33,8 @@ private enum TeleprompterMode: String, CaseIterable {
 
 struct TeleprompterView: View {
     @Environment(\.dismiss) private var dismiss
-    @Bindable var script: Script
+    @State private var queueScripts: [Script]
+    @State private var queueIndex: Int = 0
     @StateObject private var viewModel = TeleprompterViewModel()
     #if os(iOS)
     @StateObject private var cameraService = CameraRecordingService()
@@ -46,9 +47,22 @@ struct TeleprompterView: View {
     @State private var playerDetent: PresentationDetent = .height(420)
     @State private var teleprompterMode: TeleprompterMode = .auto
     @Namespace private var modeNamespace
+    @State private var showNextBanner = false
+    @State private var nextCountdown = 5
+    @State private var countdownTask: Task<Void, Never>? = nil
     #endif
 
-    private var customization: TextCustomization { script.customization }
+    private var currentScript: Script { queueScripts[queueIndex] }
+    private var nextQueueScript: Script? { queueIndex + 1 < queueScripts.count ? queueScripts[queueIndex + 1] : nil }
+    private var customization: TextCustomization { currentScript.customization }
+
+    init(script: Script) {
+        _queueScripts = State(initialValue: [script])
+    }
+
+    init(queue: [Script]) {
+        _queueScripts = State(initialValue: queue)
+    }
 
     #if os(iOS)
     private var contentBackground: Color {
@@ -201,7 +215,31 @@ struct TeleprompterView: View {
         } message: {
             Text("Your recording has been saved to the Photos library.")
         }
-        .onDisappear { cameraService.stopCamera() }
+        .onChange(of: viewModel.isFinished) { _, finished in
+            guard finished, nextQueueScript != nil else { return }
+            showNextBanner = true
+            withAnimation { playerDetent = .height(420) }
+            startNextCountdown()
+        }
+        .onAppear {
+            WatchSessionRelay.shared.onCommandReceived = { command in
+                switch command {
+                case .startContinuousDown:  viewModel.startContinuousScroll(direction: .forward)
+                case .startContinuousUp:    viewModel.startContinuousScroll(direction: .backward)
+                case .stopContinuous:       viewModel.stopContinuousScroll()
+                case .togglePlayPause:      viewModel.togglePlayPause()
+                case .reset:                viewModel.resetToTop()
+                case .setSpeed(let speed):  viewModel.scrollSpeed = max(AppConstants.minScrollSpeed, min(AppConstants.maxScrollSpeed, speed))
+                case .selectScript:         break
+                case .setNotchMode:         break
+                }
+            }
+        }
+        .onDisappear {
+            cameraService.stopCamera()
+            countdownTask?.cancel()
+            WatchSessionRelay.shared.onCommandReceived = nil
+        }
     }
 
     private var iOSPlayerPanel: some View {
@@ -219,7 +257,7 @@ struct TeleprompterView: View {
     private var iOSCompactPanel: some View {
         HStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(script.title)
+                Text(currentScript.title)
                     .font(.subheadline.bold())
                     .lineLimit(1)
                 Text(String(format: "%d%% complete", Int(viewModel.progress * 100)))
@@ -245,8 +283,12 @@ struct TeleprompterView: View {
     // Full music-player panel
     private var iOSFullPanel: some View {
         VStack(spacing: 16) {
+            if showNextBanner, let next = nextQueueScript {
+                nextScriptBanner(for: next)
+            }
+
             VStack(spacing: 4) {
-                Text(script.title)
+                Text(currentScript.title)
                     .font(.headline)
                     .lineLimit(1)
                 Text(String(format: "%d%% complete", Int(viewModel.progress * 100)))
@@ -407,14 +449,81 @@ struct TeleprompterView: View {
             Task { await cameraService.requestPermissionsAndStart() }
         }
     }
+
+    // MARK: - Queue
+
+    @ViewBuilder
+    private func nextScriptBanner(for next: Script) -> some View {
+        VStack(spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Up Next")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                    Text(next.title)
+                        .font(.subheadline.bold())
+                        .lineLimit(1)
+                }
+                Spacer()
+                Button("Play Now") { advanceToNextScript() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+            }
+            HStack(spacing: 8) {
+                ProgressView(value: Double(5 - nextCountdown), total: 5)
+                    .tint(.primary)
+                Text("Auto in \(nextCountdown)s")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(width: 68, alignment: .trailing)
+            }
+            Button("Cancel") { cancelNextBanner() }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showNextBanner)
+    }
+
+    private func startNextCountdown() {
+        nextCountdown = 5
+        countdownTask?.cancel()
+        countdownTask = Task { @MainActor in
+            for i in stride(from: 4, through: 0, by: -1) {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard !Task.isCancelled else { return }
+                nextCountdown = i
+            }
+            guard !Task.isCancelled else { return }
+            advanceToNextScript()
+        }
+    }
+
+    private func advanceToNextScript() {
+        countdownTask?.cancel()
+        withAnimation { showNextBanner = false }
+        queueIndex += 1
+        viewModel.prepareForNext(customization: currentScript.customization)
+        viewModel.play()
+    }
+
+    private func cancelNextBanner() {
+        countdownTask?.cancel()
+        withAnimation { showNextBanner = false }
+    }
     #endif
 
     // MARK: - Scrolling content
 
     private func scrollingContent(screenSize: CGSize, textColor: Color? = nil) -> some View {
-        let text = script.content.isEmpty ? "[ Empty script ]" : script.content
-        return Text(text)
-            .font(.custom(customization.fontName, size: customization.fontSize))
+        let displayText = currentScript.content.isEmpty
+            ? AttributedString("[ Empty script ]")
+            : currentScript.attributedContent
+        return Text(displayText)
+            .font(.system(size: customization.fontSize))
             .foregroundStyle(textColor ?? Color(hex: customization.textColorHex))
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing((customization.lineHeight - 1.0) * customization.fontSize * 0.5)

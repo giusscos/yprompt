@@ -29,6 +29,10 @@ struct ypromptApp: App {
                     FloatingTeleprompterManager.shared.storeKit = storeKit
                     RemoteControlService.shared.startAdvertising()
                 }
+                #elseif os(iOS)
+                .onAppear {
+                    WatchSessionRelay.shared.activate()
+                }
                 #endif
         }
         .modelContainer(sharedModelContainer)

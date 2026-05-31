@@ -26,7 +26,7 @@ struct SettingsView: View {
         Group {
             #if os(macOS)
             macOSSettings
-                .frame(minWidth: 400, minHeight: 460)
+                .frame(minWidth: 460, minHeight: 540)
             #else
             iOSSettings
             #endif
@@ -45,7 +45,6 @@ struct SettingsView: View {
     #if os(macOS)
     private var macOSSettings: some View {
         TabView {
-            // Account / Pro tab
             ScrollView {
                 VStack(spacing: 20) {
                     purchaseCard
@@ -55,7 +54,19 @@ struct SettingsView: View {
             }
             .tabItem { Label("Account", systemImage: "person.circle") }
 
-            // About tab
+            ScrollView {
+                VStack(spacing: 20) {
+                    if let settings = settingsArray.first {
+                        displayModeCard(settings)
+                        floatingWindowCard(settings)
+                        notchModeCard(settings)
+                        playbackCard(settings)
+                    }
+                }
+                .padding(20)
+            }
+            .tabItem { Label("Preferences", systemImage: "slider.horizontal.3") }
+
             ScrollView {
                 VStack(spacing: 20) {
                     aboutCard
@@ -137,6 +148,119 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Preferences Cards (macOS)
+
+    private func displayModeCard(_ settings: AppSettings) -> some View {
+        macCard {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Default Mode").font(.headline)
+                    Text("Which mode the teleprompter opens in")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("", selection: Binding(
+                    get: { settings.displayMode },
+                    set: { newMode in
+                        settings.displayModeRaw = newMode.rawValue
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.notchMode = newMode == .notch
+                    }
+                )) {
+                    Label("Floating", systemImage: "rectangle.on.rectangle").tag(DisplayMode.floatingWindow)
+                    Label("Notch", systemImage: "camera").tag(DisplayMode.notch)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+        }
+    }
+
+    private func floatingWindowCard(_ settings: AppSettings) -> some View {
+        macCard {
+            Text("Floating Window").font(.headline)
+            Divider()
+            prefSliderRow("Font Size",
+                value: Binding(
+                    get: { settings.floatingFontSize },
+                    set: { v in
+                        settings.floatingFontSize = v
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.floatingFontSize = v
+                    }),
+                range: 12...40, step: 1,
+                display: "\(Int(settings.floatingFontSize))pt")
+            prefSliderRow("Width",
+                value: Binding(
+                    get: { settings.floatingWindowWidth },
+                    set: { v in
+                        settings.floatingWindowWidth = v
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.floatingWindowWidth = v
+                    }),
+                range: 340...1200, step: 10,
+                display: "\(Int(settings.floatingWindowWidth))px")
+            prefSliderRow("Height",
+                value: Binding(
+                    get: { settings.floatingWindowHeight },
+                    set: { v in
+                        settings.floatingWindowHeight = v
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.floatingWindowHeight = v
+                    }),
+                range: 72...340, step: 4,
+                display: "\(Int(settings.floatingWindowHeight))px")
+        }
+    }
+
+    private func notchModeCard(_ settings: AppSettings) -> some View {
+        macCard {
+            Text("Notch Mode").font(.headline)
+            Divider()
+            prefSliderRow("Font Size",
+                value: Binding(
+                    get: { settings.notchFontSize },
+                    set: { v in
+                        settings.notchFontSize = v
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.notchFontSize = v
+                    }),
+                range: 8...16, step: 1,
+                display: "\(Int(settings.notchFontSize))pt")
+        }
+    }
+
+    private func playbackCard(_ settings: AppSettings) -> some View {
+        macCard {
+            Text("Playback").font(.headline)
+            Divider()
+            prefSliderRow("Scroll Speed",
+                value: Binding(
+                    get: { settings.defaultScrollSpeed },
+                    set: { v in settings.defaultScrollSpeed = v; try? modelContext.save() }),
+                range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed, step: 0.1,
+                display: String(format: "%.1fx", settings.defaultScrollSpeed))
+        }
+    }
+
+    private func prefSliderRow(_ label: String, value: Binding<CGFloat>,
+                                range: ClosedRange<CGFloat>, step: CGFloat, display: String) -> some View {
+        HStack {
+            Text(label).frame(width: 90, alignment: .leading)
+            Slider(value: value, in: range, step: step)
+            Text(display).font(.caption.monospacedDigit()).frame(width: 52, alignment: .trailing)
+        }
+    }
+
+    private func prefSliderRow(_ label: String, value: Binding<Double>,
+                                range: ClosedRange<Double>, step: Double, display: String) -> some View {
+        HStack {
+            Text(label).frame(width: 90, alignment: .leading)
+            Slider(value: value, in: range, step: step)
+            Text(display).font(.caption.monospacedDigit()).frame(width: 52, alignment: .trailing)
+        }
+    }
+
     private var aboutCard: some View {
         macCard {
             HStack {
@@ -188,6 +312,7 @@ struct SettingsView: View {
         Form {
             purchaseSection
             syncSection
+            preferencesSection
             aboutSection
             dangerSection
         }
@@ -247,6 +372,43 @@ struct SettingsView: View {
                 }
             } else {
                 Toggle("Sync with iCloud", isOn: .constant(false)).disabled(true)
+            }
+        }
+    }
+
+    private var preferencesSection: some View {
+        Section("Preferences") {
+            if let settings = settingsArray.first {
+                HStack {
+                    Text("Font Size")
+                    Slider(
+                        value: Binding(
+                            get: { settings.defaultFontSize },
+                            set: { settings.defaultFontSize = $0; try? modelContext.save() }
+                        ),
+                        in: AppConstants.minFontSize...AppConstants.maxFontSize,
+                        step: 1
+                    )
+                    Text("\(Int(settings.defaultFontSize))pt")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, alignment: .trailing)
+                }
+                HStack {
+                    Text("Scroll Speed")
+                    Slider(
+                        value: Binding(
+                            get: { settings.defaultScrollSpeed },
+                            set: { settings.defaultScrollSpeed = $0; try? modelContext.save() }
+                        ),
+                        in: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
+                        step: 0.1
+                    )
+                    Text(String(format: "%.1fx", settings.defaultScrollSpeed))
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, alignment: .trailing)
+                }
             }
         }
     }

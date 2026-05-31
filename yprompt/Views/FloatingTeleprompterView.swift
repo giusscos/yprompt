@@ -9,6 +9,7 @@ import SwiftUI
 struct FloatingTeleprompterView: View {
     @ObservedObject private var manager: FloatingTeleprompterManager
     @ObservedObject private var viewModel: TeleprompterViewModel
+    @Environment(\.fontResolutionContext) private var fontContext
     @State private var isHovering = false
     @State private var showUpgradeAlert = false
 
@@ -55,7 +56,7 @@ struct FloatingTeleprompterView: View {
                 .allowsHitTesting(false)
             }
 
-            if isHovering {
+            if isHovering || manager.showQueueBanner {
                 controlsBar
                     .transition(.opacity.animation(.easeInOut(duration: 0.15)))
             }
@@ -84,11 +85,27 @@ struct FloatingTeleprompterView: View {
 
     // MARK: - Scrolling text
 
+    private func normalizedText(from input: AttributedString) -> AttributedString {
+        var result = input
+        for run in result.runs {
+            guard let font = run.font else { continue }
+            let resolved = font.resolve(in: fontContext)
+            var scaled = Font.system(size: manager.floatingFontSize)
+            if resolved.isBold { scaled = scaled.bold() }
+            if resolved.isItalic { scaled = scaled.italic() }
+            result[run.range].font = scaled
+        }
+        return result
+    }
+
     private var scrollableText: some View {
-        let content = manager.currentScript?.content ?? ""
-        let text = content.isEmpty ? "[ No script — pick one from the menu bar ]" : content
-        return Text(text)
-            .font(.custom(customization.fontName, size: manager.floatingFontSize))
+        let isEmpty = (manager.currentScript?.content ?? "").isEmpty
+        let raw = isEmpty
+            ? AttributedString("[ No script — pick one from the menu bar ]")
+            : (manager.currentScript?.attributedContent ?? AttributedString())
+        let displayText = normalizedText(from: raw)
+        return Text(displayText)
+            .font(.system(size: manager.floatingFontSize))
             .foregroundStyle(.white)
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing(4)
@@ -110,6 +127,38 @@ struct FloatingTeleprompterView: View {
 
     private var controlsBar: some View {
         VStack(spacing: 6) {
+            // Queue "Up Next" banner
+            if manager.showQueueBanner, let next = manager.nextInQueue {
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Up Next")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.55))
+                        Text(next.title)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Text("Auto in \(manager.queueCountdown)s")
+                        .font(.system(size: 10).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.6))
+                    Button("Play Now") { manager.advanceQueue() }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.mini)
+                    Button { manager.cancelQueueBanner() } label: {
+                        Image(systemName: "xmark").font(.system(size: 9))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.white.opacity(0.5))
+                    .help("Cancel queue advance")
+                }
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
+                .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             // Row 1 — playback + voice scroll
             HStack(spacing: 12) {
                 Button { viewModel.resetToTop() } label: {

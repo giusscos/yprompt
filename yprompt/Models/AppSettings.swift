@@ -11,11 +11,15 @@ enum PurchaseState: String, Codable {
     case free, lifetime, subscribed
 }
 
+// MARK: - DisplayMode
+enum DisplayMode: String, Codable, Hashable {
+    case floatingWindow, notch
+}
+
 // MARK: - AppSettings Model
 @Model
 final class AppSettings {
     var lastOpenedScriptID: UUID?
-    var defaultFontName: String = "Menlo"
     var defaultFontSize: CGFloat = 28
     var defaultTextColorHex: String = "#000000"
     var defaultBackgroundColorHex: String = "#FFFFFF"
@@ -24,9 +28,22 @@ final class AppSettings {
     var purchaseStateRaw: String = PurchaseState.free.rawValue
     var lastSyncDate: Date?
 
+    // MARK: Teleprompter Preferences
+    var displayModeRaw: String = "floatingWindow"
+    var floatingWindowWidth: CGFloat = 780
+    var floatingWindowHeight: CGFloat = 116
+    var floatingFontSize: CGFloat = 19
+    var notchFontSize: CGFloat = 11
+    var defaultScrollSpeed: Double = 1.0
+
     var purchaseState: PurchaseState {
         get { PurchaseState(rawValue: purchaseStateRaw) ?? .free }
         set { purchaseStateRaw = newValue.rawValue }
+    }
+
+    var displayMode: DisplayMode {
+        get { DisplayMode(rawValue: displayModeRaw) ?? .floatingWindow }
+        set { displayModeRaw = newValue.rawValue }
     }
 
     init() {}
