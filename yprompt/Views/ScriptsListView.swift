@@ -16,6 +16,8 @@ struct ScriptsListView: View {
     #if os(macOS)
     @Binding var selectedScript: Script?
     @State private var macSelectedIDs: Set<UUID> = []
+    @State private var macSelectionOrder: [UUID] = []
+    @State private var macIsSelectMode: Bool = false
     init(selectedScript: Binding<Script?>) {
         self._selectedScript = selectedScript
     }
@@ -38,6 +40,7 @@ struct ScriptsListView: View {
     #if os(iOS)
     @State private var editMode: EditMode = .inactive
     @State private var selectedIDs: Set<UUID> = []
+    @State private var selectionOrder: [UUID] = []
     @State private var showingQueuePlayer = false
     @State private var queueToPlay: [Script] = []
     #endif
@@ -68,12 +71,27 @@ struct ScriptsListView: View {
                 }
             }
             #if os(macOS)
-            if macSelectedIDs.count > 1 {
-                ToolbarItem(placement: .primaryAction) {
-                    Button { playQueueMac() } label: {
+            ToolbarItem(placement: .cancellationAction) {
+                if !macSelectedIDs.isEmpty {
+                    Button {
+                        playQueueMac()
+                    } label: {
                         Label("Play Queue (\(macSelectedIDs.count))", systemImage: "play.fill")
                     }
                     .buttonStyle(.borderedProminent)
+                } else {
+                    Button(macIsSelectMode ? "Done" : "Select") {
+                        if macIsSelectMode {
+                            macIsSelectMode = false
+                            macSelectedIDs = []
+                            macSelectionOrder = []
+                        } else {
+                            macIsSelectMode = true
+                            macSelectedIDs = []
+                            macSelectionOrder = []
+                            selectedScript = nil
+                        }
+                    }
                 }
             }
             #endif
@@ -83,6 +101,7 @@ struct ScriptsListView: View {
                     if editMode == .active {
                         editMode = .inactive
                         selectedIDs = []
+                        selectionOrder = []
                     } else {
                         editMode = .active
                     }
@@ -102,7 +121,7 @@ struct ScriptsListView: View {
             PaywallView().environmentObject(storeKit)
         }
         #if os(iOS)
-        .fullScreenCover(isPresented: $showingQueuePlayer) {
+        .navigationDestination(isPresented: $showingQueuePlayer) {
             TeleprompterView(queue: queueToPlay)
                 .environmentObject(storeKit)
         }
@@ -163,16 +182,40 @@ struct ScriptsListView: View {
                 .environmentObject(storeKit)
         }
         .environment(\.editMode, $editMode)
-        #else
-        List(selection: $macSelectedIDs) {
-            listRows
+        .onChange(of: selectedIDs) { oldIDs, newIDs in
+            let added = newIDs.subtracting(oldIDs)
+            for id in added where !selectionOrder.contains(id) {
+                selectionOrder.append(id)
+            }
+            selectionOrder.removeAll { !newIDs.contains($0) }
         }
-        .onChange(of: macSelectedIDs) { _, ids in
-            if ids.count == 1, let id = ids.first,
+        #else
+        Group {
+            if macIsSelectMode {
+                List {
+                    listRows
+                }
+            } else {
+                List(selection: $macSelectedIDs) {
+                    listRows
+                }
+            }
+        }
+        .onChange(of: macSelectedIDs) { oldIDs, newIDs in
+            guard !macIsSelectMode else { return }
+            if newIDs.count == 1, let id = newIDs.first,
                let script = scripts.first(where: { $0.id == id }) {
                 selectedScript = script
-            } else if ids.isEmpty {
+                macSelectionOrder = [id]
+            } else if newIDs.isEmpty {
                 selectedScript = nil
+                macSelectionOrder = []
+            } else {
+                let added = newIDs.subtracting(oldIDs)
+                for id in added where !macSelectionOrder.contains(id) {
+                    macSelectionOrder.append(id)
+                }
+                macSelectionOrder.removeAll { !newIDs.contains($0) }
             }
         }
         #endif
@@ -203,16 +246,57 @@ struct ScriptsListView: View {
                         Label("Delete", systemImage: "trash")
                     }
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        scriptToDelete = script
+                        showDeleteConfirm = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    Button {
+                        renameTitle = script.title
+                        scriptToRename = script
+                        showRenameAlert = true
+                    } label: {
+                        Label("Rename", systemImage: "pencil")
+                    }
+                    .tint(.blue)
+                    Button {
+                        duplicateScript(script)
+                    } label: {
+                        Label("Duplicate", systemImage: "doc.on.doc")
+                    }
+                    .tint(.orange)
+                }
         }
     }
 
     @ViewBuilder
     private func rowView(for script: Script) -> some View {
         #if os(macOS)
-        ScriptRowView(script: script, selectedScript: selectedScript)
+        let queuePosition = macSelectionOrder.firstIndex(of: script.id).map { $0 + 1 }
+        let hideHeart = macIsSelectMode || macSelectedIDs.count > 1
+        if macIsSelectMode {
+            ScriptRowView(script: script, selectedScript: selectedScript, queuePosition: queuePosition, isSelectMode: hideHeart)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if macSelectedIDs.contains(script.id) {
+                        macSelectedIDs.remove(script.id)
+                        macSelectionOrder.removeAll { $0 == script.id }
+                    } else {
+                        macSelectedIDs.insert(script.id)
+                        macSelectionOrder.append(script.id)
+                    }
+                }
+        } else {
+            ScriptRowView(script: script, selectedScript: selectedScript, queuePosition: queuePosition, isSelectMode: hideHeart)
+        }
         #else
+        let queuePosition = selectionOrder.firstIndex(of: script.id).map { $0 + 1 }
         NavigationLink(value: script) {
-            ScriptRowView(script: script)
+            ScriptRowView(script: script, queuePosition: queuePosition, isSelectMode: editMode == .active)
         }
         #endif
     }
@@ -272,20 +356,23 @@ struct ScriptsListView: View {
 
     #if os(macOS)
     private func playQueueMac() {
-        let ordered = filtered.filter { macSelectedIDs.contains($0.id) }
-        guard ordered.count > 1 else { return }
+        let ordered = macSelectionOrder.compactMap { id in filtered.first { $0.id == id } }
+        guard !ordered.isEmpty else { return }
         FloatingTeleprompterManager.shared.showQueue(scripts: ordered, storeKit: storeKit)
+        macIsSelectMode = false
         macSelectedIDs = []
+        macSelectionOrder = []
     }
     #endif
 
     #if os(iOS)
     private func playQueue() {
-        let ordered = filtered.filter { selectedIDs.contains($0.id) }
+        let ordered = selectionOrder.compactMap { id in filtered.first { $0.id == id } }
         guard !ordered.isEmpty else { return }
         queueToPlay = ordered
         editMode = .inactive
         selectedIDs = []
+        selectionOrder = []
         showingQueuePlayer = true
     }
     #endif
@@ -298,6 +385,8 @@ struct ScriptRowView: View {
     @Bindable var script: Script
 
     var selectedScript: Script? = nil
+    var queuePosition: Int? = nil
+    var isSelectMode: Bool = false
 
     var body: some View {
         HStack(spacing: 6) {
@@ -320,18 +409,34 @@ struct ScriptRowView: View {
 
             Spacer()
 
-            Button {
-                script.isFavorite.toggle()
-                try? modelContext.save()
-            } label: {
-                Image(systemName: script.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(script.isFavorite ? Color.pink : Color.secondary)
+            Group {
+                if let pos = queuePosition {
+                    ZStack {
+                        Circle()
+                            .fill(Color.accentColor)
+                            .frame(width: 22, height: 22)
+                        Text("\(pos)")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.white)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(script.isFavorite ? "Unfavorite" : "Favorite")
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: queuePosition)
+
+            if !isSelectMode {
+                Button {
+                    script.isFavorite.toggle()
+                    try? modelContext.save()
+                } label: {
+                    Image(systemName: script.isFavorite ? "heart.fill" : "heart")
+                        .foregroundStyle(script.isFavorite ? Color.red : Color.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(script.isFavorite ? "Unfavorite" : "Favorite")
+            }
         }
-        .padding(8)
-        .background(selectedScript?.id == script.id ? Color.accentColor.opacity(0.1) : Color.clear)
-        .clipShape(.rect(cornerRadius: 16))
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
     }
 }

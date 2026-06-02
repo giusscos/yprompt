@@ -23,6 +23,7 @@ final class FloatingTeleprompterManager: ObservableObject {
     @Published var queueCountdown: Int = 5
     @Published var floatingWindowWidth: CGFloat = 780
     @Published var floatingWindowHeight: CGFloat = 116
+    @Published var horizontalPadding: CGFloat = 52
     let viewModel = TeleprompterViewModel()
 
     var storeKit: StoreKitService?

@@ -54,6 +54,13 @@
 			);
 			target = 3B632FFD2FA35FBB00066314 /* yprompt watch Watch App */;
 		};
+		3B66E4C62FCDE3AF00C775B0 /* Exceptions for "yprompt" folder in "yprompt watch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				appIcon.icon,
+			);
+			target = 3B632FFD2FA35FBB00066314 /* yprompt watch Watch App */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -61,6 +68,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				3B632FC72FA359C200066314 /* Exceptions for "yprompt" folder in "yprompt" target */,
+				3B66E4C62FCDE3AF00C775B0 /* Exceptions for "yprompt" folder in "yprompt watch Watch App" target */,
 			);
 			path = yprompt;
 			sourceTree = "<group>";
@@ -245,7 +253,7 @@
 		3B632FC92FA359C200066314 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = appIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = yprompt/yprompt.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -293,7 +301,7 @@
 		3B632FCA2FA359C200066314 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = appIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = yprompt/yprompt.entitlements;
 				CODE_SIGN_STYLE = Automatic;

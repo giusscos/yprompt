@@ -12,6 +12,8 @@ struct FloatingTeleprompterView: View {
     @Environment(\.fontResolutionContext) private var fontContext
     @State private var isHovering = false
     @State private var showUpgradeAlert = false
+    @State private var floatingTimedEnabled = false
+    @State private var floatingTimedMinutes: Int = 3
 
     init() {
         let mgr = FloatingTeleprompterManager.shared
@@ -109,7 +111,7 @@ struct FloatingTeleprompterView: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing(4)
-            .padding(.horizontal, 52)
+            .padding(.horizontal, manager.horizontalPadding)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: customization.textAlignmentIndex.frameAlignment)
             .fixedSize(horizontal: false, vertical: true)
@@ -121,6 +123,20 @@ struct FloatingTeleprompterView: View {
                 }
             )
             .offset(y: -viewModel.contentOffset)
+    }
+
+    // MARK: - Helpers
+
+    private func timeString(_ interval: TimeInterval) -> String {
+        let total = max(0, Int(interval))
+        let m = total / 60
+        let s = total % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    private func updateFloatingTimedDuration() {
+        let total = TimeInterval(floatingTimedMinutes * 60)
+        viewModel.timedDuration = total > 0 ? total : 180
     }
 
     // MARK: - Hover controls
@@ -178,18 +194,60 @@ struct FloatingTeleprompterView: View {
                 .foregroundStyle(.white)
                 .help(viewModel.isPlaying ? "Pause" : "Play")
 
-                Slider(
-                    value: $viewModel.scrollSpeed,
-                    in: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                    step: 0.1
-                )
-                .frame(width: 80)
-                .controlSize(.mini)
+                Picker("", selection: Binding(
+                    get: { floatingTimedEnabled ? 1 : 0 },
+                    set: { newVal in
+                        if newVal == 1 {
+                            guard manager.isPremium else { showUpgradeAlert = true; return }
+                            floatingTimedEnabled = true
+                            updateFloatingTimedDuration()
+                        } else {
+                            floatingTimedEnabled = false
+                            viewModel.timedDuration = nil
+                        }
+                    }
+                )) {
+                    Image(systemName: "hare.fill").tag(0)
+                    Image(systemName: "timer").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 60)
 
-                Text(String(format: "%.1fx", viewModel.scrollSpeed))
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.65))
-                    .frame(width: 28)
+                if floatingTimedEnabled {
+                    if viewModel.isPlaying && viewModel.timedDuration != nil {
+                        Text(timeString(viewModel.remainingTime))
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.white)
+                            .frame(minWidth: 40)
+                    } else {
+                        HStack(spacing: 2) {
+                            Button {
+                                if floatingTimedMinutes > 0 { floatingTimedMinutes -= 1; updateFloatingTimedDuration() }
+                            } label: { Image(systemName: "minus").font(.caption2) }
+                            .buttonStyle(.plain)
+                            Text("\(floatingTimedMinutes)m")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(.white)
+                                .frame(minWidth: 24)
+                            Button {
+                                floatingTimedMinutes = min(59, floatingTimedMinutes + 1)
+                                updateFloatingTimedDuration()
+                            } label: { Image(systemName: "plus").font(.caption2) }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                } else {
+                    MusicSlider(
+                        value: $viewModel.scrollSpeed,
+                        range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
+                        step: 0.1
+                    )
+                    .frame(width: 80)
+                    Text(String(format: "%.1fx", viewModel.scrollSpeed))
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.65))
+                        .frame(width: 28)
+                }
 
                 // Voice scroll toggle (premium)
                 Button {
@@ -235,8 +293,7 @@ struct FloatingTeleprompterView: View {
                     .foregroundStyle(.white.opacity(0.55))
                     .help("Background opacity")
 
-                Slider(value: $manager.backgroundOpacity, in: 0.15...1.0, step: 0.05)
-                    .controlSize(.mini)
+                MusicSlider(value: $manager.backgroundOpacity, range: 0.15...1.0, step: 0.05)
 
                 Rectangle()
                     .fill(.white.opacity(0.25))
@@ -247,8 +304,7 @@ struct FloatingTeleprompterView: View {
                     .foregroundStyle(.white.opacity(0.55))
                     .help("Background blur")
 
-                Slider(value: $manager.blurAmount, in: 0.0...1.0, step: 0.05)
-                    .controlSize(.mini)
+                MusicSlider(value: $manager.blurAmount, range: 0.0...1.0, step: 0.05)
             }
 
             // Row 3 — voice level meter (only when voice scroll is enabled and meter is visible)

@@ -84,6 +84,9 @@ struct NotchTeleprompterView: View {
         .onChange(of: text) { _, _ in
             xOffset = containerWidth
         }
+        .onReceive(viewModel.resetPublisher) {
+            xOffset = containerWidth
+        }
         .onTapGesture {
             viewModel.togglePlayPause()
         }

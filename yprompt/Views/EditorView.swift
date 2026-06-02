@@ -6,24 +6,22 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
+import PDFKit
 
-// MARK: - Markdown FileDocument
+// MARK: - Rich Text FileDocument
 
-private struct MarkdownFile: FileDocument {
-    static var readableContentTypes: [UTType] { [.plainText] }
-    var text: String
+private struct RichTextFile: FileDocument {
+    static var readableContentTypes: [UTType] { [.rtf] }
+    var data: Data
 
-    init(text: String) { self.text = text }
+    init(data: Data) { self.data = data }
 
     init(configuration: ReadConfiguration) throws {
-        text = String(
-            data: configuration.file.regularFileContents ?? Data(),
-            encoding: .utf8
-        ) ?? ""
+        data = configuration.file.regularFileContents ?? Data()
     }
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: text.data(using: .utf8) ?? Data())
+        FileWrapper(regularFileWithContents: data)
     }
 }
 
@@ -41,22 +39,21 @@ struct EditorView: View {
     @State private var showingCustomization = false
     @State private var isSaving = false
     @State private var showingImporter = false
-    @State private var showingExporter = false
-    @State private var exportDocument: MarkdownFile? = nil
+    @State private var showingRTFExporter = false
+    @State private var rtfDocument: RichTextFile? = nil
     @State private var showingRename = false
     @State private var renameText = ""
-    #if os(iOS)
-    @State private var showingTeleprompter = false
-    #endif
+    
     @State private var saveTask: Task<Void, Never>?
+    @State private var cachedRTFData = Data()
 
-    private var exportFilename: String {
+    private var rtfFilename: String {
         let unsafe = CharacterSet(charactersIn: "/\\:*?\"<>|")
         let clean = script.title
             .components(separatedBy: unsafe)
             .joined(separator: "_")
             .trimmingCharacters(in: .whitespaces)
-        return "\(clean.isEmpty ? "Untitled" : clean).md"
+        return "\(clean.isEmpty ? "Untitled" : clean).rtf"
     }
 
     var body: some View {
@@ -74,42 +71,45 @@ struct EditorView: View {
                 CustomizationView(script: script)
                     .environmentObject(storeKit)
             }
-            #if os(iOS)
-            .fullScreenCover(isPresented: $showingTeleprompter) {
-                TeleprompterView(script: script)
-                    .environmentObject(storeKit)
-            }
-            #endif
+            
             .fileImporter(
                 isPresented: $showingImporter,
-                allowedContentTypes: [.plainText],
+                allowedContentTypes: [.plainText, .pdf, .rtf],
                 allowsMultipleSelection: false
             ) { result in
                 if case .success(let urls) = result, let url = urls.first {
-                    importMarkdown(from: url)
+                    importFile(from: url)
                 }
             }
-            .onChange(of: showingExporter) { _, isShowing in
-                if isShowing { exportDocument = MarkdownFile(text: script.content) }
-            }
+            #if os(iOS)
             .fileExporter(
-                isPresented: $showingExporter,
-                document: exportDocument,
-                contentType: .plainText,
-                defaultFilename: exportFilename
+                isPresented: $showingRTFExporter,
+                document: rtfDocument,
+                contentType: .rtf,
+                defaultFilename: rtfFilename
             ) { _ in
-                exportDocument = nil
+                rtfDocument = nil
             }
+            #endif
             .alert("Rename Script", isPresented: $showingRename) {
                 TextField("Title", text: $renameText)
                 Button("Save") { commitRename() }
                 Button("Cancel", role: .cancel) {}
             }
-            .onAppear { attrText = script.attributedContent }
-            .onChange(of: script.id) { _, _ in attrText = script.attributedContent }
+            .onAppear {
+                let content = script.attributedContent
+                attrText = content
+                cachedRTFData = makeRTFData(from: content)
+            }
+            .onChange(of: script.id) { _, _ in
+                let content = script.attributedContent
+                attrText = content
+                cachedRTFData = makeRTFData(from: content)
+            }
             .onChange(of: attrText) { _, newValue in
                 script.content = String(newValue.characters)
                 scheduleSave(attributedText: newValue)
+                cachedRTFData = makeRTFData(from: newValue)
             }
     }
 
@@ -141,8 +141,6 @@ struct EditorView: View {
             .buttonStyle(.borderedProminent)
             .disabled(script.content.isEmpty)
 
-            Divider()
-
             Button { applyBold() } label: { Label("Bold", systemImage: "bold") }
             Button { applyItalic() } label: { Label("Italic", systemImage: "italic") }
             Button { applyUnderline() } label: { Label("Underline", systemImage: "underline") }
@@ -150,7 +148,7 @@ struct EditorView: View {
         }
 
         // Secondary group 1: Rename + Customize
-        ToolbarItemGroup(placement: .secondaryAction) {
+        ToolbarItemGroup(placement: .automatic) {
             Button {
                 renameText = script.title
                 showingRename = true
@@ -163,19 +161,22 @@ struct EditorView: View {
         }
 
         // Secondary group 2: Import + Export
-        ToolbarItemGroup(placement: .secondaryAction) {
+        ToolbarItemGroup(placement: .automatic) {
             Button { showingImporter = true } label: {
-                Label("Import Markdown", systemImage: "square.and.arrow.down")
+                Label("Import File", systemImage: "square.and.arrow.down")
             }
-            Button { showingExporter = true } label: {
-                Label("Export Markdown", systemImage: "square.and.arrow.up")
+            Button { showRTFExporter() } label: {
+                Label("Export Rich Text", systemImage: "square.and.arrow.up")
             }
             .disabled(script.content.isEmpty)
         }
         #else
         // iOS: Play button
-        ToolbarItem(placement: .primaryAction) {
-            Button { showingTeleprompter = true } label: {
+        ToolbarItem(placement: .topBarTrailing) {
+            NavigationLink {
+                TeleprompterView(script: script)
+                    .environmentObject(storeKit)
+            } label: {
                 Label("Present", systemImage: "play.fill")
             }
             .buttonStyle(.borderedProminent)
@@ -183,31 +184,35 @@ struct EditorView: View {
         }
 
         // iOS: More menu — group 1: Rename + Customize
-        ToolbarItem(placement: .secondaryAction) {
-            Button {
-                renameText = script.title
-                showingRename = true
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button {
+                    renameText = script.title
+                    showingRename = true
+                } label: {
+                    Label("Rename", systemImage: "pencil")
+                }
+                
+                Button { showingCustomization = true } label: {
+                    Label("Customize", systemImage: "paintpalette")
+                }
+                
+                Divider()
+                
+                Button { showingImporter = true } label: {
+                    Label("Import File", systemImage: "square.and.arrow.down")
+                }
+                
+                Button {
+                    rtfDocument = RichTextFile(data: cachedRTFData)
+                    showingRTFExporter = true
+                } label: {
+                    Label("Export Rich Text", systemImage: "square.and.arrow.up")
+                }
+                .disabled(script.content.isEmpty)
             } label: {
-                Label("Rename", systemImage: "pencil")
+                Label("More", systemImage: "ellipsis")
             }
-        }
-        ToolbarItem(placement: .secondaryAction) {
-            Button { showingCustomization = true } label: {
-                Label("Customize", systemImage: "paintpalette")
-            }
-        }
-
-        // iOS: More menu — group 2: Import + Export
-        ToolbarItem(placement: .secondaryAction) {
-            Button { showingImporter = true } label: {
-                Label("Import Markdown", systemImage: "square.and.arrow.down")
-            }
-        }
-        ToolbarItem(placement: .secondaryAction) {
-            Button { showingExporter = true } label: {
-                Label("Export Markdown", systemImage: "square.and.arrow.up")
-            }
-            .disabled(script.content.isEmpty)
         }
         #endif
     }
@@ -266,12 +271,110 @@ struct EditorView: View {
         }
     }
 
+    // MARK: - RTF Export
+
+    private func makeRTFData(from attrStr: AttributedString) -> Data {
+        let nsAttr = NSMutableAttributedString()
+        let baseFontSize: CGFloat = 16
+
+        // Pre-compute known font variants — bold/italic detection via value equality
+        // avoids Font.resolve(in:) which is only safe during SwiftUI rendering.
+        let boldFont = Font.body.bold()
+        let italicFont = Font.body.italic()
+        let boldItalicA = Font.body.bold().italic()
+        let boldItalicB = Font.body.italic().bold()
+
+        for run in attrStr.runs {
+            let substr = String(attrStr[run.range].characters)
+            guard !substr.isEmpty else { continue }
+            var nsAttrs: [NSAttributedString.Key: Any] = [:]
+
+            let f = run.font
+            let isBold = f == boldFont || f == boldItalicA || f == boldItalicB
+            let isItalic = f == italicFont || f == boldItalicA || f == boldItalicB
+
+            #if os(macOS)
+            var nsFont = NSFont.systemFont(ofSize: baseFontSize)
+            if isBold && isItalic {
+                let desc = nsFont.fontDescriptor.withSymbolicTraits([.bold, .italic])
+                if let resolved = NSFont(descriptor: desc, size: baseFontSize) { nsFont = resolved }
+            } else if isBold {
+                nsFont = NSFont.boldSystemFont(ofSize: baseFontSize)
+            } else if isItalic {
+                let desc = nsFont.fontDescriptor.withSymbolicTraits(.italic)
+                if let resolved = NSFont(descriptor: desc, size: baseFontSize) { nsFont = resolved }
+            }
+            nsAttrs[.font] = nsFont
+            #else
+            var uiFont = UIFont.systemFont(ofSize: baseFontSize)
+            if isBold || isItalic {
+                var symTraits = uiFont.fontDescriptor.symbolicTraits
+                if isBold { symTraits.insert(.traitBold) }
+                if isItalic { symTraits.insert(.traitItalic) }
+                if let desc = uiFont.fontDescriptor.withSymbolicTraits(symTraits) {
+                    uiFont = UIFont(descriptor: desc, size: baseFontSize)
+                }
+            }
+            nsAttrs[.font] = uiFont
+            #endif
+
+            if run.underlineStyle != nil {
+                nsAttrs[.underlineStyle] = NSUnderlineStyle.single.rawValue
+            }
+            if run.strikethroughStyle != nil {
+                nsAttrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+            }
+            nsAttr.append(NSAttributedString(string: substr, attributes: nsAttrs))
+        }
+
+        guard nsAttr.length > 0 else { return Data() }
+        return (try? nsAttr.data(
+            from: NSRange(location: 0, length: nsAttr.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+        )) ?? Data()
+    }
+
+    #if os(macOS)
+    private func showRTFExporter() {
+        let data = cachedRTFData
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.rtf]
+        panel.nameFieldStringValue = rtfFilename
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            try? data.write(to: url, options: .atomic)
+        }
+    }
+    #endif
+
     // MARK: - Import
 
-    private func importMarkdown(from url: URL) {
+    private func importFile(from url: URL) {
         guard url.startAccessingSecurityScopedResource() else { return }
         defer { url.stopAccessingSecurityScopedResource() }
-        guard let text = try? String(contentsOf: url, encoding: .utf8) else { return }
+
+        let ext = url.pathExtension.lowercased()
+        let text: String
+
+        switch ext {
+        case "pdf":
+            guard let doc = PDFDocument(url: url) else { return }
+            text = (0..<doc.pageCount)
+                .compactMap { doc.page(at: $0)?.string }
+                .joined(separator: "\n\n")
+        case "rtf", "rtfd":
+            guard let data = try? Data(contentsOf: url),
+                  let attrStr = try? NSAttributedString(
+                      data: data,
+                      options: [.documentType: NSAttributedString.DocumentType.rtf],
+                      documentAttributes: nil)
+            else { return }
+            text = attrStr.string
+        default:
+            guard let content = try? String(contentsOf: url, encoding: .utf8) else { return }
+            text = content
+        }
+
         script.content = text
         script.richContent = nil
         attrText = AttributedString(text)

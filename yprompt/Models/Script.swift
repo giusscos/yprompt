@@ -53,6 +53,13 @@ extension TextCustomization: Codable {
     }
 }
 
+// MARK: - CuePoint
+struct CuePoint: Codable, Identifiable, Sendable {
+    var id: UUID = UUID()
+    var position: Double  // 0.0 – 1.0 fraction of max scroll offset
+    var label: String = ""
+}
+
 // MARK: - CloudSyncState
 enum CloudSyncState: String, Codable {
     case notSynced, pending, synced, failed
@@ -73,6 +80,7 @@ final class Script: Hashable {
     var customizationData: Data?
     var cloudSyncStateRaw: String = CloudSyncState.notSynced.rawValue
     var isFavorite: Bool = false
+    var cuePointsData: Data?
 
     var attributedContent: AttributedString {
         get {
@@ -107,6 +115,16 @@ final class Script: Hashable {
     var cloudSyncState: CloudSyncState {
         get { CloudSyncState(rawValue: cloudSyncStateRaw) ?? .notSynced }
         set { cloudSyncStateRaw = newValue.rawValue }
+    }
+
+    var cuePoints: [CuePoint] {
+        get {
+            guard let data = cuePointsData,
+                  let decoded = try? JSONDecoder().decode([CuePoint].self, from: data)
+            else { return [] }
+            return decoded
+        }
+        set { cuePointsData = try? JSONEncoder().encode(newValue) }
     }
 
     init(title: String = "Untitled Script", content: String = "") {

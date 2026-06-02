@@ -14,11 +14,11 @@ struct VoiceLevelMeterView: View {
             ZStack(alignment: .leading) {
                 // Background track
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(Color.white.opacity(0.12))
+                    .fill(Color.secondary)
 
                 // Level fill — green when speaking, dim when silent
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(service.isSpeaking ? Color.green.opacity(0.70) : Color.white.opacity(0.25))
+                    .fill(service.isSpeaking ? Color.green.opacity(0.70) : Color.orange.opacity(0.70))
                     .frame(width: max(6, geo.size.width * CGFloat(service.normalizedLevel)))
                     .animation(.easeOut(duration: 0.06), value: service.normalizedLevel)
 
@@ -27,10 +27,10 @@ struct VoiceLevelMeterView: View {
                 ZStack {
                     Capsule()
                         .fill(Color.yellow)
-                        .frame(width: 3, height: geo.size.height + 8)
+                        .frame(width: 3, height: geo.size.height + 6)
                     // Wider invisible hit area for easier dragging
                     Color.clear
-                        .frame(width: 28, height: geo.size.height + 16)
+                        .frame(width: 28, height: geo.size.height + 8)
                         .contentShape(Rectangle())
                 }
                 .offset(x: max(0, min(geo.size.width - 3, markerX - 1)))
@@ -43,6 +43,7 @@ struct VoiceLevelMeterView: View {
                         service.speechThreshold = VoiceScrollService.denormalize(max(0, min(1, normalized)))
                     }
             )
+            .frame(height: 10)
         }
         .frame(height: 10)
     }

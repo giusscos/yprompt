@@ -12,6 +12,9 @@ struct MenuBarView: View {
     @ObservedObject private var viewModel: TeleprompterViewModel
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @State private var selectedScriptID: Script.ID?
+    @State private var menuTimedEnabled = false
+    @State private var menuTimedMinutes: Int = 3
+    @State private var showTimedUpgradeAlert = false
 
     init() {
         let mgr = FloatingTeleprompterManager.shared
@@ -48,6 +51,25 @@ struct MenuBarView: View {
                 selectedScriptID = manager.currentScript?.id ?? scripts.first?.id
             }
         }
+        .alert("Premium Feature", isPresented: $showTimedUpgradeAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Timer mode is available with YPrompt Premium. Open the main app to upgrade.")
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func timeString(_ interval: TimeInterval) -> String {
+        let total = max(0, Int(interval))
+        let m = total / 60
+        let s = total % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    private func updateMenuTimedDuration() {
+        let total = TimeInterval(menuTimedMinutes * 60)
+        viewModel.timedDuration = total > 0 ? total : 180
     }
 
     // MARK: - Header
@@ -70,6 +92,15 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .help("Open main window")
+
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Image(systemName: "power")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Quit YPrompt")
         }
         .padding(12)
     }
@@ -155,35 +186,99 @@ struct MenuBarView: View {
     private var playbackControls: some View {
         VStack(spacing: 10) {
             Divider()
-            HStack(spacing: 10) {
-                Button { viewModel.togglePlayPause() } label: {
-                    Label(
-                        viewModel.isPlaying ? "Pause" : "Play",
-                        systemImage: viewModel.isPlaying ? "pause.fill" : "play.fill"
-                    )
+            HStack {
+                Button { viewModel.resetToTop() } label: {
+                    Image(systemName: "backward.end.fill").font(.title2)
                 }
-                .buttonStyle(.bordered)
+                .accessibilityLabel("Reset to top")
+                .help("Reset to top")
 
                 Spacer()
 
-                Button { viewModel.resetToTop() } label: {
-                    Image(systemName: "backward.end.fill")
+                Button { viewModel.togglePlayPause() } label: {
+                    Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.largeTitle)
                 }
-                .buttonStyle(.bordered)
-                .help("Reset to top")
+                .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
+
+                Spacer()
+
+                Image(systemName: "backward.end.fill").font(.title2).hidden()
+            }
+            .buttonStyle(.plain)
+            .tint(.primary)
+            .padding(.horizontal, 8)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Playback mode")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                
+                Picker("Playback mode", selection: Binding(
+                    get: { menuTimedEnabled ? 1 : 0 },
+                    set: { newVal in
+                        if newVal == 1 {
+                            guard manager.isPremium else { showTimedUpgradeAlert = true; return }
+                            menuTimedEnabled = true
+                            updateMenuTimedDuration()
+                        } else {
+                            menuTimedEnabled = false
+                            viewModel.timedDuration = nil
+                        }
+                    }
+                )) {
+                    Text("Standard").tag(0)
+                    Text("Timer").tag(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .pickerStyle(.segmented)
+                .labelsHidden()
             }
 
-            HStack(spacing: 8) {
-                Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
-                Slider(
-                    value: $viewModel.scrollSpeed,
-                    in: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                    step: 0.1
-                )
-                Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
-                Text(String(format: "%.1fx", viewModel.scrollSpeed))
-                    .font(.caption2.monospacedDigit())
-                    .frame(width: 30, alignment: .trailing)
+            if menuTimedEnabled {
+                if viewModel.isPlaying && viewModel.timedDuration != nil {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Remaining").font(.caption).foregroundStyle(.secondary)
+                        
+                        Text(timeString(viewModel.remainingTime))
+                            .font(.body.monospacedDigit().bold())
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Select time").font(.caption).foregroundStyle(.secondary)
+                        
+                        HStack(spacing: 0) {
+                            Button { if menuTimedMinutes > 0 { menuTimedMinutes -= 1; updateMenuTimedDuration() } } label: {
+                                Image(systemName: "minus")
+                                    .frame(width: 16, height: 16)
+                            }
+                            
+                            Text("\(menuTimedMinutes)m")
+                                .font(.body.monospacedDigit().bold())
+                                .frame(minWidth: 44)
+                            
+                            Button { menuTimedMinutes = min(59, menuTimedMinutes + 1); updateMenuTimedDuration() } label: {
+                                Image(systemName: "plus")
+                                    .frame(width: 16, height: 16)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
+                    MusicSlider(
+                        value: $viewModel.scrollSpeed,
+                        range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
+                        step: 0.1
+                    )
+                    Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
+                    Text(String(format: "%.1fx", viewModel.scrollSpeed))
+                        .font(.caption2.monospacedDigit())
+                        .frame(width: 30, alignment: .trailing)
+                }
             }
         }
     }
@@ -216,8 +311,6 @@ struct MenuBarView: View {
                     Image(systemName: "minus")
                         .frame(width: 16, height: 16)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
 
                 Text("\(Int(currentFontSize))")
                     .font(.caption.monospacedDigit())
@@ -233,8 +326,6 @@ struct MenuBarView: View {
                     Image(systemName: "plus")
                         .frame(width: 16, height: 16)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
             }
         }
     }
@@ -255,7 +346,7 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(width: 14)
-                Slider(value: $manager.backgroundOpacity, in: 0.15...1.0, step: 0.05)
+                MusicSlider(value: $manager.backgroundOpacity, range: 0.15...1.0, step: 0.05)
                 Text("\(Int(manager.backgroundOpacity * 100))%")
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -268,8 +359,25 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(width: 14)
-                Slider(value: $manager.blurAmount, in: 0.0...1.0, step: 0.05)
+                MusicSlider(value: $manager.blurAmount, range: 0.0...1.0, step: 0.05)
                 Text("\(Int(manager.blurAmount * 100))%")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(width: 30, alignment: .trailing)
+            }
+
+            // Horizontal padding
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.left.and.right.text.vertical")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 14)
+                MusicSlider(
+                    value: Binding(get: { Double(manager.horizontalPadding) }, set: { manager.horizontalPadding = CGFloat($0) }),
+                    range: 0...120,
+                    step: 4
+                )
+                Text("\(Int(manager.horizontalPadding))pt")
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)

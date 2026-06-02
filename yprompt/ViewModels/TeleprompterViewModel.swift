@@ -20,22 +20,54 @@ class TeleprompterViewModel: ObservableObject {
     @Published var micPermissionDenied: Bool = false
     @Published var isFinished: Bool = false
 
+    // Timed scrolling: when set, play() auto-computes scrollSpeed to finish in this duration
+    @Published var timedDuration: TimeInterval? = nil
+    // Wall-clock seconds elapsed while playing (used for notch mode remaining time)
+    @Published var elapsedPlayTime: TimeInterval = 0
+    // Fires when resetToTop() is called so notch view can reset its xOffset
+    let resetPublisher = PassthroughSubject<Void, Never>()
+
+    var remainingTime: TimeInterval {
+        guard let duration = timedDuration else { return 0 }
+        // Floating mode: position-based remaining
+        if contentHeight > screenHeight {
+            let maxOffset = max(0, Double(contentHeight - screenHeight) + 80)
+            let remaining = maxOffset - Double(contentOffset)
+            return max(0, remaining / (Double(AppConstants.basePixelsPerSecond) * max(scrollSpeed, 0.01)))
+        }
+        // Notch mode (horizontal scrolling, no vertical extent): wall-clock remaining
+        return max(0, duration - elapsedPlayTime)
+    }
+
     #if !os(watchOS)
     let voiceScrollService = VoiceScrollService()
     #endif
 
-    var contentHeight: CGFloat = 0
-    var screenHeight: CGFloat = 0
+    @Published var contentHeight: CGFloat = 0
+    @Published var screenHeight: CGFloat = 0
+
+    // Non-published: used to defer auto-play until the correct post-advance height is measured.
+    // Set by the caller before play(); cleared when the real height arrives or on timeout.
+    var pendingAutoPlay: Bool = false
+    var pendingAutoPlayStaleHeight: CGFloat = 0
 
     private var scrollTask: Task<Void, Never>?
     private var hideControlsTask: Task<Void, Never>?
     private var remoteScrollTask: Task<Void, Never>?
+    private var timedElapsedTask: Task<Void, Never>?
 
     // MARK: - Playback
 
     func play() {
         guard !isPlaying else { return }
+        // Auto-compute speed so the script finishes in the requested duration (floating mode only)
+        if let duration = timedDuration, duration > 0, contentHeight > screenHeight {
+            let maxOffset = max(0, Double(contentHeight - screenHeight) + 80)
+            let needed = maxOffset / (Double(AppConstants.basePixelsPerSecond) * duration)
+            scrollSpeed = max(AppConstants.minScrollSpeed, min(AppConstants.maxScrollSpeed, needed))
+        }
         isPlaying = true
+        if timedDuration != nil { startTimedElapsedTask() }
         #if !os(watchOS)
         if voiceScrollEnabled { voiceScrollService.start() }
         #endif
@@ -47,6 +79,8 @@ class TeleprompterViewModel: ObservableObject {
         isPlaying = false
         scrollTask?.cancel()
         scrollTask = nil
+        timedElapsedTask?.cancel()
+        timedElapsedTask = nil
         #if !os(watchOS)
         voiceScrollService.stop()
         #endif
@@ -59,14 +93,19 @@ class TeleprompterViewModel: ObservableObject {
     func resetToTop() {
         pause()
         isFinished = false
+        elapsedPlayTime = 0
         withAnimation(.easeOut(duration: 0.4)) { contentOffset = 0 }
         showControls = true
         hideControlsTask?.cancel()
+        resetPublisher.send()
     }
 
     func prepareForNext(customization: TextCustomization) {
+        print("[Queue] prepareForNext — resetting contentHeight from \(contentHeight) → 0")
         isFinished = false
         contentOffset = 0
+        contentHeight = 0
+        pendingAutoPlay = false
         scrollSpeed = customization.scrollSpeed
         transparency = customization.transparency
     }
@@ -74,6 +113,8 @@ class TeleprompterViewModel: ObservableObject {
     func resetForNext() {
         isFinished = false
         contentOffset = 0
+        contentHeight = 0
+        pendingAutoPlay = false
     }
 
     // MARK: - Progress
@@ -88,6 +129,15 @@ class TeleprompterViewModel: ObservableObject {
         let maxOffset = max(0, contentHeight - screenHeight + 80)
         withAnimation(.easeOut(duration: 0.2)) {
             contentOffset = maxOffset * CGFloat(fraction)
+        }
+    }
+
+    // MARK: - Cue Points
+
+    func jumpToCue(_ cue: CuePoint) {
+        let maxOffset = max(0, contentHeight - screenHeight + 80)
+        withAnimation(.easeOut(duration: 0.3)) {
+            contentOffset = maxOffset * CGFloat(cue.position)
         }
     }
 
@@ -171,17 +221,33 @@ class TeleprompterViewModel: ObservableObject {
 
                 // contentHeight == 0 means dimensions aren't set (e.g. notch mode, which
                 // scrolls horizontally via its own timer and doesn't use contentOffset).
-                guard contentHeight > 0 else { continue }
+                guard contentHeight > 0 else {
+                    print("[Queue] scroll tick skipped — contentHeight=0 (waiting for layout)")
+                    continue
+                }
 
                 let pixelsPerTick = AppConstants.basePixelsPerSecond * scrollSpeed / 60.0
                 let maxOffset = max(0, contentHeight - screenHeight + 80)
+                print("[Queue] tick — offset=\(Int(contentOffset)) maxOffset=\(Int(maxOffset)) contentH=\(Int(contentHeight)) screenH=\(Int(screenHeight))")
                 if contentOffset < maxOffset {
                     contentOffset += pixelsPerTick
                 } else {
+                    print("[Queue] finished script")
                     pause()
                     isFinished = true
                     break
                 }
+            }
+        }
+    }
+
+    private func startTimedElapsedTask() {
+        timedElapsedTask?.cancel()
+        timedElapsedTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard !Task.isCancelled else { break }
+                elapsedPlayTime += 1
             }
         }
     }
@@ -199,5 +265,6 @@ class TeleprompterViewModel: ObservableObject {
         scrollTask?.cancel()
         hideControlsTask?.cancel()
         remoteScrollTask?.cancel()
+        timedElapsedTask?.cancel()
     }
 }

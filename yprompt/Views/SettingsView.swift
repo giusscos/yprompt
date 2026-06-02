@@ -5,9 +5,11 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var storeKit: StoreKitService
     @Query private var settingsArray: [AppSettings]
 
@@ -270,6 +272,11 @@ struct SettingsView: View {
             }
             Divider()
             HStack {
+                Button("Rate YPrompt") { requestReview() }
+                Spacer()
+            }
+            Divider()
+            HStack {
                 Button("Send Feedback") { sendFeedback() }
                 Spacer()
             }
@@ -420,6 +427,7 @@ struct SettingsView: View {
                 Spacer()
                 Text("\(appVersion) (\(buildNumber))").foregroundStyle(.secondary)
             }
+            Button("Rate YPrompt") { requestReview() }
             Button("Send Feedback") { sendFeedback() }
             Button("Show App Tour") { showingOnboarding = true }
         }
@@ -450,17 +458,25 @@ struct SettingsView: View {
 
     private func sendFeedback() {
         #if canImport(UIKit)
-        UIApplication.shared.open(URL(string: "mailto:support@yprompt.app")!)
+        if let url = URL(string: "mailto:support@yprompt.app") {
+            UIApplication.shared.open(url)
+        }
         #elseif canImport(AppKit)
-        NSWorkspace.shared.open(URL(string: "mailto:support@yprompt.app")!)
+        if let url = URL(string: "mailto:support@yprompt.app") {
+            NSWorkspace.shared.open(url)
+        }
         #endif
     }
 
     private func openSubscriptionManagement() {
         #if canImport(UIKit)
-        UIApplication.shared.open(URL(string: "itms-apps://apps.apple.com/account/subscriptions")!)
+        if let url = URL(string: "itms-apps://apps.apple.com/account/subscriptions") {
+            UIApplication.shared.open(url)
+        }
         #elseif canImport(AppKit)
-        NSWorkspace.shared.open(URL(string: "https://apps.apple.com/account/subscriptions")!)
+        if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+            NSWorkspace.shared.open(url)
+        }
         #endif
     }
 }
