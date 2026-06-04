@@ -281,14 +281,9 @@ struct MenuBarView: View {
                             Button {
                                 viewModel.jumpToCue(cue)
                             } label: {
-                                VStack(spacing: 2) {
-                                    Image(systemName: "flag.fill")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundStyle(Color.accentColor)
-                                    Rectangle()
-                                        .fill(Color.primary.opacity(0.7))
-                                        .frame(width: 1.5, height: 6)
-                                }
+                                Image(systemName: "flag.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color.accentColor)
                             }
                             .buttonStyle(.plain)
                             .offset(x: geo.size.width * CGFloat(cue.position) - 4)
@@ -296,7 +291,7 @@ struct MenuBarView: View {
                         }
                     }
                 }
-                .frame(height: 22)
+                .frame(height: 14)
             }
             MusicSlider(
                 value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),

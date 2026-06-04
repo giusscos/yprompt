@@ -138,7 +138,10 @@ struct TeleprompterView: View {
     @Environment(\.requestReview) private var requestReview
 #endif
 #if os(iOS)
-    @State private var playerDetent: PresentationDetent = .height(360)
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var isPlayerExpanded: Bool = true
+    @State private var isSheetPresented: Bool = true
+    @State private var liveHorizontalPadding: CGFloat = 16
     @State private var teleprompterMode: TeleprompterMode = .auto
     @Namespace private var modeNamespace
     @State private var showNextBanner = false
@@ -177,6 +180,10 @@ struct TeleprompterView: View {
         uiColor.getRed(&r, green: &g, blue: &b, alpha: nil)
         return 0.299 * r + 0.587 * g + 0.114 * b < 0.5
     }
+
+    private var miniDetentHeight: CGFloat { 72 }
+    private var fullDetentHeight: CGFloat { verticalSizeClass == .compact ? 160 : 360 }
+    private var activeSheetHeight: CGFloat { isPlayerExpanded ? fullDetentHeight : miniDetentHeight }
 #endif
     
     var body: some View {
@@ -262,14 +269,13 @@ struct TeleprompterView: View {
     private var iOSBody: some View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
-            content: textBody(textColor: cameraService.isCameraActive ? .white : nil),
+            content: textBody(textColor: cameraService.isCameraActive ? .white : nil, horizontalPadding: liveHorizontalPadding),
             onHeights: { contentHeight, screenHeight in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
                 viewModel.contentHeight = contentHeight
                 // screenHeight is full height below nav bar; subtract the sheet so maxOffset
                 // reflects only the readable area above the sheet.
-                let sheetHeight: CGFloat = playerDetent == .height(72) ? 72 : 360
-                viewModel.screenHeight = max(100, screenHeight - sheetHeight)
+                viewModel.screenHeight = max(100, screenHeight - (isSheetPresented ? activeSheetHeight : 0))
                 // After a queue advance, UIKit fires one stale layout with the old script's height
                 // before the new content is measured. Only start playing once a different (real)
                 // height arrives — the 200 ms Task in advanceToNextScript handles the same-height edge case.
@@ -278,7 +284,7 @@ struct TeleprompterView: View {
                     viewModel.play()
                 }
             },
-            bottomInset: playerDetent == .height(72) ? 72 : 360,
+            bottomInset: isSheetPresented ? activeSheetHeight : 0,
             scriptID: currentScript.id
         )
         .ignoresSafeArea()
@@ -316,6 +322,18 @@ struct TeleprompterView: View {
                         .font(.headline)
                 }
             }
+            if verticalSizeClass == .compact && !isSheetPresented {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isSheetPresented = true
+                    } label: {
+                        Image(systemName: "slider.horizontal.below.rectangle")
+                    }
+                }
+            }
+        }
+        .onChange(of: verticalSizeClass) { _, newValue in
+            if newValue != .compact { isSheetPresented = true }
         }
         .opacity(viewModel.transparency)
         .safeAreaInset(edge: .top, spacing: 0) {
@@ -326,16 +344,22 @@ struct TeleprompterView: View {
                     .padding(.bottom, 4)
             }
         }
-        .sheet(isPresented: .constant(true)) {
+        .sheet(isPresented: $isSheetPresented) {
             iOSPlayerPanel
                 .sheet(isPresented: $showingPaywall) {
                     PaywallView().environmentObject(storeKit)
                 }
-                .presentationDetents([.height(72), .height(360)], selection: $playerDetent)
+                .presentationDetents(
+                    [.height(miniDetentHeight), .height(fullDetentHeight)],
+                    selection: Binding(
+                        get: { isPlayerExpanded ? .height(fullDetentHeight) : .height(miniDetentHeight) },
+                        set: { isPlayerExpanded = $0 != .height(miniDetentHeight) }
+                    )
+                )
                 .presentationDragIndicator(.visible)
                 .presentationBackground(.ultraThinMaterial)
-                .presentationBackgroundInteraction(.enabled(upThrough: .height(360)))
-                .interactiveDismissDisabled()
+                .presentationBackgroundInteraction(.enabled(upThrough: .height(fullDetentHeight)))
+                .interactiveDismissDisabled(verticalSizeClass != .compact)
         }
         .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
             Button("Open Settings") { openMicSettings() }
@@ -405,13 +429,13 @@ struct TeleprompterView: View {
     
     private var iOSPlayerPanel: some View {
         Group {
-            if playerDetent == .height(72) {
+            if !isPlayerExpanded {
                 iOSCompactPanel
             } else {
                 iOSFullPanel
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerDetent)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isPlayerExpanded)
     }
     
     // Compact strip shown when sheet is minimised
@@ -444,7 +468,7 @@ struct TeleprompterView: View {
         VStack(spacing: 30) {
             Spacer()
             
-            VStack(spacing: 8) {
+            VStack(spacing: 2) {
                 // Cue point markers strip (moved above the progress bar)
                 if !currentScript.cuePoints.isEmpty {
                     cuePointStrip
@@ -502,20 +526,40 @@ struct TeleprompterView: View {
             if teleprompterMode == .timed {
                 timedControls
             } else {
-                VStack(spacing: 4) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
-                        MusicSlider(
-                            value: $viewModel.scrollSpeed,
-                            range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                            step: 0.1
-                        )
-                        Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
+                VStack(spacing: 12) {
+                    VStack(spacing: 4) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
+                            MusicSlider(
+                                value: $viewModel.scrollSpeed,
+                                range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
+                                step: 0.1
+                            )
+                            Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Text(String(format: "%.1fx speed", viewModel.scrollSpeed))
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
                     }
-                    
-                    Text(String(format: "%.1fx speed", viewModel.scrollSpeed))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                    VStack(spacing: 4) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left.and.line.vertical.and.arrow.right")
+                                .font(.caption).foregroundStyle(.secondary)
+                            MusicSlider(
+                                value: Binding(
+                                    get: { Double(liveHorizontalPadding) },
+                                    set: { liveHorizontalPadding = CGFloat($0) }
+                                ),
+                                range: 0...80,
+                                step: 4
+                            )
+                            Image(systemName: "arrow.right.and.line.vertical.and.arrow.left")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        Text(String(format: "%.0fpx margins", liveHorizontalPadding))
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             
@@ -556,14 +600,9 @@ struct TeleprompterView: View {
                     Button {
                         viewModel.jumpToCue(cue)
                     } label: {
-                        VStack(spacing: 2) {
-                            Image(systemName: "flag.fill")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Color.accentColor)
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.7))
-                                .frame(width: 2, height: 8)
-                        }
+                        Image(systemName: "flag.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Color.accentColor)
                     }
                     .buttonStyle(.plain)
                     .offset(x: geo.size.width * CGFloat(cue.position) - 4)
@@ -571,7 +610,7 @@ struct TeleprompterView: View {
                 }
             }
         }
-        .frame(height: 24)
+        .frame(height: 16)
     }
     
     private func addCueAtCurrentPosition() {
@@ -831,7 +870,7 @@ struct TeleprompterView: View {
     // MARK: - Scrolling content
     
     // Shared text body used by both the UIScrollView (iOS) and the fake-scroll (macOS/watchOS)
-    private func textBody(textColor: Color? = nil) -> some View {
+    private func textBody(textColor: Color? = nil, horizontalPadding: CGFloat = 16) -> some View {
         let displayText = currentScript.content.isEmpty
         ? AttributedString("[ Empty script ]")
         : currentScript.attributedContent
@@ -840,7 +879,8 @@ struct TeleprompterView: View {
             .foregroundStyle(textColor ?? Color(hex: customization.textColorHex))
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing((customization.lineHeight - 1.0) * customization.fontSize * 0.5)
-            .padding()
+            .padding(.vertical)
+            .padding(.horizontal, horizontalPadding)
             .frame(maxWidth: .infinity, alignment: customization.textAlignmentIndex.frameAlignment)
             .fixedSize(horizontal: false, vertical: true)
             .scaleEffect(x: customization.isMirrored ? -1 : 1, y: 1)

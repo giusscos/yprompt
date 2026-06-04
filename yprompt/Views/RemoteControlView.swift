@@ -11,6 +11,7 @@ import MultipeerConnectivity
 struct RemoteControlView: View {
     @StateObject private var remote = RemoteControlService.shared
     @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showPaywall = false
     @State private var localSpeed: Double = AppConstants.defaultScrollSpeed
     @State private var isPlayingLocal: Bool = false
@@ -33,6 +34,26 @@ struct RemoteControlView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Disconnect") { remote.disconnect() }
                         .foregroundStyle(.red)
+                }
+                if !remote.availableScripts.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Picker("Script", selection: Binding(
+                            get: { remote.currentRemoteScriptID },
+                            set: { id in
+                                guard let id else { return }
+                                remote.send(command: .selectScript(id))
+                                remote.currentRemoteScriptID = id
+                                isPlayingLocal = false
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            }
+                        )) {
+                            Text("Select script…").tag(Optional<UUID>.none)
+                            ForEach(remote.availableScripts) { script in
+                                Text(script.title).tag(Optional(script.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
                 }
             }
         }
@@ -118,55 +139,47 @@ struct RemoteControlView: View {
 
     // MARK: - Control Panel
 
+    private var dpad: some View {
+        DPadControl(
+            onPressUp:    { remote.send(command: .startContinuousUp) },
+            onPressDown:  { remote.send(command: .startContinuousDown) },
+            onPressLeft:  { remote.send(command: .startContinuousUp) },
+            onPressRight: { remote.send(command: .startContinuousDown) },
+            onRelease:    { remote.send(command: .stopContinuous) },
+            onReset:      { remote.send(command: .reset) }
+        )
+    }
+
     private var controlPanel: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            VStack(spacing: 28) {
-                pickersSection
-                DPadControl(
-                    onPressUp:    { remote.send(command: .startContinuousUp) },
-                    onPressDown:  { remote.send(command: .startContinuousDown) },
-                    onPressLeft:  { remote.send(command: .startContinuousUp) },
-                    onPressRight: { remote.send(command: .startContinuousDown) },
-                    onRelease:    { remote.send(command: .stopContinuous) },
-                    onReset:      { remote.send(command: .reset) }
-                )
-                playPauseSection
-                speedSection
-            }
-            .padding(.horizontal, 20)
-            Spacer()
-        }
-    }
-
-    // MARK: - Script Picker
-
-    @ViewBuilder
-    private var pickersSection: some View {
-        if !remote.availableScripts.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Script")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                Picker("Script", selection: Binding(
-                    get: { remote.currentRemoteScriptID },
-                    set: { id in
-                        guard let id else { return }
-                        remote.send(command: .selectScript(id))
-                        remote.currentRemoteScriptID = id
-                        isPlayingLocal = false
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        Group {
+            if verticalSizeClass == .compact {
+                HStack(spacing: 0) {
+                    Spacer()
+                    dpad
+                    Spacer()
+                    VStack(spacing: 28) {
+                        playPauseSection
+                        speedSection
                     }
-                )) {
-                    ForEach(remote.availableScripts) { script in
-                        Text(script.title).tag(Optional(script.id))
-                    }
+                    .padding(.horizontal, 20)
+                    Spacer()
                 }
-                .pickerStyle(.menu)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 20)
+            } else {
+                VStack(spacing: 0) {
+                    Spacer()
+                    VStack(spacing: 28) {
+                        dpad
+                        playPauseSection
+                        speedSection
+                    }
+                    .padding(.horizontal, 20)
+                    Spacer()
+                }
             }
         }
     }
+
 
     // MARK: - Play / Pause
 
@@ -176,12 +189,12 @@ struct RemoteControlView: View {
             remote.send(command: .togglePlayPause)
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } label: {
-            Image(systemName: isPlayingLocal ? "pause.circle.fill" : "play.circle.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(Color.primary)
+            Image(systemName: isPlayingLocal ? "pause.fill" : "play.fill")
+                .font(.system(size: 32, weight: .semibold))
+                .padding(20)
                 .symbolEffect(.bounce, value: isPlayingLocal)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.glass)
     }
 
     // MARK: - Speed
@@ -198,16 +211,18 @@ struct RemoteControlView: View {
                     remote.send(command: .setSpeed(newSpeed))
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 42))
-                        .foregroundStyle(localSpeed <= AppConstants.minScrollSpeed ? Color.secondary : Color.primary)
+                    Image(systemName: "minus")
+                        .font(.system(size: 20, weight: .semibold))
+                        .padding(14)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
                 .disabled(localSpeed <= AppConstants.minScrollSpeed)
 
-                Text(String(format: "%.1fx", localSpeed))
+                Text(String(format: "%.1f", localSpeed))
                     .font(.title.bold().monospacedDigit())
-                    .frame(minWidth: 72)
+                    .frame(minWidth: 60)
+                    .contentTransition(.numericText())
+                    .animation(.default, value: localSpeed)
 
                 Button {
                     let newSpeed = min(AppConstants.maxScrollSpeed, (round((localSpeed + 0.1) * 10) / 10))
@@ -215,11 +230,11 @@ struct RemoteControlView: View {
                     remote.send(command: .setSpeed(newSpeed))
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 42))
-                        .foregroundStyle(localSpeed >= AppConstants.maxScrollSpeed ? Color.secondary : Color.primary)
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .semibold))
+                        .padding(14)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
                 .disabled(localSpeed >= AppConstants.maxScrollSpeed)
             }
         }
