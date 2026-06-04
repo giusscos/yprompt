@@ -35,6 +35,17 @@ final class AppSettings {
     var floatingFontSize: CGFloat = 19
     var notchFontSize: CGFloat = 11
     var defaultScrollSpeed: Double = 1.0
+    var definedTagsData: Data?
+
+    var definedTags: [String] {
+        get {
+            guard let data = definedTagsData,
+                  let decoded = try? JSONDecoder().decode([String].self, from: data)
+            else { return [] }
+            return decoded
+        }
+        set { definedTagsData = try? JSONEncoder().encode(newValue) }
+    }
 
     var purchaseState: PurchaseState {
         get { PurchaseState(rawValue: purchaseStateRaw) ?? .free }

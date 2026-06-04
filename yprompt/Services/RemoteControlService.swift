@@ -29,6 +29,8 @@ enum RemoteControlCommand: Codable {
     case setSpeed(Double)
     case selectScript(UUID)
     case setNotchMode(Bool)
+    case setVoiceScroll(Bool)
+    case setTimedDuration(TimeInterval?)
 
     // Used by WatchSessionRelay to decode Watch-originated commands (no associated values).
     init?(rawValue: String) {
@@ -55,6 +57,8 @@ enum RemoteControlCommand: Codable {
         case "setSpeed":            self = .setSpeed(try c.decode(Double.self, forKey: .payload))
         case "selectScript":        self = .selectScript(try c.decode(UUID.self, forKey: .payload))
         case "setNotchMode":        self = .setNotchMode(try c.decode(Bool.self, forKey: .payload))
+        case "setVoiceScroll":      self = .setVoiceScroll(try c.decode(Bool.self, forKey: .payload))
+        case "setTimedDuration":    self = .setTimedDuration(try? c.decode(Double.self, forKey: .payload))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "unknown command")
         }
@@ -77,6 +81,12 @@ enum RemoteControlCommand: Codable {
         case .setNotchMode(let isNotch):
             try c.encode("setNotchMode", forKey: .type)
             try c.encode(isNotch, forKey: .payload)
+        case .setVoiceScroll(let enabled):
+            try c.encode("setVoiceScroll", forKey: .type)
+            try c.encode(enabled, forKey: .payload)
+        case .setTimedDuration(let duration):
+            try c.encode("setTimedDuration", forKey: .type)
+            if let duration { try c.encode(duration, forKey: .payload) }
         }
     }
 }
@@ -85,10 +95,12 @@ enum RemoteControlCommand: Codable {
 
 enum RemoteMessage: Codable {
     case command(RemoteControlCommand)
-    /// Sent Mac → iOS: script list, currently active script ID, and notch-mode state.
-    case scriptList([ScriptInfo], UUID?, Bool)
+    /// Sent Mac → iOS: script list, active script ID, notch-mode, voice-scroll, timed duration.
+    case scriptList([ScriptInfo], UUID?, Bool, Bool, TimeInterval?)
 
-    private enum CodingKeys: String, CodingKey { case kind, command, scripts, currentID, notchMode }
+    private enum CodingKeys: String, CodingKey {
+        case kind, command, scripts, currentID, notchMode, voiceScrollEnabled, timedDuration
+    }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -99,7 +111,9 @@ enum RemoteMessage: Codable {
             self = .scriptList(
                 try c.decode([ScriptInfo].self, forKey: .scripts),
                 try c.decodeIfPresent(UUID.self, forKey: .currentID),
-                (try? c.decode(Bool.self, forKey: .notchMode)) ?? false
+                (try? c.decode(Bool.self, forKey: .notchMode)) ?? false,
+                (try? c.decode(Bool.self, forKey: .voiceScrollEnabled)) ?? false,
+                try? c.decode(Double.self, forKey: .timedDuration)
             )
         default:
             throw DecodingError.dataCorruptedError(forKey: .kind, in: c, debugDescription: "unknown message kind")
@@ -112,11 +126,13 @@ enum RemoteMessage: Codable {
         case .command(let cmd):
             try c.encode("command", forKey: .kind)
             try c.encode(cmd, forKey: .command)
-        case .scriptList(let scripts, let currentID, let notchMode):
+        case .scriptList(let scripts, let currentID, let notchMode, let voiceScrollEnabled, let timedDuration):
             try c.encode("scriptList", forKey: .kind)
             try c.encode(scripts, forKey: .scripts)
             try c.encodeIfPresent(currentID, forKey: .currentID)
             try c.encode(notchMode, forKey: .notchMode)
+            try c.encode(voiceScrollEnabled, forKey: .voiceScrollEnabled)
+            if let timedDuration { try c.encode(timedDuration, forKey: .timedDuration) }
         }
     }
 }
@@ -138,10 +154,16 @@ final class RemoteControlService: NSObject, ObservableObject {
     @Published var currentRemoteScriptID: UUID? = nil
     /// Whether the Mac is currently in notch mode (iOS remote side).
     @Published var remoteNotchMode: Bool = false
+    /// Whether voice scroll is active on the Mac (iOS remote side).
+    @Published var remoteVoiceScrollEnabled: Bool = false
+    /// Timed duration set on the Mac (iOS remote side).
+    @Published var remoteTimedDuration: TimeInterval? = nil
 
     var onCommandReceived: ((RemoteControlCommand) -> Void)?
     var onLastPeerDisconnected: (() -> Void)?
-    var onPeerConnected: ((MCPeerID) -> Void)?
+    var onPeerConnected: ((MCPeerID) -> Void)? 
+    /// Called whenever the Mac pushes an updated script list to the iPhone.
+    var onScriptListUpdated: (() -> Void)?
 
     private let myPeerID: MCPeerID
     private lazy var session: MCSession = {
@@ -206,6 +228,8 @@ final class RemoteControlService: NSObject, ObservableObject {
         availableScripts = []
         currentRemoteScriptID = nil
         remoteNotchMode = false
+        remoteVoiceScrollEnabled = false
+        remoteTimedDuration = nil
     }
 
     // MARK: - Sending
@@ -216,8 +240,8 @@ final class RemoteControlService: NSObject, ObservableObject {
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
     }
 
-    func sendScriptList(_ scripts: [ScriptInfo], currentID: UUID?, notchMode: Bool, to peer: MCPeerID) {
-        guard let data = try? JSONEncoder().encode(RemoteMessage.scriptList(scripts, currentID, notchMode)) else { return }
+    func sendScriptList(_ scripts: [ScriptInfo], currentID: UUID?, notchMode: Bool, voiceScrollEnabled: Bool, timedDuration: TimeInterval?, to peer: MCPeerID) {
+        guard let data = try? JSONEncoder().encode(RemoteMessage.scriptList(scripts, currentID, notchMode, voiceScrollEnabled, timedDuration)) else { return }
         try? session.send(data, toPeers: [peer], with: .reliable)
     }
 }
@@ -250,10 +274,13 @@ extension RemoteControlService: MCSessionDelegate {
             switch message {
             case .command(let command):
                 self.onCommandReceived?(command)
-            case .scriptList(let scripts, let currentID, let notchMode):
+            case .scriptList(let scripts, let currentID, let notchMode, let voiceScrollEnabled, let timedDuration):
                 self.availableScripts = scripts
                 self.currentRemoteScriptID = currentID
                 self.remoteNotchMode = notchMode
+                self.remoteVoiceScrollEnabled = voiceScrollEnabled
+                self.remoteTimedDuration = timedDuration
+                self.onScriptListUpdated?()
             }
         }
     }

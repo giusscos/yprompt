@@ -46,6 +46,7 @@ struct EditorView: View {
     
     @State private var saveTask: Task<Void, Never>?
     @State private var cachedRTFData = Data()
+    @State private var isLoaded = false
 
     private var rtfFilename: String {
         let unsafe = CharacterSet(charactersIn: "/\\:*?\"<>|")
@@ -97,16 +98,21 @@ struct EditorView: View {
                 Button("Cancel", role: .cancel) {}
             }
             .onAppear {
+                isLoaded = false
                 let content = script.attributedContent
                 attrText = content
                 cachedRTFData = makeRTFData(from: content)
+                Task { @MainActor in isLoaded = true }
             }
             .onChange(of: script.id) { _, _ in
+                isLoaded = false
                 let content = script.attributedContent
                 attrText = content
                 cachedRTFData = makeRTFData(from: content)
+                Task { @MainActor in isLoaded = true }
             }
             .onChange(of: attrText) { _, newValue in
+                guard isLoaded else { return }
                 script.content = String(newValue.characters)
                 scheduleSave(attributedText: newValue)
                 cachedRTFData = makeRTFData(from: newValue)

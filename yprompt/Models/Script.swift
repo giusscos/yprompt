@@ -81,6 +81,7 @@ final class Script: Hashable {
     var cloudSyncStateRaw: String = CloudSyncState.notSynced.rawValue
     var isFavorite: Bool = false
     var cuePointsData: Data?
+    var tagsData: Data?
 
     var attributedContent: AttributedString {
         get {
@@ -125,6 +126,16 @@ final class Script: Hashable {
             return decoded
         }
         set { cuePointsData = try? JSONEncoder().encode(newValue) }
+    }
+
+    var tags: [String] {
+        get {
+            guard let data = tagsData,
+                  let decoded = try? JSONDecoder().decode([String].self, from: data)
+            else { return [] }
+            return decoded
+        }
+        set { tagsData = try? JSONEncoder().encode(newValue) }
     }
 
     init(title: String = "Untitled Script", content: String = "") {

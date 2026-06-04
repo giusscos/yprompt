@@ -15,6 +15,12 @@
   "groups" : [
     {
       "blur-material" : 0.5,
+      "hidden-specializations" : [
+        {
+          "idiom" : "watchOS",
+          "value" : true
+        }
+      ],
       "layers" : [
         {
           "blend-mode" : "normal",
@@ -69,6 +75,12 @@
     },
     {
       "blur-material" : 1,
+      "hidden-specializations" : [
+        {
+          "idiom" : "watchOS",
+          "value" : true
+        }
+      ],
       "layers" : [
         {
           "blend-mode" : "normal",
@@ -132,6 +144,80 @@
       "translucency" : {
         "enabled" : true,
         "value" : 0.75
+      }
+    },
+    {
+      "blur-material" : null,
+      "hidden-specializations" : [
+        {
+          "value" : true
+        },
+        {
+          "idiom" : "watchOS",
+          "value" : false
+        }
+      ],
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "automatic-gradient" : "extended-gray:0.25000,1.00000",
+            "orientation" : {
+              "start" : {
+                "x" : 0.5,
+                "y" : 0
+              },
+              "stop" : {
+                "x" : 0.5,
+                "y" : 0.7
+              }
+            }
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "arrow_down.svg",
+          "name" : "arrow_down",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0.07478359320009531,
+              152.1073607319455
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "automatic-gradient" : "extended-gray:0.25000,1.00000"
+          },
+          "hidden" : false,
+          "image-name" : "arrow_up.svg",
+          "name" : "arrow_up",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0.07482654750867823,
+              -154.14926782411166
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "arrows",
+      "position" : {
+        "scale" : 1.4,
+        "translation-in-points" : [
+          0,
+          0
+        ]
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
       }
     }
   ],

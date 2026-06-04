@@ -76,16 +76,32 @@ struct NotchTeleprompterView: View {
             xOffset -= pixelsPerFrame
             if textWidth > 0 && xOffset < -(textWidth + 20) {
                 xOffset = containerWidth
+                viewModel.notchProgress = 0
+                viewModel.pause()
+                viewModel.isFinished = true
+            } else if textWidth > 0 {
+                let totalSpan = containerWidth + textWidth
+                if totalSpan > 0 {
+                    viewModel.notchProgress = Double(max(0, min(1, (containerWidth - xOffset) / totalSpan)))
+                }
             }
+        }
+        .onReceive(viewModel.notchSeekRequest) { fraction in
+            guard textWidth > 0 else { return }
+            let totalSpan = containerWidth + textWidth
+            xOffset = containerWidth - CGFloat(fraction) * totalSpan
+            viewModel.notchProgress = fraction
         }
         .onReceive(manager.notchScrollDelta) { delta in
             xOffset += delta
         }
         .onChange(of: text) { _, _ in
             xOffset = containerWidth
+            viewModel.notchProgress = 0
         }
         .onReceive(viewModel.resetPublisher) {
             xOffset = containerWidth
+            viewModel.notchProgress = 0
         }
         .onTapGesture {
             viewModel.togglePlayPause()

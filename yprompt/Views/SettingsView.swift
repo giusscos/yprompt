@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showingOnboarding = false
     @State private var showingResetConfirm = false
     @State private var showingPaywall = false
+    @State private var showingTagManager = false
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -64,6 +65,7 @@ struct SettingsView: View {
                         notchModeCard(settings)
                         playbackCard(settings)
                     }
+                    manageTagsCard
                 }
                 .padding(20)
             }
@@ -80,6 +82,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingPaywall) {
             PaywallView().environmentObject(storeKit)
+        }
+        .sheet(isPresented: $showingTagManager) {
+            GlobalTagManagerView()
         }
         .confirmationDialog("Reset All Data?", isPresented: $showingResetConfirm) {
             Button("Delete Everything", role: .destructive) { resetAllData() }
@@ -302,6 +307,20 @@ struct SettingsView: View {
         }
     }
 
+    private var manageTagsCard: some View {
+        macCard {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tags").font(.headline)
+                    Text("Rename or delete tags across all scripts")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Manage…") { showingTagManager = true }
+            }
+        }
+    }
+
     @ViewBuilder
     private func macCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -320,6 +339,7 @@ struct SettingsView: View {
             purchaseSection
             syncSection
             preferencesSection
+            scriptsSection
             aboutSection
             dangerSection
         }
@@ -416,6 +436,14 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
                 }
+            }
+        }
+    }
+
+    private var scriptsSection: some View {
+        Section("Scripts") {
+            NavigationLink("Manage Tags") {
+                GlobalTagManagerView()
             }
         }
     }

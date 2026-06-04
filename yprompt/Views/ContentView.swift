@@ -121,6 +121,12 @@ struct ContentView: View {
             }
             .tabItem { Label("Settings", systemImage: "gearshape") }
         }
+        .onAppear {
+            WatchSessionRelay.shared.localScripts = scripts
+        }
+        .onChange(of: scripts) { _, newScripts in
+            WatchSessionRelay.shared.localScripts = newScripts
+        }
     }
     #endif
 }

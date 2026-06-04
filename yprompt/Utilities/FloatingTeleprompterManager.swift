@@ -33,25 +33,26 @@ final class FloatingTeleprompterManager: ObservableObject {
     private var queueIndex: Int = 0
     var nextInQueue: Script? { queueIndex + 1 < queue.count ? queue[queueIndex + 1] : nil }
 
-    // Published to NotchTeleprompterView for remote horizontal scroll
     let notchScrollDelta = PassthroughSubject<CGFloat, Never>()
 
     /// All scripts on the Mac — kept in sync by ContentView so the remote can list and select them.
-    var registeredScripts: [Script] = [] {
+    @Published var registeredScripts: [Script] = [] {
         didSet {
             let infos = registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
             let remote = RemoteControlService.shared
             for peer in remote.connectedPeers {
-                remote.sendScriptList(infos, currentID: currentScript?.id, notchMode: notchMode, to: peer)
+                remote.sendScriptList(infos, currentID: currentScript?.id, notchMode: notchMode,
+                                     voiceScrollEnabled: viewModel.voiceScrollEnabled,
+                                     timedDuration: viewModel.timedDuration, to: peer)
             }
         }
     }
 
-    /// Set true before changing notchMode from the remote so MenuBarView.onChange skips hide/show.
     var suppressModeRestart = false
 
     private var panel: NSPanel?
     private var notchPanel: NSPanel?
+    private var keyEventMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
     private var notchRemoteScrollTask: Task<Void, Never>?
     private var queueCountdownTask: Task<Void, Never>?
@@ -90,6 +91,7 @@ final class FloatingTeleprompterManager: ObservableObject {
     func show(script: Script, storeKit: StoreKitService? = nil) {
         currentScript = script
         if let storeKit { self.storeKit = storeKit }
+        viewModel.isNotchMode = notchMode
         viewModel.resetToTop()
         if notchMode {
             panel?.orderOut(nil)
@@ -100,6 +102,7 @@ final class FloatingTeleprompterManager: ObservableObject {
             if panel == nil { buildPanel() }
             panel?.orderFront(nil)
         }
+        startArrowKeyMonitor()
         isVisible = true
     }
 
@@ -142,6 +145,7 @@ final class FloatingTeleprompterManager: ObservableObject {
     func switchDisplayMode(notch: Bool) {
         suppressModeRestart = true
         notchMode = notch
+        viewModel.isNotchMode = notch
         guard isVisible else { return }
         if notch {
             panel?.orderOut(nil)
@@ -158,9 +162,31 @@ final class FloatingTeleprompterManager: ObservableObject {
         viewModel.pause()
         viewModel.stopContinuousScroll()
         stopNotchRemoteScroll()
+        stopArrowKeyMonitor()
         panel?.orderOut(nil)
         notchPanel?.orderOut(nil)
         isVisible = false
+    }
+
+    // MARK: - Arrow Key Monitor (↑↓ always active while visible)
+
+    private func startArrowKeyMonitor() {
+        guard keyEventMonitor == nil else { return }
+        keyEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isVisible else { return }
+            switch event.keyCode {
+            case 126: Task { @MainActor in self.viewModel.tapReverse() }   // ↑
+            case 125: Task { @MainActor in self.viewModel.tapAdvance() }   // ↓
+            default: break
+            }
+        }
+    }
+
+    private func stopArrowKeyMonitor() {
+        if let monitor = keyEventMonitor {
+            NSEvent.removeMonitor(monitor)
+            keyEventMonitor = nil
+        }
     }
 
     // MARK: - Remote Control
@@ -170,7 +196,9 @@ final class FloatingTeleprompterManager: ObservableObject {
         remote.onPeerConnected = { [weak self] peer in
             guard let self else { return }
             let infos = self.registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
-            remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: self.notchMode, to: peer)
+            remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: self.notchMode,
+                                  voiceScrollEnabled: self.viewModel.voiceScrollEnabled,
+                                  timedDuration: self.viewModel.timedDuration, to: peer)
         }
         remote.onCommandReceived = { [weak self] command in
             guard let self else { return }
@@ -196,15 +224,30 @@ final class FloatingTeleprompterManager: ObservableObject {
                 }
             case .setNotchMode(let isNotch):
                 self.switchDisplayMode(notch: isNotch)
-                let infos = self.registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
-                for peer in remote.connectedPeers {
-                    remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: isNotch, to: peer)
+                self.pushStateToRemotes(notchMode: isNotch)
+            case .setVoiceScroll(let enabled):
+                if enabled != self.viewModel.voiceScrollEnabled {
+                    Task { await self.viewModel.toggleVoiceScroll() }
                 }
+                self.pushStateToRemotes(notchMode: self.notchMode)
+            case .setTimedDuration(let duration):
+                self.viewModel.timedDuration = duration
+                self.pushStateToRemotes(notchMode: self.notchMode)
             }
         }
         remote.onLastPeerDisconnected = { [weak self] in
             self?.viewModel.stopContinuousScroll()
             self?.stopNotchRemoteScroll()
+        }
+    }
+
+    private func pushStateToRemotes(notchMode: Bool) {
+        let infos = registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
+        let remote = RemoteControlService.shared
+        for peer in remote.connectedPeers {
+            remote.sendScriptList(infos, currentID: currentScript?.id, notchMode: notchMode,
+                                  voiceScrollEnabled: viewModel.voiceScrollEnabled,
+                                  timedDuration: viewModel.timedDuration, to: peer)
         }
     }
 
@@ -215,7 +258,6 @@ final class FloatingTeleprompterManager: ObservableObject {
                 try? await Task.sleep(nanoseconds: 16_666_667)
                 guard !Task.isCancelled else { break }
                 let delta = AppConstants.basePixelsPerSecond * max(viewModel.scrollSpeed, 1.0) / 60.0
-                // forward = text moves left = negative xOffset delta
                 notchScrollDelta.send(forward ? -delta : delta)
             }
         }

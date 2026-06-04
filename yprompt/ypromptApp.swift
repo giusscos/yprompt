@@ -6,6 +6,25 @@
 import SwiftUI
 import SwiftData
 
+// Thin wrapper so @Query works inside MenuBarExtra (no custom init needed).
+// Keeps FloatingTeleprompterManager.registeredScripts in sync independently
+// of whether the main window is open.
+#if os(macOS)
+private struct MenuBarScriptsLoader: View {
+    @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
+
+    var body: some View {
+        MenuBarView()
+            .onAppear {
+                FloatingTeleprompterManager.shared.registeredScripts = scripts
+            }
+            .onChange(of: scripts) { _, newScripts in
+                FloatingTeleprompterManager.shared.registeredScripts = newScripts
+            }
+    }
+}
+#endif
+
 @main
 struct ypromptApp: App {
     @StateObject private var storeKit = StoreKitService()
@@ -45,7 +64,7 @@ struct ypromptApp: App {
         }
 
         MenuBarExtra("YPrompt", systemImage: "scroll") {
-            MenuBarView()
+            MenuBarScriptsLoader()
                 .modelContainer(sharedModelContainer)
         }
         .menuBarExtraStyle(.window)

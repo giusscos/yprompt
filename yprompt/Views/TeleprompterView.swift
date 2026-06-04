@@ -380,8 +380,11 @@ struct TeleprompterView: View {
                 case .togglePlayPause:      viewModel.togglePlayPause()
                 case .reset:                viewModel.resetToTop()
                 case .setSpeed(let speed):  viewModel.scrollSpeed = max(AppConstants.minScrollSpeed, min(AppConstants.maxScrollSpeed, speed))
-                case .selectScript:         break
-                case .setNotchMode:         break
+                case .selectScript:                     break
+                case .setNotchMode:                     break
+                case .setVoiceScroll(let enabled):
+                    Task { if enabled != viewModel.voiceScrollEnabled { await viewModel.toggleVoiceScroll() } }
+                case .setTimedDuration(let duration):   viewModel.timedDuration = duration
                 }
             }
         }

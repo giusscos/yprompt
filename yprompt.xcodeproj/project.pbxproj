@@ -47,17 +47,11 @@
 			);
 			target = 3B632FB92FA359C000066314 /* yprompt */;
 		};
-		3B63300F2FA3600500066314 /* Exceptions for "yprompt watch Watch App" folder in "yprompt watch Watch App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"yprompt-watch-Watch-App-Info.plist",
-			);
-			target = 3B632FFD2FA35FBB00066314 /* yprompt watch Watch App */;
-		};
 		3B66E4C62FCDE3AF00C775B0 /* Exceptions for "yprompt" folder in "yprompt watch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				appIcon.icon,
+				Assets.xcassets,
 			);
 			target = 3B632FFD2FA35FBB00066314 /* yprompt watch Watch App */;
 		};
@@ -75,9 +69,6 @@
 		};
 		3B632FFF2FA35FBB00066314 /* yprompt watch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				3B63300F2FA3600500066314 /* Exceptions for "yprompt watch Watch App" folder in "yprompt watch Watch App" target */,
-			);
 			path = "yprompt watch Watch App";
 			sourceTree = "<group>";
 		};
@@ -266,7 +257,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = yprompt/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = YPrompt;
+				INFOPLIST_KEY_CFBundleDisplayName = yPrompt;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -314,7 +305,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = yprompt/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = YPrompt;
+				INFOPLIST_KEY_CFBundleDisplayName = yPrompt;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -471,8 +462,9 @@
 		3B63300A2FA35FBD00066314 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = appIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "yprompt watch Watch App/yprompt watch Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -480,7 +472,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "yprompt-watch-Watch-App-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "YPrompt Watch";
+				INFOPLIST_KEY_CFBundleDisplayName = "yPrompt Remote";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.giusscos.yprompt;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -506,8 +498,9 @@
 		3B63300B2FA35FBD00066314 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = appIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "yprompt watch Watch App/yprompt watch Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -515,7 +508,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "yprompt-watch-Watch-App-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "YPrompt Watch";
+				INFOPLIST_KEY_CFBundleDisplayName = "yPrompt Remote";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.giusscos.yprompt;
 				LD_RUNPATH_SEARCH_PATHS = (

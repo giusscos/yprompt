@@ -10,21 +10,16 @@ import SwiftData
 struct MenuBarView: View {
     @ObservedObject private var manager: FloatingTeleprompterManager
     @ObservedObject private var viewModel: TeleprompterViewModel
-    @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @State private var selectedScriptID: Script.ID?
-    @State private var menuTimedEnabled = false
+    @State private var menuPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
     @State private var menuTimedMinutes: Int = 3
     @State private var showTimedUpgradeAlert = false
+    @State private var showVoiceUpgradeAlert = false
 
     init() {
         let mgr = FloatingTeleprompterManager.shared
         _manager = ObservedObject(wrappedValue: mgr)
         _viewModel = ObservedObject(wrappedValue: mgr.viewModel)
-    }
-
-    private var selectedScript: Script? {
-        guard let id = selectedScriptID else { return nil }
-        return scripts.first { $0.id == id }
     }
 
     var body: some View {
@@ -48,13 +43,38 @@ struct MenuBarView: View {
         .frame(width: 290)
         .onAppear {
             if selectedScriptID == nil {
-                selectedScriptID = manager.currentScript?.id ?? scripts.first?.id
+                selectedScriptID = manager.currentScript?.id ?? manager.registeredScripts.first?.id
+            }
+        }
+        .onChange(of: manager.registeredScripts) { _, scripts in
+            if selectedScriptID == nil {
+                selectedScriptID = scripts.first?.id
+            }
+        }
+        .onChange(of: manager.currentScript?.id) { _, newID in
+            if let newID {
+                selectedScriptID = newID
             }
         }
         .alert("Premium Feature", isPresented: $showTimedUpgradeAlert) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Timer mode is available with YPrompt Premium. Open the main app to upgrade.")
+        }
+        .alert("Premium Feature", isPresented: $showVoiceUpgradeAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Voice Scroll is available with YPrompt Premium. Open the main app to upgrade.")
+        }
+        .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Voice Scroll needs microphone access to detect when you are speaking.")
         }
     }
 
@@ -65,6 +85,16 @@ struct MenuBarView: View {
         let m = total / 60
         let s = total % 60
         return String(format: "%d:%02d", m, s)
+    }
+
+    private func addCueAtCurrentPosition() {
+        guard viewModel.progress > 0, let script = manager.currentScript else { return }
+        var cues = script.cuePoints
+        let newCue = CuePoint(position: viewModel.progress)
+        cues.append(newCue)
+        cues.sort { $0.position < $1.position }
+        script.cuePoints = cues
+        try? script.modelContext?.save()
     }
 
     private func updateMenuTimedDuration() {
@@ -107,31 +137,28 @@ struct MenuBarView: View {
 
     // MARK: - Script picker
 
-    @ViewBuilder
     private var scriptPicker: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Script")
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
-            if scripts.isEmpty {
-                Text("Open the app to create a script")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            } else {
-                Picker("", selection: $selectedScriptID) {
-                    ForEach(scripts) { script in
-                        Text(script.title.isEmpty ? "Untitled" : script.title)
-                            .tag(Optional(script.id))
-                    }
-                }
-                .labelsHidden()
-                .onChange(of: selectedScriptID) { _, newID in
-                    // Live-switch script if teleprompter is already showing
-                    if manager.isVisible, let script = scripts.first(where: { $0.id == newID }) {
+            Picker("Script", selection: Binding(
+                get: { selectedScriptID },
+                set: { id in
+                    selectedScriptID = id
+                    if manager.isVisible, let id,
+                       let script = manager.registeredScripts.first(where: { $0.id == id }) {
                         manager.show(script: script)
                     }
                 }
+            )) {
+                ForEach(manager.registeredScripts) { script in
+                    Text(script.title.isEmpty ? "Untitled" : script.title).tag(Optional(script.id))
+                }
             }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -167,7 +194,9 @@ struct MenuBarView: View {
         Button {
             if manager.isVisible {
                 manager.hide()
-            } else if let script = selectedScript {
+            } else {
+                guard let id = selectedScriptID,
+                      let script = manager.registeredScripts.first(where: { $0.id == id }) else { return }
                 manager.show(script: script)
             }
         } label: {
@@ -178,22 +207,24 @@ struct MenuBarView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(!manager.isVisible && selectedScript == nil)
+        .disabled(!manager.isVisible && selectedScriptID == nil)
     }
 
-    // MARK: - Playback controls (visible when floating window is open)
+    // MARK: - Playback controls (visible when teleprompter is open)
 
     private var playbackControls: some View {
         VStack(spacing: 10) {
             Divider()
-            HStack {
+
+            progressSection
+
+            // Play / Pause / Reset row — iOS music-player style
+            HStack(spacing: 24) {
                 Button { viewModel.resetToTop() } label: {
                     Image(systemName: "backward.end.fill").font(.title2)
                 }
                 .accessibilityLabel("Reset to top")
                 .help("Reset to top")
-
-                Spacer()
 
                 Button { viewModel.togglePlayPause() } label: {
                     Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
@@ -201,89 +232,230 @@ struct MenuBarView: View {
                 }
                 .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
 
-                Spacer()
-
-                Image(systemName: "backward.end.fill").font(.title2).hidden()
+                Button { addCueAtCurrentPosition() } label: {
+                    Image(systemName: "flag.fill").font(.title2)
+                }
+                .accessibilityLabel("Add cue point")
+                .help("Add cue point at current position")
+                .opacity(viewModel.progress > 0 ? 1 : 0.3)
             }
             .buttonStyle(.plain)
             .tint(.primary)
-            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Playback mode")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-                
-                Picker("Playback mode", selection: Binding(
-                    get: { menuTimedEnabled ? 1 : 0 },
-                    set: { newVal in
-                        if newVal == 1 {
-                            guard manager.isPremium else { showTimedUpgradeAlert = true; return }
-                            menuTimedEnabled = true
-                            updateMenuTimedDuration()
-                        } else {
-                            menuTimedEnabled = false
-                            viewModel.timedDuration = nil
-                        }
-                    }
-                )) {
-                    Text("Standard").tag(0)
-                    Text("Timer").tag(1)
+            // Queue autoplay banner / next-in-queue indicator
+            if manager.showQueueBanner, let nextScript = manager.nextInQueue {
+                queueAutoplayBanner(nextScript: nextScript)
+            } else if let nextScript = manager.nextInQueue {
+                HStack(spacing: 6) {
+                    Image(systemName: "forward.end.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text("Next: \(nextScript.title.isEmpty ? "Untitled" : nextScript.title)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    Spacer()
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .pickerStyle(.segmented)
-                .labelsHidden()
             }
 
-            if menuTimedEnabled {
-                if viewModel.isPlaying && viewModel.timedDuration != nil {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("Remaining").font(.caption).foregroundStyle(.secondary)
-                        
-                        Text(timeString(viewModel.remainingTime))
-                            .font(.body.monospacedDigit().bold())
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("Select time").font(.caption).foregroundStyle(.secondary)
-                        
-                        HStack(spacing: 0) {
-                            Button { if menuTimedMinutes > 0 { menuTimedMinutes -= 1; updateMenuTimedDuration() } } label: {
-                                Image(systemName: "minus")
-                                    .frame(width: 16, height: 16)
-                            }
-                            
-                            Text("\(menuTimedMinutes)m")
-                                .font(.body.monospacedDigit().bold())
-                                .frame(minWidth: 44)
-                            
-                            Button { menuTimedMinutes = min(59, menuTimedMinutes + 1); updateMenuTimedDuration() } label: {
-                                Image(systemName: "plus")
-                                    .frame(width: 16, height: 16)
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
-                    MusicSlider(
-                        value: $viewModel.scrollSpeed,
-                        range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                        step: 0.1
-                    )
-                    Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
-                    Text(String(format: "%.1fx", viewModel.scrollSpeed))
-                        .font(.caption2.monospacedDigit())
-                        .frame(width: 30, alignment: .trailing)
-                }
+            // Playback mode selector — iOS camera-app style
+            playbackModeSelector
+
+            // Mode-specific controls
+            switch menuPlaybackMode {
+            case 1:  voiceModeControls
+            case 2:  timerModeControls
+            default: standardModeControls
             }
         }
     }
 
-    // MARK: - Font size control (visible when teleprompter is open)
+    // Progress bar with cue point markers
+    private var progressSection: some View {
+        VStack(spacing: 4) {
+            if let cuePoints = manager.currentScript?.cuePoints, !cuePoints.isEmpty {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        ForEach(cuePoints) { cue in
+                            Button {
+                                viewModel.jumpToCue(cue)
+                            } label: {
+                                VStack(spacing: 2) {
+                                    Image(systemName: "flag.fill")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(Color.accentColor)
+                                    Rectangle()
+                                        .fill(Color.primary.opacity(0.7))
+                                        .frame(width: 1.5, height: 6)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .offset(x: geo.size.width * CGFloat(cue.position) - 4)
+                            .accessibilityLabel(cue.label.isEmpty ? "Cue point" : cue.label)
+                        }
+                    }
+                }
+                .frame(height: 22)
+            }
+            MusicSlider(
+                value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),
+                range: 0...1
+            )
+        }
+    }
+
+    // MARK: - Playback mode selector
+
+    private var playbackModeSelector: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Playback mode")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            Picker("Playback mode", selection: Binding(
+                get: { menuPlaybackMode },
+                set: { newMode in
+                    if newMode == 1 { guard manager.isPremium else { showVoiceUpgradeAlert = true; return } }
+                    if newMode == 2 { guard manager.isPremium else { showTimedUpgradeAlert = true; return } }
+                    if newMode != 1 && viewModel.voiceScrollEnabled { Task { await viewModel.toggleVoiceScroll() } }
+                    if newMode != 2 { viewModel.timedDuration = nil }
+                    if newMode == 2 { updateMenuTimedDuration() }
+                    menuPlaybackMode = newMode
+                }
+            )) {
+                Text("Standard").tag(0)
+                Text("Voice").tag(1)
+                Text("Timer").tag(2)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // Standard — speed slider
+    private var standardModeControls: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 8) {
+                Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
+                MusicSlider(
+                    value: $viewModel.scrollSpeed,
+                    range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
+                    step: 0.1
+                )
+                Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
+            }
+            Text(String(format: "%.1fx speed", viewModel.scrollSpeed))
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // Voice — mic toggle + level meter
+    private var voiceModeControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                Task { await viewModel.toggleVoiceScroll() }
+            } label: {
+                Label(
+                    viewModel.voiceScrollEnabled ? "Listening…" : "Enable Voice Scroll",
+                    systemImage: viewModel.voiceScrollEnabled ? "mic.fill" : "mic"
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .tint(viewModel.voiceScrollEnabled ? .green : .accentColor)
+
+            if viewModel.voiceScrollEnabled {
+                HStack(spacing: 6) {
+                    Image(systemName: "waveform.low").font(.caption).foregroundStyle(.secondary)
+                    VoiceLevelMeterView(service: viewModel.voiceScrollService)
+                    Image(systemName: "waveform").font(.caption).foregroundStyle(.secondary)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.voiceScrollEnabled)
+    }
+
+    // Timer — duration picker or countdown
+    private var timerModeControls: some View {
+        Group {
+            if viewModel.isPlaying && viewModel.timedDuration != nil {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Remaining").font(.caption).foregroundStyle(.secondary)
+                    Text(timeString(viewModel.remainingTime))
+                        .font(.body.monospacedDigit().bold())
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Select time").font(.caption).foregroundStyle(.secondary)
+                    HStack(spacing: 0) {
+                        Button {
+                            if menuTimedMinutes > 1 { menuTimedMinutes -= 1; updateMenuTimedDuration() }
+                        } label: {
+                            Image(systemName: "minus").frame(width: 16, height: 16)
+                        }
+                        Text("\(menuTimedMinutes)m")
+                            .font(.body.monospacedDigit().bold())
+                            .frame(minWidth: 44)
+                        Button {
+                            menuTimedMinutes = min(59, menuTimedMinutes + 1)
+                            updateMenuTimedDuration()
+                        } label: {
+                            Image(systemName: "plus").frame(width: 16, height: 16)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    // MARK: - Queue autoplay banner
+
+    private func queueAutoplayBanner(nextScript: Script) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "forward.end.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Text("Up next: \(nextScript.title.isEmpty ? "Untitled" : nextScript.title)")
+                    .font(.caption.bold())
+                    .lineLimit(1)
+                Spacer()
+                Text("\(manager.queueCountdown)s")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            ProgressView(value: Double(manager.queueCountdown), total: 5)
+                .progressViewStyle(.linear)
+                .tint(.accentColor)
+            HStack(spacing: 8) {
+                Button {
+                    manager.advanceQueue()
+                } label: {
+                    Label("Play Now", systemImage: "play.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+
+                Button {
+                    manager.cancelQueueBanner()
+                } label: {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+        .padding(10)
+        .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Font size control
 
     private var currentFontSize: CGFloat {
         manager.notchMode ? manager.notchFontSize : manager.floatingFontSize
@@ -308,8 +480,7 @@ struct MenuBarView: View {
                         manager.floatingFontSize = max(12, manager.floatingFontSize - 1)
                     }
                 } label: {
-                    Image(systemName: "minus")
-                        .frame(width: 16, height: 16)
+                    Image(systemName: "minus").frame(width: 16, height: 16)
                 }
 
                 Text("\(Int(currentFontSize))")
@@ -323,14 +494,13 @@ struct MenuBarView: View {
                         manager.floatingFontSize = min(40, manager.floatingFontSize + 1)
                     }
                 } label: {
-                    Image(systemName: "plus")
-                        .frame(width: 16, height: 16)
+                    Image(systemName: "plus").frame(width: 16, height: 16)
                 }
             }
         }
     }
 
-    // MARK: - Appearance controls (visible when floating window is open)
+    // MARK: - Appearance controls
 
     private var appearanceControls: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -340,46 +510,34 @@ struct MenuBarView: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
 
-            // Opacity
             HStack(spacing: 8) {
                 Image(systemName: "circle.lefthalf.filled")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 14)
+                    .font(.caption).foregroundStyle(.secondary).frame(width: 14)
                 MusicSlider(value: $manager.backgroundOpacity, range: 0.15...1.0, step: 0.05)
                 Text("\(Int(manager.backgroundOpacity * 100))%")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
             }
 
-            // Background blur
             HStack(spacing: 8) {
                 Image(systemName: "camera.filters")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 14)
+                    .font(.caption).foregroundStyle(.secondary).frame(width: 14)
                 MusicSlider(value: $manager.blurAmount, range: 0.0...1.0, step: 0.05)
                 Text("\(Int(manager.blurAmount * 100))%")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
             }
 
-            // Horizontal padding
             HStack(spacing: 8) {
                 Image(systemName: "arrow.left.and.right.text.vertical")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 14)
+                    .font(.caption).foregroundStyle(.secondary).frame(width: 14)
                 MusicSlider(
                     value: Binding(get: { Double(manager.horizontalPadding) }, set: { manager.horizontalPadding = CGFloat($0) }),
                     range: 0...120,
                     step: 4
                 )
                 Text("\(Int(manager.horizontalPadding))pt")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
             }
         }

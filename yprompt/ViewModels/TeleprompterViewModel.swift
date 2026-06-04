@@ -19,6 +19,10 @@ class TeleprompterViewModel: ObservableObject {
     @Published var showVoiceMeter: Bool = true
     @Published var micPermissionDenied: Bool = false
     @Published var isFinished: Bool = false
+    // Notch mode horizontal progress (0→1 over text width before looping)
+    @Published var notchProgress: Double = 0
+    // Explicit flag set by FloatingTeleprompterManager; avoids relying on stale contentHeight
+    @Published var isNotchMode: Bool = false
 
     // Timed scrolling: when set, play() auto-computes scrollSpeed to finish in this duration
     @Published var timedDuration: TimeInterval? = nil
@@ -26,11 +30,13 @@ class TeleprompterViewModel: ObservableObject {
     @Published var elapsedPlayTime: TimeInterval = 0
     // Fires when resetToTop() is called so notch view can reset its xOffset
     let resetPublisher = PassthroughSubject<Void, Never>()
+    // Fires a 0…1 fraction for NotchTeleprompterView to jump its horizontal position
+    let notchSeekRequest = PassthroughSubject<Double, Never>()
 
     var remainingTime: TimeInterval {
         guard let duration = timedDuration else { return 0 }
         // Floating mode: position-based remaining
-        if contentHeight > screenHeight {
+        if !isNotchMode {
             let maxOffset = max(0, Double(contentHeight - screenHeight) + 80)
             let remaining = maxOffset - Double(contentOffset)
             return max(0, remaining / (Double(AppConstants.basePixelsPerSecond) * max(scrollSpeed, 0.01)))
@@ -94,6 +100,7 @@ class TeleprompterViewModel: ObservableObject {
         pause()
         isFinished = false
         elapsedPlayTime = 0
+        notchProgress = 0
         withAnimation(.easeOut(duration: 0.4)) { contentOffset = 0 }
         showControls = true
         hideControlsTask?.cancel()
@@ -114,18 +121,23 @@ class TeleprompterViewModel: ObservableObject {
         isFinished = false
         contentOffset = 0
         contentHeight = 0
+        notchProgress = 0
         pendingAutoPlay = false
     }
 
     // MARK: - Progress
 
     var progress: Double {
-        guard contentHeight > screenHeight else { return 0 }
+        guard !isNotchMode else { return notchProgress }
         let maxOffset = max(1, contentHeight - screenHeight + 80)
         return min(1.0, Double(contentOffset) / Double(maxOffset))
     }
 
     func seek(to fraction: Double) {
+        if isNotchMode {
+            notchSeekRequest.send(fraction)
+            return
+        }
         let maxOffset = max(0, contentHeight - screenHeight + 80)
         withAnimation(.easeOut(duration: 0.2)) {
             contentOffset = maxOffset * CGFloat(fraction)
@@ -135,6 +147,10 @@ class TeleprompterViewModel: ObservableObject {
     // MARK: - Cue Points
 
     func jumpToCue(_ cue: CuePoint) {
+        if isNotchMode {
+            notchSeekRequest.send(cue.position)
+            return
+        }
         let maxOffset = max(0, contentHeight - screenHeight + 80)
         withAnimation(.easeOut(duration: 0.3)) {
             contentOffset = maxOffset * CGFloat(cue.position)
@@ -148,6 +164,13 @@ class TeleprompterViewModel: ObservableObject {
         let maxOffset = max(0, contentHeight - screenHeight + 80)
         withAnimation(.easeInOut(duration: 0.3)) {
             contentOffset = min(contentOffset + advance, maxOffset)
+        }
+    }
+
+    func tapReverse() {
+        let advance = screenHeight * 0.3
+        withAnimation(.easeInOut(duration: 0.3)) {
+            contentOffset = max(0, contentOffset - advance)
         }
     }
 
@@ -219,10 +242,9 @@ class TeleprompterViewModel: ObservableObject {
                 if voiceScrollEnabled && !voiceScrollService.isSpeaking { continue }
                 #endif
 
-                // contentHeight == 0 means dimensions aren't set (e.g. notch mode, which
-                // scrolls horizontally via its own timer and doesn't use contentOffset).
-                guard contentHeight > 0 else {
-                    print("[Queue] scroll tick skipped — contentHeight=0 (waiting for layout)")
+                // Notch mode scrolls horizontally via its own timer; skip the vertical task.
+                guard !isNotchMode, contentHeight > 0 else {
+                    if !isNotchMode { print("[Queue] scroll tick skipped — contentHeight=0 (waiting for layout)") }
                     continue
                 }
 
