@@ -95,27 +95,27 @@ extension WatchSessionRelay: WCSessionDelegate {
             return
         }
 
-        let command: RemoteControlCommand
-        if cmdString == "setSpeed", let speed = message["speed"] as? Double {
-            command = .setSpeed(speed)
-        } else if cmdString == "selectScript",
-                  let idStr = message["id"] as? String,
-                  let uuid = UUID(uuidString: idStr) {
-            command = .selectScript(uuid)
-        } else if cmdString == "setNotchMode", let value = message["value"] as? Bool {
-            command = .setNotchMode(value)
-        } else if cmdString == "setVoiceScroll", let value = message["value"] as? Bool {
-            command = .setVoiceScroll(value)
-        } else if cmdString == "setTimedDuration" {
-            let duration = message["duration"] as? Double
-            command = .setTimedDuration(duration)
-        } else if let cmd = RemoteControlCommand(rawValue: cmdString) {
-            command = cmd
-        } else {
-            return
-        }
-
         Task { @MainActor in
+            let command: RemoteControlCommand
+            if cmdString == "setSpeed", let speed = message["speed"] as? Double {
+                command = .setSpeed(speed)
+            } else if cmdString == "selectScript",
+                      let idStr = message["id"] as? String,
+                      let uuid = UUID(uuidString: idStr) {
+                command = .selectScript(uuid)
+            } else if cmdString == "setNotchMode", let value = message["value"] as? Bool {
+                command = .setNotchMode(value)
+            } else if cmdString == "setVoiceScroll", let value = message["value"] as? Bool {
+                command = .setVoiceScroll(value)
+            } else if cmdString == "setTimedDuration" {
+                let duration = message["duration"] as? Double
+                command = .setTimedDuration(duration)
+            } else if let cmd = RemoteControlCommand(rawValue: cmdString) {
+                command = cmd
+            } else {
+                return
+            }
+
             if RemoteControlService.shared.isConnected {
                 RemoteControlService.shared.send(command: command)
             } else {

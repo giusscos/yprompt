@@ -198,18 +198,31 @@ struct ScriptsListView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
         }
+        .mask(
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .black, location: 0.06),
+                    .init(color: .black, location: 0.94),
+                    .init(color: .clear, location: 1)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
     }
 
     private func tagPill(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.caption.bold())
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
+                .font(.subheadline.bold())
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
                 .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
                 .foregroundStyle(isSelected ? .white : .primary)
                 .clipShape(Capsule())
@@ -243,6 +256,7 @@ struct ScriptsListView: View {
             listRows
         }
         .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
         .navigationDestination(for: Script.self) { script in
             EditorView(script: script)
                 .environmentObject(storeKit)
@@ -282,7 +296,9 @@ struct ScriptsListView: View {
     @ViewBuilder
     private var listRows: some View {
         if !allTags.isEmpty {
-            tagFilterRow
+            Section {
+                tagFilterRow
+            }
         }
         ForEach(filtered) { script in
             rowView(for: script)
@@ -806,7 +822,7 @@ struct ScriptRowView: View {
             Spacer()
 
             Group {
-                if let pos = queuePosition {
+                if isSelectMode, let pos = queuePosition {
                     ZStack {
                         Circle()
                             .fill(Color.accentColor)

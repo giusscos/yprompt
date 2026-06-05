@@ -55,6 +55,9 @@ struct ypromptApp: App {
                 #endif
         }
         .modelContainer(sharedModelContainer)
+        #if os(macOS)
+        .defaultSize(width: 1000, height: 750)
+        #endif
 
         #if os(macOS)
         Settings {
