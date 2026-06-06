@@ -10,13 +10,25 @@ import StoreKit
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Query private var settingsArray: [AppSettings]
 
     @State private var showingOnboarding = false
     @State private var showingResetConfirm = false
     @State private var showingPaywall = false
     @State private var showingTagManager = false
+    @State private var selectedLanguage: String = {
+        (UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String)?
+            .components(separatedBy: "-").first ?? "en"
+    }()
+    @State private var showingLanguageRestartAlert = false
+
+    private let supportedLanguages: [(code: String, name: String)] = [
+        ("en", "English"),
+        ("it", "Italiano"),
+        ("fr", "Français"),
+        ("es", "Español"),
+    ]
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -36,10 +48,15 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingOnboarding) {
             OnboardingView(isOnDemand: true)
-                .environmentObject(storeKit)
+                .environment(storeKit)
                 #if os(macOS)
                 .frame(width: 520, height: 700)
                 #endif
+        }
+        .alert("Restart Required", isPresented: $showingLanguageRestartAlert) {
+            Button("OK") {}
+        } message: {
+            Text("Restart the app to apply the new language.")
         }
     }
 
@@ -66,6 +83,7 @@ struct SettingsView: View {
                         playbackCard(settings)
                     }
                     manageTagsCard
+                    languageCard
                 }
                 .padding(20)
             }
@@ -81,7 +99,7 @@ struct SettingsView: View {
             .tabItem { Label("About", systemImage: "info.circle") }
         }
         .sheet(isPresented: $showingPaywall) {
-            PaywallView().environmentObject(storeKit)
+            PaywallView().environment(storeKit)
         }
         .sheet(isPresented: $showingTagManager) {
             GlobalTagManagerView()
@@ -102,7 +120,7 @@ struct SettingsView: View {
                         .foregroundStyle(.green)
                         .font(.title2)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(storeKit.isLifetimePurchased ? "Lifetime Access" : "Subscription Active")
+                        (storeKit.isLifetimePurchased ? Text("Lifetime Access") : Text("Subscription Active"))
                             .font(.headline)
                         Text("All Pro features unlocked").font(.caption).foregroundStyle(.secondary)
                     }
@@ -139,9 +157,13 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("iCloud Sync").font(.headline)
                         if settings.cloudSyncEnabled {
-                            Text(settings.lastSyncDate.map { "Last synced: \($0.shortFormatted)" }
-                                 ?? "Not yet synced")
-                                .font(.caption).foregroundStyle(.secondary)
+                            if let date = settings.lastSyncDate {
+                                Text("Last synced: \(date.shortFormatted)")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            } else {
+                                Text("Not yet synced")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
                     }
                     Spacer()
@@ -321,6 +343,26 @@ struct SettingsView: View {
         }
     }
 
+    private var languageCard: some View {
+        macCard {
+            HStack {
+                Text("Language").font(.headline)
+                Spacer()
+                Picker("", selection: $selectedLanguage) {
+                    ForEach(supportedLanguages, id: \.code) { lang in
+                        Text(lang.name).tag(lang.code)
+                    }
+                }
+                .pickerStyle(.menu)
+                .fixedSize()
+                .onChange(of: selectedLanguage) { _, newValue in
+                    UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
+                    showingLanguageRestartAlert = true
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private func macCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -346,7 +388,7 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .task { ensureSettingsExist() }
         .sheet(isPresented: $showingPaywall) {
-            PaywallView().environmentObject(storeKit)
+            PaywallView().environment(storeKit)
         }
         .confirmationDialog("Reset All Data?", isPresented: $showingResetConfirm) {
             Button("Delete Everything", role: .destructive) { resetAllData() }
@@ -358,11 +400,13 @@ struct SettingsView: View {
     private var purchaseSection: some View {
         Section("YPrompt Pro") {
             if storeKit.isPremium {
-                Label(
-                    storeKit.isLifetimePurchased ? "Lifetime Access" : "Subscription Active",
-                    systemImage: "checkmark.seal.fill"
-                )
-                .foregroundStyle(.green)
+                if storeKit.isLifetimePurchased {
+                    Label("Lifetime Access", systemImage: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                } else {
+                    Label("Subscription Active", systemImage: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                }
                 if storeKit.isSubscribed {
                     Button("Manage Subscription") { openSubscriptionManagement() }
                 }
@@ -393,9 +437,13 @@ struct SettingsView: View {
                     set: { settings.cloudSyncEnabled = $0; try? modelContext.save() }
                 ))
                 if settings.cloudSyncEnabled {
-                    Text(settings.lastSyncDate.map { "Last synced: \($0.shortFormatted)" }
-                         ?? "Not yet synced")
-                        .font(.caption).foregroundStyle(.secondary)
+                    if let date = settings.lastSyncDate {
+                        Text("Last synced: \(date.shortFormatted)")
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        Text("Not yet synced")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
             } else {
                 Toggle("Sync with iCloud", isOn: .constant(false)).disabled(true)
@@ -436,6 +484,15 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
                 }
+            }
+            Picker("Language", selection: $selectedLanguage) {
+                ForEach(supportedLanguages, id: \.code) { lang in
+                    Text(lang.name).tag(lang.code)
+                }
+            }
+            .onChange(of: selectedLanguage) { _, newValue in
+                UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
+                showingLanguageRestartAlert = true
             }
         }
     }
@@ -513,6 +570,6 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
             .modelContainer(for: [Script.self, AppSettings.self], inMemory: true)
-            .environmentObject(StoreKitService())
+            .environment(StoreKitService())
     }
 }

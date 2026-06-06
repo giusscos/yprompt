@@ -4,11 +4,10 @@
 //
 
 import Foundation
-import Combine
 import SwiftData
 
 @MainActor
-class StorageService: ObservableObject {
+class StorageService {
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {

@@ -8,7 +8,7 @@ import SwiftData
 
 struct ScriptsListView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @Query private var settingsArray: [AppSettings]
 
@@ -129,7 +129,7 @@ struct ScriptsListView: View {
             #endif
         }
         .sheet(isPresented: $showingPaywall) {
-            PaywallView().environmentObject(storeKit)
+            PaywallView().environment(storeKit)
         }
         .sheet(item: $scriptForTags) { script in
             TagPickerSheet(script: script)
@@ -157,7 +157,7 @@ struct ScriptsListView: View {
         #if os(iOS)
         .navigationDestination(isPresented: $showingQueuePlayer) {
             TeleprompterView(queue: queueToPlay)
-                .environmentObject(storeKit)
+                .environment(storeKit)
         }
         #endif
         .confirmationDialog(
@@ -259,7 +259,7 @@ struct ScriptsListView: View {
         .listSectionSpacing(.compact)
         .navigationDestination(for: Script.self) { script in
             EditorView(script: script)
-                .environmentObject(storeKit)
+                .environment(storeKit)
         }
         .environment(\.editMode, $editMode)
         .onChange(of: selectedIDs) { oldIDs, newIDs in
@@ -514,7 +514,7 @@ struct TagQueueOrderSheet: View {
                         .font(.caption.monospacedDigit().bold())
                         .foregroundStyle(.secondary)
                         .frame(width: 20, alignment: .trailing)
-                    Text(script.title.isEmpty ? "Untitled" : script.title)
+                    Text(script.title.isEmpty ? String(localized: "Untitled") : script.title)
                         .lineLimit(1)
                 }
             }
@@ -786,7 +786,7 @@ struct ScriptRowView: View {
     var body: some View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(script.title.isEmpty ? "Untitled" : script.title)
+                Text(script.title.isEmpty ? String(localized: "Untitled") : script.title)
                     .font(.headline)
                     .lineLimit(1)
 

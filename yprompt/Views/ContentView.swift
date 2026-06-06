@@ -7,7 +7,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @Query private var settingsArray: [AppSettings]
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
@@ -21,7 +21,7 @@ struct ContentView: View {
         macOSContent
             .sheet(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
                 OnboardingView()
-                    .environmentObject(storeKit)
+                    .environment(storeKit)
                     .frame(width: 520, height: 700)
             }
         #elseif os(watchOS)
@@ -30,7 +30,7 @@ struct ContentView: View {
         iOSContent
             .fullScreenCover(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
                 OnboardingView()
-                    .environmentObject(storeKit)
+                    .environment(storeKit)
             }
         #endif
     }
@@ -134,5 +134,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: [Script.self, AppSettings.self], inMemory: true)
-        .environmentObject(StoreKitService())
+        .environment(StoreKitService())
 }

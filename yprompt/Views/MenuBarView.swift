@@ -8,19 +8,13 @@ import SwiftUI
 import SwiftData
 
 struct MenuBarView: View {
-    @ObservedObject private var manager: FloatingTeleprompterManager
-    @ObservedObject private var viewModel: TeleprompterViewModel
+    @Bindable private var manager = FloatingTeleprompterManager.shared
+    @Bindable private var viewModel = FloatingTeleprompterManager.shared.viewModel
     @State private var selectedScriptID: Script.ID?
     @State private var menuPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
     @State private var menuTimedMinutes: Int = 3
     @State private var showTimedUpgradeAlert = false
     @State private var showVoiceUpgradeAlert = false
-
-    init() {
-        let mgr = FloatingTeleprompterManager.shared
-        _manager = ObservedObject(wrappedValue: mgr)
-        _viewModel = ObservedObject(wrappedValue: mgr.viewModel)
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

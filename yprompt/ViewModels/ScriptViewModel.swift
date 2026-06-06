@@ -4,13 +4,12 @@
 //
 
 import Foundation
-import Combine
 import SwiftData
 
-@MainActor
-class ScriptViewModel: ObservableObject {
-    @Published var isSaving = false
-    @Published var errorMessage: String?
+@Observable @MainActor
+class ScriptViewModel {
+    var isSaving = false
+    var errorMessage: String?
 
     private let modelContext: ModelContext
     private var saveTask: Task<Void, Never>?

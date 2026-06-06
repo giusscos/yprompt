@@ -4,17 +4,16 @@
 //
 
 import Foundation
-import Combine
 import StoreKit
 
-@MainActor
-class StoreKitService: ObservableObject {
-    @Published var products: [Product] = []
-    @Published var purchasedProductIDs: Set<String> = []
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+@Observable @MainActor
+class StoreKitService {
+    var products: [Product] = []
+    var purchasedProductIDs: Set<String> = []
+    var isLoading = false
+    var errorMessage: String?
 
-    private var transactionListener: Task<Void, Error>?
+    @ObservationIgnored nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
 
     init() {
         transactionListener = listenForTransactions()

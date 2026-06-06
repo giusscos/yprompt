@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct VoiceLevelMeterView: View {
-    @ObservedObject var service: VoiceScrollService
+    var service: VoiceScrollService
 
     var body: some View {
         GeometryReader { geo in

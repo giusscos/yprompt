@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import Combine
 import CloudKit
 
 // MARK: - SyncStatus
@@ -21,10 +20,10 @@ enum SyncStatus: Equatable {
     }
 }
 
-@MainActor
-class CloudKitService: ObservableObject {
-    @Published var syncStatus: SyncStatus = .idle
-    @Published var isAuthenticated = false
+@Observable @MainActor
+class CloudKitService {
+    var syncStatus: SyncStatus = .idle
+    var isAuthenticated = false
 
     private let container = CKContainer(identifier: "iCloud.com.giusscos.yprompt")
     private var retryCount = 0

@@ -7,31 +7,34 @@ import Foundation
 import Combine
 import SwiftUI
 
-@MainActor
-class TeleprompterViewModel: ObservableObject {
-    @Published var isPlaying: Bool = false
-    @Published var scrollSpeed: Double = 1.0
-    @Published var contentOffset: CGFloat = 0
-    @Published var transparency: Double = 1.0
-    @Published var showControls: Bool = true
-    @Published var isTapToAdvance: Bool = false
-    @Published var voiceScrollEnabled: Bool = false
-    @Published var showVoiceMeter: Bool = true
-    @Published var micPermissionDenied: Bool = false
-    @Published var isFinished: Bool = false
+@Observable @MainActor
+class TeleprompterViewModel {
+    var isPlaying: Bool = false
+    var scrollSpeed: Double = 1.0
+    var contentOffset: CGFloat = 0
+    var transparency: Double = 1.0
+    var showControls: Bool = true
+    var isTapToAdvance: Bool = false
+    var voiceScrollEnabled: Bool = false
+    var showVoiceMeter: Bool = true
+    var micPermissionDenied: Bool = false
+    var isFinished: Bool = false
     // Notch mode horizontal progress (0→1 over text width before looping)
-    @Published var notchProgress: Double = 0
+    var notchProgress: Double = 0
     // Explicit flag set by FloatingTeleprompterManager; avoids relying on stale contentHeight
-    @Published var isNotchMode: Bool = false
+    var isNotchMode: Bool = false
 
     // Timed scrolling: when set, play() auto-computes scrollSpeed to finish in this duration
-    @Published var timedDuration: TimeInterval? = nil
+    var timedDuration: TimeInterval? = nil
     // Wall-clock seconds elapsed while playing (used for notch mode remaining time)
-    @Published var elapsedPlayTime: TimeInterval = 0
+    var elapsedPlayTime: TimeInterval = 0
     // Fires when resetToTop() is called so notch view can reset its xOffset
-    let resetPublisher = PassthroughSubject<Void, Never>()
+    @ObservationIgnored let resetPublisher = PassthroughSubject<Void, Never>()
     // Fires a 0…1 fraction for NotchTeleprompterView to jump its horizontal position
-    let notchSeekRequest = PassthroughSubject<Double, Never>()
+    @ObservationIgnored let notchSeekRequest = PassthroughSubject<Double, Never>()
+
+    // Called when the script finishes scrolling; FloatingTeleprompterManager uses this for queue logic.
+    var onFinished: (() -> Void)?
 
     var remainingTime: TimeInterval {
         guard let duration = timedDuration else { return 0 }
@@ -49,18 +52,18 @@ class TeleprompterViewModel: ObservableObject {
     let voiceScrollService = VoiceScrollService()
     #endif
 
-    @Published var contentHeight: CGFloat = 0
-    @Published var screenHeight: CGFloat = 0
+    var contentHeight: CGFloat = 0
+    var screenHeight: CGFloat = 0
 
     // Non-published: used to defer auto-play until the correct post-advance height is measured.
     // Set by the caller before play(); cleared when the real height arrives or on timeout.
     var pendingAutoPlay: Bool = false
     var pendingAutoPlayStaleHeight: CGFloat = 0
 
-    private var scrollTask: Task<Void, Never>?
-    private var hideControlsTask: Task<Void, Never>?
-    private var remoteScrollTask: Task<Void, Never>?
-    private var timedElapsedTask: Task<Void, Never>?
+    @ObservationIgnored nonisolated(unsafe) private var scrollTask: Task<Void, Never>?
+    @ObservationIgnored nonisolated(unsafe) private var hideControlsTask: Task<Void, Never>?
+    @ObservationIgnored nonisolated(unsafe) private var remoteScrollTask: Task<Void, Never>?
+    @ObservationIgnored nonisolated(unsafe) private var timedElapsedTask: Task<Void, Never>?
 
     // MARK: - Playback
 
@@ -257,6 +260,7 @@ class TeleprompterViewModel: ObservableObject {
                     print("[Queue] finished script")
                     pause()
                     isFinished = true
+                    onFinished?()
                     break
                 }
             }

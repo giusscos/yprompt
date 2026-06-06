@@ -8,20 +8,14 @@ import SwiftUI
 import Combine
 
 struct NotchTeleprompterView: View {
-    @ObservedObject private var manager: FloatingTeleprompterManager
-    @ObservedObject private var viewModel: TeleprompterViewModel
+    private let manager = FloatingTeleprompterManager.shared
+    private var viewModel: TeleprompterViewModel { manager.viewModel }
     @State private var xOffset: CGFloat = 260
     @State private var textWidth: CGFloat = 0
     @State private var containerWidth: CGFloat = 260
 
     private let ticker = Timer.publish(every: 1.0 / 60.0, on: .main, in: .common).autoconnect()
     private var menuBarH: CGFloat { NSStatusBar.system.thickness }
-
-    init() {
-        let mgr = FloatingTeleprompterManager.shared
-        _manager = ObservedObject(wrappedValue: mgr)
-        _viewModel = ObservedObject(wrappedValue: mgr.viewModel)
-    }
 
     private var text: String {
         let content = manager.currentScript?.content ?? ""

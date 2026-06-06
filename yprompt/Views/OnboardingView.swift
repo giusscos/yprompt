@@ -11,7 +11,7 @@ struct OnboardingView: View {
 
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
 
     @State private var teleprompterOffset: CGFloat = 80
 
@@ -31,12 +31,8 @@ struct OnboardingView: View {
                     }
                 }
         }
-        #if os(iOS)
-        .presentationBackground(.white)
-        #else
-        .presentationBackground(Color(nsColor: .windowBackgroundColor))
-        .toolbarBackground(.hidden, for: .windowToolbar)
-        #endif
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .presentationBackground(.ultraThinMaterial)
         .interactiveDismissDisabled(!isOnDemand)
         .onChange(of: storeKit.isPremium) { _, isPremium in
             guard isPremium else { return }
@@ -49,15 +45,16 @@ struct OnboardingView: View {
     private func navCTABar(next: Step) -> some View {
         NavigationLink(value: next) {
             Text("Continue")
-                .font(.headline.bold())
+                .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .padding(.vertical, 14)
         }
-        .background(Color.accentColor, in: Capsule())
-        .foregroundStyle(.white)
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.capsule)
+        .tint(Color.accentColor)
         .padding(.horizontal, 24)
-        .padding(.top, 20)
-        .padding(.bottom, 8)
+        .padding(.top, 12)
+        .padding(.bottom)
         .background { blurFade }
     }
 
@@ -67,16 +64,17 @@ struct OnboardingView: View {
                 if isOnDemand { dismiss() } else { hasSeenOnboarding = true }
             } label: {
                 Text("Get Started for Free")
-                    .font(.headline.bold())
+                    .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 14)
             }
-            .background(Color.accentColor, in: Capsule())
-            .foregroundStyle(.white)
+            .buttonStyle(.glassProminent)
+            .buttonBorderShape(.capsule)
+            .tint(Color.accentColor)
 
             HStack(spacing: 0) {
                 Link("Privacy Policy", destination: URL(string: "https://example.com/privacy")!)
-                Text(" · ").foregroundStyle(.tertiary)
+                Text(" & ").foregroundStyle(.tertiary)
                 Link("Terms of Use", destination: URL(string: "https://example.com/terms")!)
                 Spacer()
                 Button("Restore Purchases") {
@@ -87,7 +85,7 @@ struct OnboardingView: View {
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 24)
-        .padding(.top, 20)
+        .padding(.top, 12)
         .padding(.bottom, 8)
         .background { blurFade }
     }
@@ -113,9 +111,9 @@ struct OnboardingView: View {
 
     private var welcomePage: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 28) {
+            VStack(spacing: 20) {
                 teleprompterPreviewCard
-                    .frame(height: 170)
+                    .frame(height: 140)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
                     .task {
@@ -136,39 +134,23 @@ struct OnboardingView: View {
                 }
             }
             .padding(.horizontal, 28)
-            .padding(.top, 56)
-            .padding(.bottom, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 16)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { navCTABar(next: .scripts) }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
-        #if os(macOS)
-        .overlay(alignment: .topLeading) {
-            if isOnDemand {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .padding(16)
-            }
-        }
-        #else
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                if isOnDemand {
-                    Button { dismiss() } label: {
-                        Label("Close", systemImage: "xmark")
-                            .labelStyle(.iconOnly)
-                            .fontWeight(.semibold)
-                    }
-                } else {
-                    Color.clear.frame(width: 28, height: 28)
+                Button { dismiss() } label: {
+                    Label("Close", systemImage: "xmark")
+                        .labelStyle(.iconOnly)
+                        .fontWeight(.semibold)
                 }
             }
         }
-        #endif
+#endif
     }
 
     private var teleprompterPreviewCard: some View {
@@ -285,7 +267,7 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                .glassEffect(in: .rect(cornerRadius: 14))
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 24)
@@ -356,7 +338,7 @@ struct OnboardingView: View {
             }
         }
         .padding(4)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .glassEffect(in: .rect(cornerRadius: 12))
     }
 
     // MARK: - Page 4: Platform-specific preview
@@ -364,9 +346,9 @@ struct OnboardingView: View {
 #if os(macOS)
     private var platformPage: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 28) {
+            VStack(spacing: 20) {
                 floatingWindowMockup
-                    .frame(height: 150)
+                    .frame(height: 130)
                 VStack(spacing: 10) {
                     Text("Float Near\nYour Camera")
                         .font(.largeTitle.bold())
@@ -378,8 +360,8 @@ struct OnboardingView: View {
                 }
             }
             .padding(.horizontal, 32)
-            .padding(.top, 56)
-            .padding(.bottom, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 16)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { navCTABar(next: .pro) }
         .navigationTitle("")
@@ -526,7 +508,7 @@ struct OnboardingView: View {
                     featureRow("sparkles",          .orange, "All Future Features",   "Every update included with Lifetime access.")
                 }
                 .padding(16)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .glassEffect(in: .rect(cornerRadius: 16))
             }
             .padding(24)
         }
@@ -534,17 +516,7 @@ struct OnboardingView: View {
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        #if os(macOS)
-        .overlay(alignment: .topLeading) {
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .padding(16)
-        }
-        #else
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button { dismiss() } label: {
@@ -554,7 +526,7 @@ struct OnboardingView: View {
                 }
             }
         }
-        #endif
+#endif
     }
 
     private var inlinePricingCards: some View {
@@ -591,15 +563,14 @@ struct OnboardingView: View {
                     Text(name).font(.headline)
                     Text(desc)
                         .font(.caption)
-                        .foregroundStyle(highlighted ? .white.opacity(0.75) : .secondary)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(price).font(.title3.bold())
             }
             .padding(14)
             .frame(maxWidth: .infinity)
-            .background(highlighted ? Color.accentColor : Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-            .foregroundStyle(highlighted ? .white : .primary)
+            .glassEffect(highlighted ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .rect(cornerRadius: 12))
             .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)

@@ -10,7 +10,7 @@ import MultipeerConnectivity
 
 struct RemoteControlView: View {
     @StateObject private var remote = RemoteControlService.shared
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showPaywall = false
     @State private var localSpeed: Double = AppConstants.defaultScrollSpeed
@@ -70,7 +70,7 @@ struct RemoteControlView: View {
             }
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView().environmentObject(storeKit)
+            PaywallView().environment(storeKit)
         }
     }
 
@@ -370,6 +370,6 @@ private struct DPadCenter: View {
     NavigationStack {
         RemoteControlView()
     }
-    .environmentObject(StoreKitService())
+    .environment(StoreKitService())
 }
 #endif

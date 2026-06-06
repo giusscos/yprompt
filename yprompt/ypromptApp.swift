@@ -27,7 +27,7 @@ private struct MenuBarScriptsLoader: View {
 
 @main
 struct ypromptApp: App {
-    @StateObject private var storeKit = StoreKitService()
+    @State private var storeKit = StoreKitService()
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Script.self, AppSettings.self])
@@ -42,7 +42,7 @@ struct ypromptApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(storeKit)
+                .environment(storeKit)
                 #if os(macOS)
                 .onAppear {
                     FloatingTeleprompterManager.shared.storeKit = storeKit
@@ -62,7 +62,7 @@ struct ypromptApp: App {
         #if os(macOS)
         Settings {
             SettingsView()
-                .environmentObject(storeKit)
+                .environment(storeKit)
                 .modelContainer(sharedModelContainer)
         }
 

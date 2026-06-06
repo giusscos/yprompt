@@ -30,7 +30,7 @@ private struct RichTextFile: FileDocument {
 struct EditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.fontResolutionContext) private var fontContext
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Bindable var script: Script
 
     @State private var attrText = AttributedString()
@@ -70,7 +70,7 @@ struct EditorView: View {
             .toolbar { toolbarItems }
             .sheet(isPresented: $showingCustomization) {
                 CustomizationView(script: script)
-                    .environmentObject(storeKit)
+                    .environment(storeKit)
             }
             
             .fileImporter(
@@ -181,7 +181,7 @@ struct EditorView: View {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationLink {
                 TeleprompterView(script: script)
-                    .environmentObject(storeKit)
+                    .environment(storeKit)
             } label: {
                 Label("Present", systemImage: "play.fill")
             }

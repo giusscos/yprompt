@@ -128,12 +128,12 @@ struct TeleprompterView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var queueScripts: [Script]
     @State private var queueIndex: Int = 0
-    @StateObject private var viewModel = TeleprompterViewModel()
+    @State private var viewModel = TeleprompterViewModel()
 #if os(iOS)
     @StateObject private var cameraService = CameraRecordingService()
 #endif
 #if !os(watchOS)
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @State private var showingPaywall = false
     @Environment(\.requestReview) private var requestReview
 #endif
@@ -242,7 +242,7 @@ struct TeleprompterView: View {
             }
             .onKeyPress(KeyEquivalent("r")) { viewModel.resetToTop(); return .handled }
             .sheet(isPresented: $showingPaywall) {
-                PaywallView().environmentObject(storeKit)
+                PaywallView().environment(storeKit)
             }
             .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
                 Button("Open Settings") { openMicSettings() }
@@ -347,7 +347,7 @@ struct TeleprompterView: View {
         .sheet(isPresented: $isSheetPresented) {
             iOSPlayerPanel
                 .sheet(isPresented: $showingPaywall) {
-                    PaywallView().environmentObject(storeKit)
+                    PaywallView().environment(storeKit)
                 }
                 .presentationDetents(
                     [.height(miniDetentHeight), .height(fullDetentHeight)],
@@ -537,7 +537,7 @@ struct TeleprompterView: View {
                             )
                             Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
                         }
-                        Text(String(format: "%.1fx speed", viewModel.scrollSpeed))
+                        Text(String(format: String(localized: "%.1fx speed"), viewModel.scrollSpeed))
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
@@ -556,7 +556,7 @@ struct TeleprompterView: View {
                             Image(systemName: "arrow.right.and.line.vertical.and.arrow.left")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
-                        Text(String(format: "%.0fpx margins", liveHorizontalPadding))
+                        Text(String(format: String(localized: "%.0fpx margins"), liveHorizontalPadding))
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }

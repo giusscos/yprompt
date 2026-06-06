@@ -8,7 +8,7 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
 
     @State private var isPurchasing = false
     @State private var errorMessage: String?
@@ -16,7 +16,7 @@ struct PaywallView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 28) {
+                VStack(spacing: 20) {
                     headerSection
                     featuresSection
                     if storeKit.isLoading {
@@ -49,14 +49,15 @@ struct PaywallView: View {
                 Text(errorMessage ?? "")
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .top)
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 10) {
             Image(systemName: "crown.fill")
-                .font(.system(size: 60))
+                .font(.system(size: 48))
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.yellow)
             VStack(spacing: 6) {
@@ -68,13 +69,13 @@ struct PaywallView: View {
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     // MARK: - Features
 
     private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 14) {
             featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice")
             featureRow("video.fill",        .red,    "Camera Mode",           "Record while the teleprompter rolls")
             featureRow("doc.fill",          .blue,   "Unlimited Scripts",     "No cap on how many you can create")
@@ -83,7 +84,7 @@ struct PaywallView: View {
             featureRow("sparkles",          .orange, "All Future Features",   "Lifetime includes every new feature")
         }
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .glassEffect(in: .rect(cornerRadius: 16))
     }
 
     private func featureRow(_ icon: String, _ color: Color, _ title: String, _ desc: String) -> some View {
@@ -135,18 +136,14 @@ struct PaywallView: View {
                     Text(product.displayName).font(.headline)
                     Text(product.description)
                         .font(.caption)
-                        .foregroundStyle(highlighted ? .white.opacity(0.75) : .secondary)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(product.displayPrice).font(.title3.bold())
             }
             .padding(16)
             .frame(maxWidth: .infinity)
-            .background(
-                highlighted ? Color.accentColor : Color.secondary.opacity(0.1),
-                in: RoundedRectangle(cornerRadius: 14)
-            )
-            .foregroundStyle(highlighted ? .white : .primary)
+            .glassEffect(highlighted ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .rect(cornerRadius: 14))
             .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)

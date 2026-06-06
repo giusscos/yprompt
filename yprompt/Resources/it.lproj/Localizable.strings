@@ -1,0 +1,229 @@
+/* General */
+"Continue" = "Continua";
+"Cancel" = "Annulla";
+"Done" = "Fine";
+"Save" = "Salva";
+"Close" = "Chiudi";
+"Play" = "Riproduci";
+"Delete" = "Elimina";
+"Rename" = "Rinomina";
+"Duplicate" = "Duplica";
+"Tags" = "Tag";
+"Add" = "Aggiungi";
+"All" = "Tutti";
+"Search" = "Cerca";
+"OK" = "OK";
+"Select" = "Seleziona";
+"Create" = "Crea";
+"Pro" = "Pro";
+"Apply" = "Applica";
+"Speed" = "Velocità";
+"Connected" = "Connesso";
+
+/* Navigation */
+"Scripts" = "Script";
+"Remote" = "Telecomando";
+"Settings" = "Impostazioni";
+
+/* Content View */
+"No Script Selected" = "Nessuno Script Selezionato";
+"Choose a script from the sidebar or create a new one." = "Scegli uno script dalla barra laterale o creane uno nuovo.";
+
+/* Scripts List */
+"New Script" = "Nuovo Script";
+"No Scripts" = "Nessuno Script";
+"Tap + to create your first script." = "Tocca + per creare il tuo primo script.";
+"Create Script" = "Crea Script";
+"Delete Script?" = "Eliminare lo Script?";
+"Delete \"%@\"" = "Elimina \"%@\"";
+"This will permanently delete \"%@\"." = "Questo eliminerà definitivamente \"%@\".";
+"Title" = "Titolo";
+"Enter a title for your script." = "Inserisci un titolo per il tuo script.";
+"Rename Script" = "Rinomina Script";
+"Play \"%@\"" = "Riproduci \"%@\"";
+"Play Queue (%lld)" = "Coda (%lld)";
+"Untitled" = "Senza Titolo";
+"Untitled Script" = "Script Senza Titolo";
+
+/* Tag Management */
+"Manage Tags" = "Gestisci Tag";
+"New tag" = "Nuovo tag";
+"All Tags" = "Tutti i Tag";
+"Rename Tag" = "Rinomina Tag";
+"Tag name" = "Nome tag";
+
+/* Favorites */
+"Favorite" = "Preferito";
+"Unfavorite" = "Rimuovi dai Preferiti";
+
+/* Editor */
+"Present" = "Presenta";
+"Bold" = "Grassetto";
+"Italic" = "Corsivo";
+"Underline" = "Sottolineato";
+"Strikethrough" = "Barrato";
+"Customize" = "Personalizza";
+"Import File" = "Importa File";
+"Export Rich Text" = "Esporta Testo Ricco";
+"More" = "Altro";
+
+/* Customization */
+"Colors" = "Colori";
+"Layout" = "Layout";
+"Teleprompter" = "Teleprompter";
+"Preview" = "Anteprima";
+"Text Color" = "Colore Testo";
+"Background" = "Sfondo";
+"Font Size" = "Dimensione Font";
+"Line Height" = "Altezza Riga";
+"Alignment" = "Allineamento";
+"Left" = "Sinistra";
+"Center" = "Centro";
+"Right" = "Destra";
+"Mirror Text" = "Specchia Testo";
+"Mirror" = "Specchia";
+"Transparency" = "Trasparenza";
+"Auto Scroll" = "Scorrimento Automatico";
+
+/* Teleprompter */
+"Remaining" = "Rimanente";
+"Target" = "Obiettivo";
+"Up Next" = "Prossimo";
+"Play Now" = "Riproduci Ora";
+"Cue point" = "Punto di Riferimento";
+"Microphone Access Required" = "Accesso al Microfono Necessario";
+"Voice Scroll needs microphone access to detect when you are speaking." = "Lo scorrimento vocale necessita dell'accesso al microfono per rilevare quando stai parlando.";
+"Open Settings" = "Apri Impostazioni";
+"Camera & Microphone Access Required" = "Accesso a Fotocamera e Microfono Necessario";
+"Camera mode needs camera and microphone access to record video." = "La modalità fotocamera necessita dell'accesso alla fotocamera e al microfono per registrare video.";
+"Recording Saved" = "Registrazione Salvata";
+"Your recording has been saved to the Photos library." = "La tua registrazione è stata salvata nella libreria Foto.";
+"Reset Cue Points?" = "Reimpostare i Punti di Riferimento?";
+"This will remove all cue points for the current script." = "Questo rimuoverà tutti i punti di riferimento dello script corrente.";
+"Reset Cue Points" = "Reimposta Punti di Riferimento";
+"Add Cue Point" = "Aggiungi Punto di Riferimento";
+"Reset to top" = "Torna all'inizio";
+"Pause" = "Pausa";
+"Stop Recording" = "Ferma Registrazione";
+"Start Recording" = "Avvia Registrazione";
+"Tap to advance" = "Tocca per avanzare";
+"Disable Voice Scroll" = "Disabilita Scorrimento Vocale";
+"Enable Voice Scroll" = "Abilita Scorrimento Vocale";
+"Hide level meter" = "Nascondi misuratore livello";
+"Show level meter" = "Mostra misuratore livello";
+"%.1fx speed" = "%.1fx velocità";
+"%.0fpx margins" = "%.0fpx margini";
+
+/* Settings */
+"Account" = "Account";
+"YPrompt Pro" = "YPrompt Pro";
+"Lifetime Access" = "Accesso a Vita";
+"Subscription Active" = "Abbonamento Attivo";
+"All Pro features unlocked" = "Tutte le funzionalità Pro sbloccate";
+"Manage Subscription" = "Gestisci Abbonamento";
+"YPrompt Free" = "YPrompt Gratuito";
+"Free Plan" = "Piano Gratuito";
+"Limited to %lld scripts." = "Limitato a %lld script.";
+"Limited to %lld scripts" = "Limitato a %lld script";
+"Upgrade to Pro" = "Passa a Pro";
+"Restore Purchases" = "Ripristina Acquisti";
+"iCloud Sync" = "Sincronizzazione iCloud";
+"Sync with iCloud" = "Sincronizza con iCloud";
+"Not yet synced" = "Non ancora sincronizzato";
+"Last synced: %@" = "Ultima sincronizzazione: %@";
+"Preferences" = "Preferenze";
+"Scroll Speed" = "Velocità di Scorrimento";
+"About" = "Info";
+"Version" = "Versione";
+"Rate YPrompt" = "Valuta YPrompt";
+"Send Feedback" = "Invia Feedback";
+"Show App Tour" = "Mostra Tour dell'App";
+"Danger Zone" = "Zona Pericolosa";
+"Reset All Data" = "Reimposta Tutti i Dati";
+"Reset All Data?" = "Reimpostare Tutti i Dati?";
+"Delete Everything" = "Elimina Tutto";
+"All scripts and settings will be permanently deleted." = "Tutti gli script e le impostazioni verranno eliminati definitivamente.";
+"Permanently delete all scripts and settings" = "Elimina definitivamente tutti gli script e le impostazioni";
+"Default Mode" = "Modalità Predefinita";
+"Which mode the teleprompter opens in" = "La modalità in cui si apre il teleprompter";
+"Floating" = "Flottante";
+"Notch" = "Notch";
+"Floating Window" = "Finestra Flottante";
+"Width" = "Larghezza";
+"Height" = "Altezza";
+"Notch Mode" = "Modalità Notch";
+"Playback" = "Riproduzione";
+"Reset…" = "Reimposta…";
+"Rename or delete tags across all scripts" = "Rinomina o elimina tag in tutti gli script";
+"Manage…" = "Gestisci…";
+"Floating Teleprompter" = "Teleprompter Flottante";
+"Language" = "Lingua";
+"Restart Required" = "Riavvio Necessario";
+"Restart the app to apply the new language." = "Riavvia l'app per applicare la nuova lingua.";
+
+/* Remote Control */
+"Disconnect" = "Disconnetti";
+"Script" = "Script";
+"Select script…" = "Seleziona script…";
+"iPhone Remote Control" = "Controllo Remoto iPhone";
+"Control your Mac teleprompter from your iPhone over Wi-Fi or Bluetooth." = "Controlla il teleprompter del tuo Mac dal tuo iPhone tramite Wi-Fi o Bluetooth.";
+"Unlock Premium" = "Sblocca Premium";
+"Searching for your Mac…" = "Ricerca del tuo Mac in corso…";
+"Make sure YPrompt is open on your Mac." = "Assicurati che YPrompt sia aperto sul tuo Mac.";
+"Available Macs" = "Mac Disponibili";
+
+/* Paywall */
+"Unlock YPrompt Pro" = "Sblocca YPrompt Pro";
+"Professional tools for every presenter." = "Strumenti professionali per ogni presentatore.";
+"Camera Mode" = "Modalità Fotocamera";
+"Hands-free scrolling driven by your voice" = "Scorrimento senza mani guidato dalla tua voce";
+"Record while the teleprompter rolls" = "Registra mentre il teleprompter scorre";
+"No cap on how many you can create" = "Nessun limite al numero che puoi creare";
+"Full visual control over your scripts" = "Pieno controllo visivo sui tuoi script";
+"Access your scripts on all your devices" = "Accedi ai tuoi script su tutti i tuoi dispositivi";
+"Lifetime includes every new feature" = "L'accesso a vita include ogni nuova funzionalità";
+"Payment is charged to your Apple ID. Subscriptions renew automatically until cancelled." = "Il pagamento viene addebitato al tuo Apple ID. Gli abbonamenti si rinnovano automaticamente fino alla cancellazione.";
+"Products unavailable. Check your connection." = "Prodotti non disponibili. Verifica la connessione.";
+"Purchase Error" = "Errore di Acquisto";
+
+/* Onboarding */
+"Read with Confidence.\nEvery Time." = "Leggi con Sicurezza.\nOgni Volta.";
+"The professional teleprompter for creators, speakers, and broadcasters on every Apple platform." = "Il teleprompter professionale per creator, relatori e broadcaster su ogni piattaforma Apple.";
+"All Your Scripts," = "Tutti i Tuoi Script,";
+"One Place." = "In Un Solo Posto.";
+"Write from scratch, paste any text, or use a template. Organised with tags and search." = "Scrivi da zero, incolla qualsiasi testo o usa un modello. Organizzato con tag e ricerca.";
+"Read on" = "Leggi su";
+"Your Terms." = "Le Tue Condizioni.";
+"Auto" = "Auto";
+"Tap" = "Tocca";
+"Voice" = "Voce";
+"Camera" = "Fotocamera";
+"Timed" = "A Tempo";
+"Smooth continuous scroll at your chosen pace." = "Scorrimento continuo fluido al tuo ritmo scelto.";
+"Advance each line manually with a tap." = "Avanza ogni riga manualmente con un tocco.";
+"Hands-free scrolling driven by your voice." = "Scorrimento senza mani guidato dalla tua voce.";
+"Record video while your script scrolls." = "Registra video mentre lo script scorre.";
+"Auto-pace to hit your target duration." = "Ritmo automatico per raggiungere la durata obiettivo.";
+"Float Near\nYour Camera" = "Flotta Vicino\nalla Fotocamera";
+"A floating window hovers just below your webcam so you look straight into the lens while delivering every word." = "Una finestra flottante si posiziona appena sotto la webcam, così guardi direttamente nell'obiettivo mentre pronunci ogni parola.";
+"Record\nAs You Read" = "Registra\nMentre Leggi";
+"Camera mode captures professional-quality video while your script scrolls perfectly in sync — no teleprompter visible to your audience." = "La modalità fotocamera cattura video di qualità professionale mentre lo script scorre perfettamente sincronizzato — nessun teleprompter visibile al pubblico.";
+"yPrompt Pro" = "yPrompt Pro";
+"Unlock everything. No limits." = "Sblocca tutto. Senza limiti.";
+"Loading products…" = "Caricamento prodotti…";
+"Best Value" = "Miglior Offerta";
+"Products unavailable — check your connection." = "Prodotti non disponibili — verifica la connessione.";
+"Unlimited Scripts" = "Script Illimitati";
+"No cap on how many you can create." = "Nessun limite al numero che puoi creare.";
+"Voice Scroll" = "Scorrimento Vocale";
+"Camera Recording" = "Registrazione con Fotocamera";
+"Record while the teleprompter rolls." = "Registra mentre il teleprompter scorre.";
+"Custom Fonts & Colors" = "Font e Colori Personalizzati";
+"Full visual control over your scripts." = "Pieno controllo visivo sui tuoi script.";
+"Access your scripts on all your devices." = "Accedi ai tuoi script su tutti i tuoi dispositivi.";
+"All Future Features" = "Tutte le Funzionalità Future";
+"Every update included with Lifetime access." = "Ogni aggiornamento incluso con l'accesso a vita.";
+"Get Started for Free" = "Inizia Gratuitamente";
+"Privacy Policy" = "Informativa sulla Privacy";
+"Terms of Use" = "Termini di Utilizzo";
+" & " = " e ";

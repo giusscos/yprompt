@@ -8,22 +8,28 @@ import AppKit
 import Combine
 import SwiftUI
 
-@MainActor
-final class FloatingTeleprompterManager: ObservableObject {
+@Observable @MainActor
+final class FloatingTeleprompterManager {
     static let shared = FloatingTeleprompterManager()
 
-    @Published var isVisible = false
-    @Published var currentScript: Script?
-    @Published var backgroundOpacity: Double = 0.92
-    @Published var blurAmount: Double = 0.0
-    @Published var notchMode: Bool = false
-    @Published var notchFontSize: CGFloat = 11
-    @Published var floatingFontSize: CGFloat = 19
-    @Published var showQueueBanner: Bool = false
-    @Published var queueCountdown: Int = 5
-    @Published var floatingWindowWidth: CGFloat = 780
-    @Published var floatingWindowHeight: CGFloat = 116
-    @Published var horizontalPadding: CGFloat = 52
+    var isVisible = false
+    var currentScript: Script?
+    var backgroundOpacity: Double = 0.92
+    var blurAmount: Double = 0.0
+    var notchMode: Bool = false
+    var notchFontSize: CGFloat = 11 {
+        didSet { updateNotchPanelFrame() }
+    }
+    var floatingFontSize: CGFloat = 19
+    var showQueueBanner: Bool = false
+    var queueCountdown: Int = 5
+    var floatingWindowWidth: CGFloat = 780 {
+        didSet { resizeFloatingPanel(width: floatingWindowWidth, height: floatingWindowHeight) }
+    }
+    var floatingWindowHeight: CGFloat = 116 {
+        didSet { resizeFloatingPanel(width: floatingWindowWidth, height: floatingWindowHeight) }
+    }
+    var horizontalPadding: CGFloat = 52
     let viewModel = TeleprompterViewModel()
 
     var storeKit: StoreKitService?
@@ -33,10 +39,10 @@ final class FloatingTeleprompterManager: ObservableObject {
     private var queueIndex: Int = 0
     var nextInQueue: Script? { queueIndex + 1 < queue.count ? queue[queueIndex + 1] : nil }
 
-    let notchScrollDelta = PassthroughSubject<CGFloat, Never>()
+    @ObservationIgnored let notchScrollDelta = PassthroughSubject<CGFloat, Never>()
 
     /// All scripts on the Mac — kept in sync by ContentView so the remote can list and select them.
-    @Published var registeredScripts: [Script] = [] {
+    var registeredScripts: [Script] = [] {
         didSet {
             let infos = registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
             let remote = RemoteControlService.shared
@@ -53,30 +59,15 @@ final class FloatingTeleprompterManager: ObservableObject {
     private var panel: NSPanel?
     private var notchPanel: NSPanel?
     private var keyEventMonitor: Any?
-    private var cancellables = Set<AnyCancellable>()
     private var notchRemoteScrollTask: Task<Void, Never>?
     private var queueCountdownTask: Task<Void, Never>?
 
     private init() {
-        $notchFontSize
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.updateNotchPanelFrame() }
-            .store(in: &cancellables)
-        Publishers.CombineLatest($floatingWindowWidth, $floatingWindowHeight)
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] w, h in self?.resizeFloatingPanel(width: w, height: h) }
-            .store(in: &cancellables)
-        viewModel.$isFinished
-            .filter { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self, self.nextInQueue != nil else { return }
-                self.showQueueBanner = true
-                self.startQueueCountdown()
-            }
-            .store(in: &cancellables)
+        viewModel.onFinished = { [weak self] in
+            guard let self, self.nextInQueue != nil else { return }
+            self.showQueueBanner = true
+            self.startQueueCountdown()
+        }
         setupRemoteControlCallbacks()
     }
 

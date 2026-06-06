@@ -9,7 +9,7 @@ import SwiftData
 struct CustomizationView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var storeKit: StoreKitService
+    @Environment(StoreKitService.self) private var storeKit
     @Bindable var script: Script
 
     @State private var customization: TextCustomization
@@ -32,7 +32,7 @@ struct CustomizationView: View {
         .frame(minWidth: 540, minHeight: 600)
         #endif
         .sheet(isPresented: $showingPaywall) {
-            PaywallView().environmentObject(storeKit)
+            PaywallView().environment(storeKit)
         }
     }
 

@@ -5,13 +5,12 @@
 
 #if !os(watchOS)
 import AVFoundation
-import Combine
 
-@MainActor
-final class VoiceScrollService: ObservableObject {
-    @Published private(set) var currentPower: Float = -80
-    @Published var speechThreshold: Float = -30
-    @Published private(set) var isRunning: Bool = false
+@Observable @MainActor
+final class VoiceScrollService {
+    private(set) var currentPower: Float = -80
+    var speechThreshold: Float = -30
+    private(set) var isRunning: Bool = false
 
     var isSpeaking: Bool { currentPower > speechThreshold }
     var normalizedLevel: Float { Self.normalize(currentPower) }
