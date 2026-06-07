@@ -73,9 +73,9 @@ struct OnboardingView: View {
             .tint(Color.accentColor)
 
             HStack(spacing: 0) {
-                Link("Privacy Policy", destination: URL(string: "https://example.com/privacy")!)
+                Link("Privacy Policy", destination: URL(string: "https://yprompt.app/privacy")!)
                 Text(" & ").foregroundStyle(.tertiary)
-                Link("Terms of Use", destination: URL(string: "https://example.com/terms")!)
+                Link("Terms of Use", destination: URL(string: "https://yprompt.app/terms")!)
                 Spacer()
                 Button("Restore Purchases") {
                     Task { await storeKit.restorePurchases() }
@@ -157,7 +157,7 @@ struct OnboardingView: View {
         ZStack {
             Color.black
             Text("Good morning everyone, and welcome to today's keynote. I'm truly honored to be here with all of you. Over the past year, our team has been building something we believe will change the way you communicate. Whether you're a podcaster, a speaker, or a content creator — today is the day everything changes.\n\nLet me start by sharing the vision behind this product...")
-                .font(.system(size: 17, weight: .medium, design: .monospaced))
+                .font(.body)
                 .foregroundStyle(.white)
                 .lineSpacing(6)
                 .padding(.horizontal, 18)
@@ -177,8 +177,8 @@ struct OnboardingView: View {
                 HStack {
                     Spacer()
                     HStack(spacing: 4) {
-                        Image(systemName: "play.fill").font(.system(size: 8))
-                        Text("1.0×").font(.system(size: 10, weight: .bold, design: .monospaced))
+                        Image(systemName: "play.fill").font(.caption2)
+                        Text("1.0×").font(.caption2.bold())
                     }
                     .foregroundStyle(.white.opacity(0.7))
                     .padding(.horizontal, 7).padding(.vertical, 4)
@@ -328,7 +328,7 @@ struct OnboardingView: View {
             ForEach(Array(modes.enumerated()), id: \.offset) { _, mode in
                 VStack(spacing: 4) {
                     Image(systemName: mode.icon).font(.caption)
-                    Text(mode.label).font(.system(size: 9, weight: .medium))
+                    Text(mode.label).font(.caption2)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
@@ -380,7 +380,7 @@ struct OnboardingView: View {
                     Circle().fill(Color.green.opacity(0.8)).frame(width: 8, height: 8)
                     Spacer()
                     Text("Floating Teleprompter")
-                        .font(.system(size: 9))
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                     Spacer()
                 }
@@ -388,7 +388,7 @@ struct OnboardingView: View {
                 .background(Color.primary.opacity(0.04))
                 Divider()
                 Text("Good morning everyone, and welcome to today's keynote. I'm honored to share what we've built...")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(.caption)
                     .foregroundStyle(.white)
                     .lineSpacing(3)
                     .padding(10)
@@ -450,7 +450,7 @@ struct OnboardingView: View {
             VStack {
                 Spacer()
                 Text("Good morning everyone, and welcome...")
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .font(.subheadline)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16).padding(.vertical, 10)
@@ -462,7 +462,7 @@ struct OnboardingView: View {
                     Spacer()
                     HStack(spacing: 5) {
                         Circle().fill(Color.red).frame(width: 6, height: 6)
-                        Text("REC").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                        Text("REC").font(.caption2.bold()).foregroundStyle(.white)
                     }
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Color.black.opacity(0.45), in: Capsule())
@@ -481,7 +481,7 @@ struct OnboardingView: View {
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Image(systemName: "crown.fill")
-                        .font(.system(size: 48))
+                        .font(.largeTitle)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.yellow, .yellow.opacity(0.5))
                     Text("yPrompt Pro")
@@ -502,10 +502,12 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     featureRow("doc.fill",          .blue,   "Unlimited Scripts",     "No cap on how many you can create.")
                     featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice.")
-                    featureRow("video.fill",        .red,    "Camera Recording",      "Record while the teleprompter rolls.")
-                    featureRow("paintpalette.fill", .pink,   "Custom Fonts & Colors", "Full visual control over your scripts.")
-                    featureRow("icloud.fill",       .cyan,   "iCloud Sync",           "Access your scripts on all your devices.")
-                    featureRow("sparkles",          .orange, "All Future Features",   "Every update included with Lifetime access.")
+                    featureRow("video.fill",        .red,    "Camera Recording",   "Record while the teleprompter rolls.")
+                    featureRow("paintpalette.fill", .pink,   "Custom Colors",      "Choose your own text and background colors.")
+                    featureRow("textformat.size",   .teal,   "Font Size Control",  "Adjust the reading size to your comfort.")
+                    featureRow("macwindow",         .indigo, "Floating Window",    "Pin the teleprompter above any app on Mac.")
+                    featureRow("icloud.fill",       .cyan,   "iCloud Sync",        "Access your scripts on all your devices.")
+                    featureRow("sparkles",          .orange, "All Future Features","Every update included with Lifetime access.")
                 }
                 .padding(16)
                 .glassEffect(in: .rect(cornerRadius: 16))

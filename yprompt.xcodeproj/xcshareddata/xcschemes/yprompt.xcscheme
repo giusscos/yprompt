@@ -52,7 +52,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../yprompt/OfflineStore.storekit">
+         identifier = "../../yprompt/OnlineStore.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

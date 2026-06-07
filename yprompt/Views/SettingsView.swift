@@ -543,11 +543,11 @@ struct SettingsView: View {
 
     private func sendFeedback() {
         #if canImport(UIKit)
-        if let url = URL(string: "mailto:support@yprompt.app") {
+        if let url = URL(string: "https://yprompt.app/support") {
             UIApplication.shared.open(url)
         }
         #elseif canImport(AppKit)
-        if let url = URL(string: "mailto:support@yprompt.app") {
+        if let url = URL(string: "https://yprompt.app/support") {
             NSWorkspace.shared.open(url)
         }
         #endif

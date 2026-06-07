@@ -52,6 +52,7 @@
 			membershipExceptions = (
 				appIcon.icon,
 				Assets.xcassets,
+				OnlineStore.storekit,
 			);
 			target = 3B632FFD2FA35FBB00066314 /* yprompt watch Watch App */;
 		};

@@ -1,0 +1,205 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "5042CA95",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "89.99",
+      "familyShareable" : false,
+      "internalID" : "6777462736",
+      "localizations" : [
+        {
+          "description" : "Todas las funciones Pro, para siempre.",
+          "displayName" : "Acceso de por Vida",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "All Pro features, forever. No subscription.",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Tutte le funzionalità Pro, per sempre.",
+          "displayName" : "Accesso a Vita",
+          "locale" : "it"
+        },
+        {
+          "description" : "Toutes les fonctions Pro, pour toujours.",
+          "displayName" : "Accès à Vie",
+          "locale" : "fr"
+        }
+      ],
+      "productID" : "yp_8999_lifetime",
+      "referenceName" : "yPrompt Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6777453211",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "MA7MBQ947C",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 802453047.69247603,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "22138765",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "yPrompt Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "49.99",
+              "displayPrice" : "49.99",
+              "internalID" : "6777460158_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "49.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6777460158",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "7B2787C3",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "7B2787C3",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "localizations" : [
+            {
+              "description" : "Accesso Pro completo, fatturato una volta all'anno.",
+              "displayName" : "Annuale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Full Pro access, billed once a year.",
+              "displayName" : "Annual",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Accès Pro complet, facturé chaque mois.",
+              "displayName" : "Mensuel",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Acceso Pro completo, facturado una vez al año.",
+              "displayName" : "Anual",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "yp_4999_1y",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual",
+          "subscriptionGroupID" : "22138765",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "4.99",
+              "displayPrice" : "4.99",
+              "internalID" : "6777457120_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6777457120",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "Accesso Pro completo, fatturato ogni mese.",
+              "displayName" : "Mensile",
+              "locale" : "it"
+            },
+            {
+              "description" : "Full Pro access, billed monthly",
+              "displayName" : "Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Acceso Pro completo, facturado mensualmente.",
+              "displayName" : "Mensual",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Accès Pro complet, facturé chaque mois.",
+              "displayName" : "Mensuel",
+              "locale" : "fr"
+            }
+          ],
+          "productID" : "yp_499_1m",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly",
+          "subscriptionGroupID" : "22138765",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 5,
+    "minor" : 0
+  }
+}

@@ -6,17 +6,26 @@
 import SwiftUI
 
 enum AppConstants {
+    // MARK: - Demo StoreKit Product IDs
+    // static let lifetimeProductID = "com.yprompt.lifetime"
+    // static let monthlySubscriptionID = "com.yprompt.monthly"
+    // static let yearlySubscriptionID = "com.yprompt.yearly"
+    
     // MARK: - StoreKit Product IDs
-    static let lifetimeProductID = "com.yprompt.lifetime"
-    static let monthlySubscriptionID = "com.yprompt.monthly"
-    static let yearlySubscriptionID = "com.yprompt.yearly"
+    static let lifetimeProductID = "yp_8999_lifetime"
+    static let monthlySubscriptionID = "yp_499_1m"
+    static let yearlySubscriptionID = "yp_4999_1y"
+
+    // MARK: - Legal URLs
+    static let privacyPolicyURL = URL(string: "https://yprompt.app/privacy")!
+    static let termsOfUseURL = URL(string: "https://yprompt.app/terms")!
 
     // MARK: - Free Tier
     static let freeScriptLimit = 3
 
     // MARK: - Scroll
-    static let minScrollSpeed: Double = 0.5
-    static let maxScrollSpeed: Double = 3.0
+    static let minScrollSpeed: Double = 0.25
+    static let maxScrollSpeed: Double = 5.0
     static let defaultScrollSpeed: Double = 1.0
     static let basePixelsPerSecond: CGFloat = 60
 
@@ -27,7 +36,7 @@ enum AppConstants {
 
     // MARK: - Line Height
     static let minLineHeight: CGFloat = 1.0
-    static let maxLineHeight: CGFloat = 2.0
+    static let maxLineHeight: CGFloat = 4.0
     static let defaultLineHeight: CGFloat = 1.4
 
     // MARK: - Default Colors

@@ -57,7 +57,7 @@ struct PaywallView: View {
     private var headerSection: some View {
         VStack(spacing: 10) {
             Image(systemName: "crown.fill")
-                .font(.system(size: 48))
+                .font(.largeTitle)
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.yellow)
             VStack(spacing: 6) {
@@ -78,10 +78,12 @@ struct PaywallView: View {
         VStack(alignment: .leading, spacing: 14) {
             featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice")
             featureRow("video.fill",        .red,    "Camera Mode",           "Record while the teleprompter rolls")
-            featureRow("doc.fill",          .blue,   "Unlimited Scripts",     "No cap on how many you can create")
-            featureRow("paintpalette.fill", .pink,   "Custom Fonts & Colors", "Full visual control over your scripts")
-            featureRow("icloud.fill",       .cyan,   "iCloud Sync",           "Access your scripts on all your devices")
-            featureRow("sparkles",          .orange, "All Future Features",   "Lifetime includes every new feature")
+            featureRow("doc.fill",          .blue,   "Unlimited Scripts",  "No cap on how many you can create")
+            featureRow("paintpalette.fill", .pink,   "Custom Colors",       "Choose your own text and background colors")
+            featureRow("textformat.size",   .teal,   "Font Size Control",   "Adjust the reading size to your comfort")
+            featureRow("macwindow",         .indigo, "Floating Window",     "Pin the teleprompter above any app on Mac")
+            featureRow("icloud.fill",       .cyan,   "iCloud Sync",         "Access your scripts on all your devices")
+            featureRow("sparkles",          .orange, "All Future Features", "Lifetime includes every new feature")
         }
         .padding(16)
         .glassEffect(in: .rect(cornerRadius: 16))
@@ -179,6 +181,14 @@ struct PaywallView: View {
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
+
+            HStack(spacing: 16) {
+                Link("Privacy Policy", destination: AppConstants.privacyPolicyURL)
+                Text("·").foregroundStyle(.tertiary)
+                Link("Terms of Use", destination: AppConstants.termsOfUseURL)
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
         }
         .padding(.bottom, 8)
     }
