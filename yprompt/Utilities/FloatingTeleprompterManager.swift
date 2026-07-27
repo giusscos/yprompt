@@ -22,10 +22,44 @@ final class FloatingTeleprompterManager {
     var notchFontSize: CGFloat = 11 {
         didSet { updateNotchPanelFrame() }
     }
+    /// Vertical multiline scroll in the notch (vs horizontal ticker).
+    var notchScrollVertical: Bool = false {
+        didSet { updateNotchPanelFrame() }
+    }
+
+    /// User-facing orientation change; bounces the notch when it's on screen.
+    func setNotchScrollVertical(_ vertical: Bool) {
+        if !isVisible || !notchMode {
+            notchScrollVertical = vertical
+            return
+        }
+        if vertical == notchScrollVertical, notchPresented, notchAnimationTask == nil {
+            return
+        }
+
+        notchAnimationTask?.cancel()
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+            notchPresented = false
+        }
+        let target = vertical
+        notchAnimationTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 340_000_000)
+            guard !Task.isCancelled else { return }
+            notchScrollVertical = target
+            notchPanel?.orderFront(nil)
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
+                notchPresented = true
+            }
+        }
+    }
 
     static let notchTopRadius: CGFloat = 12
     static let notchBottomRadius: CGFloat = 14
     static let notchBodyWidth: CGFloat = 260
+    /// Extra panel height below the silhouette so spring overshoot isn't window-clipped.
+    static let notchBounceSlack: CGFloat = 28
     var floatingFontSize: CGFloat = 19
     var showQueueBanner: Bool = false
     var queueCountdown: Int = 5
@@ -345,14 +379,21 @@ final class FloatingTeleprompterManager {
         panel = newPanel
     }
 
+    func notchTextBandHeight() -> CGFloat {
+        notchScrollVertical
+            ? max(88, notchFontSize * 5 + 28)
+            : notchFontSize + 19
+    }
+
     private func notchPanelFrame() -> CGRect {
         guard let screen = NSScreen.main else { return .zero }
         let sf = screen.frame
         let menuBarH = NSStatusBar.system.thickness
-        let textBandH = notchFontSize + 19
+        let textBandH = notchTextBandHeight()
         // Extra width for inverted top-corner “ears”
         let panelWidth = Self.notchBodyWidth + 2 * Self.notchTopRadius
-        let panelHeight = menuBarH + textBandH
+        // Slack below lets the bounce overshoot draw rounded bottoms without a hard clip.
+        let panelHeight = menuBarH + textBandH + Self.notchBounceSlack
         let originX = sf.minX + (sf.width - panelWidth) / 2
         let originY = sf.maxY - panelHeight
         return CGRect(x: originX, y: originY, width: panelWidth, height: panelHeight)

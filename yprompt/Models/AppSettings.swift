@@ -34,6 +34,8 @@ final class AppSettings {
     var floatingWindowHeight: CGFloat = 116
     var floatingFontSize: CGFloat = 19
     var notchFontSize: CGFloat = 11
+    /// When true, notch teleprompter scrolls multiline text vertically instead of a horizontal ticker.
+    var notchScrollVertical: Bool = false
     var defaultScrollSpeed: Double = 1.0
     var definedTagsData: Data?
 

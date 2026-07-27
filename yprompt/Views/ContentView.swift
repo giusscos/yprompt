@@ -169,6 +169,7 @@ struct ContentView: View {
         let mgr = FloatingTeleprompterManager.shared
         mgr.floatingFontSize = settings.floatingFontSize
         mgr.notchFontSize = settings.notchFontSize
+        mgr.notchScrollVertical = settings.notchScrollVertical
         mgr.floatingWindowWidth = settings.floatingWindowWidth
         mgr.floatingWindowHeight = settings.floatingWindowHeight
         mgr.notchMode = settings.displayMode == .notch

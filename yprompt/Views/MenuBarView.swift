@@ -10,6 +10,9 @@ import SwiftData
 struct MenuBarView: View {
     @Bindable private var manager = FloatingTeleprompterManager.shared
     @Bindable private var viewModel = FloatingTeleprompterManager.shared.viewModel
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settingsArray: [AppSettings]
+    @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @State private var selectedScriptID: Script.ID?
     @State private var menuPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
     @State private var menuTimedMinutes: Int = 3
@@ -23,6 +26,9 @@ struct MenuBarView: View {
             VStack(alignment: .leading, spacing: 14) {
                 scriptPicker
                 modeSelector
+                if manager.notchMode {
+                    notchOrientationToggle
+                }
                 launchButton
                 if manager.isVisible {
                     playbackControls
@@ -179,6 +185,25 @@ struct MenuBarView: View {
         }
     }
 
+    // MARK: - Notch orientation
+
+    private var notchOrientationToggle: some View {
+        Toggle(isOn: Binding(
+            get: { settingsArray.first?.notchScrollVertical ?? manager.notchScrollVertical },
+            set: { value in
+                if let settings = settingsArray.first {
+                    settings.notchScrollVertical = value
+                    try? modelContext.save()
+                }
+                manager.setNotchScrollVertical(value)
+            }
+        )) {
+            Label("Scroll Vertically", systemImage: "arrow.up.and.down.text.horizontal")
+        }
+        .toggleStyle(.switch)
+        .controlSize(.small)
+    }
+
     // MARK: - Launch / close button
 
     private var launchButton: some View {
@@ -286,7 +311,8 @@ struct MenuBarView: View {
             }
             MusicSlider(
                 value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),
-                range: 0...1
+                range: 0...1,
+                requiresLongPress: sliderRequiresLongPress
             )
         }
     }
@@ -327,7 +353,8 @@ struct MenuBarView: View {
                 MusicSlider(
                     value: $viewModel.scrollSpeed,
                     range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                    step: 0.1
+                    step: 0.1,
+                    requiresLongPress: sliderRequiresLongPress
                 )
                 Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
             }
@@ -475,7 +502,7 @@ struct MenuBarView: View {
 
                 Button {
                     if manager.notchMode {
-                        manager.notchFontSize = min(16, manager.notchFontSize + 1)
+                        manager.notchFontSize = min(32, manager.notchFontSize + 1)
                     } else {
                         manager.floatingFontSize = min(40, manager.floatingFontSize + 1)
                     }
@@ -499,7 +526,12 @@ struct MenuBarView: View {
             HStack(spacing: 8) {
                 Image(systemName: "circle.lefthalf.filled")
                     .font(.caption).foregroundStyle(.secondary).frame(width: 14)
-                MusicSlider(value: $manager.backgroundOpacity, range: 0.15...1.0, step: 0.05)
+                MusicSlider(
+                    value: $manager.backgroundOpacity,
+                    range: 0.15...1.0,
+                    step: 0.05,
+                    requiresLongPress: sliderRequiresLongPress
+                )
                 Text("\(Int(manager.backgroundOpacity * 100))%")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
@@ -508,7 +540,12 @@ struct MenuBarView: View {
             HStack(spacing: 8) {
                 Image(systemName: "camera.filters")
                     .font(.caption).foregroundStyle(.secondary).frame(width: 14)
-                MusicSlider(value: $manager.blurAmount, range: 0.0...1.0, step: 0.05)
+                MusicSlider(
+                    value: $manager.blurAmount,
+                    range: 0.0...1.0,
+                    step: 0.05,
+                    requiresLongPress: sliderRequiresLongPress
+                )
                 Text("\(Int(manager.blurAmount * 100))%")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     .frame(width: 30, alignment: .trailing)
@@ -520,7 +557,8 @@ struct MenuBarView: View {
                 MusicSlider(
                     value: Binding(get: { Double(manager.horizontalPadding) }, set: { manager.horizontalPadding = CGFloat($0) }),
                     range: 0...120,
-                    step: 4
+                    step: 4,
+                    requiresLongPress: sliderRequiresLongPress
                 )
                 Text("\(Int(manager.horizontalPadding))pt")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)

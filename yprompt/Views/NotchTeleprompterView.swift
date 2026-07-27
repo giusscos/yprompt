@@ -59,102 +59,148 @@ struct NotchShape: Shape {
 struct NotchTeleprompterView: View {
     private let manager = FloatingTeleprompterManager.shared
     private var viewModel: TeleprompterViewModel { manager.viewModel }
-    @State private var xOffset: CGFloat = 260
-    @State private var textWidth: CGFloat = 0
-    @State private var containerWidth: CGFloat = 260
+    @State private var scrollOffset: CGFloat = 0
+    @State private var contentSize: CGFloat = 0
+    @State private var viewportSize: CGFloat = 260
 
     private let ticker = Timer.publish(every: 1.0 / 60.0, on: .main, in: .common).autoconnect()
     private var menuBarH: CGFloat { NSStatusBar.system.thickness }
+    private var textBandH: CGFloat { manager.notchTextBandHeight() }
+    private var isVertical: Bool { manager.notchScrollVertical }
 
     private var text: String {
         let content = manager.currentScript?.content ?? ""
-        return content.isEmpty
-            ? "[ No script selected ]"
-            : content.replacingOccurrences(of: "\n", with: "   ·   ")
+        if content.isEmpty { return "[ No script selected ]" }
+        if isVertical { return content }
+        return content.replacingOccurrences(of: "\n", with: "   ·   ")
     }
 
     var body: some View {
+        // Fixed-height silhouette pinned to the top; panel includes bounce slack below
+        // so spring overshoot can draw full bottom radii without a hard window clip.
         VStack(spacing: 0) {
-            // Top black block covers the notch area in the menu bar
             Color.black
                 .frame(height: menuBarH)
 
-            // Bottom pill: text scrolls here, just below the notch
             GeometryReader { geo in
-                ZStack(alignment: .leading) {
+                ZStack(alignment: isVertical ? .top : .leading) {
                     Color.black
-                    Text(text)
-                        .font(.system(size: manager.notchFontSize, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .fixedSize()
-                        .background(
-                            GeometryReader { tg in
-                                Color.clear
-                                    .onAppear {
-                                        textWidth = tg.size.width
-                                        containerWidth = geo.size.width
-                                        xOffset = geo.size.width
-                                    }
-                                    .onChange(of: tg.size.width) { _, w in textWidth = w }
-                            }
-                        )
-                        .offset(x: xOffset)
+                    scrollingText(in: geo)
                 }
                 .clipped()
-                .onChange(of: geo.size.width) { _, w in containerWidth = w }
+                .onAppear { resetScroll(viewport: primaryAxis(of: geo.size)) }
+                .onChange(of: geo.size.width) { _, _ in
+                    viewportSize = primaryAxis(of: geo.size)
+                }
+                .onChange(of: geo.size.height) { _, _ in
+                    viewportSize = primaryAxis(of: geo.size)
+                }
             }
+            .frame(height: textBandH)
         }
+        .frame(height: menuBarH + textBandH)
         .clipShape(
             NotchShape(
                 topRadius: FloatingTeleprompterManager.notchTopRadius,
                 bottomRadius: FloatingTeleprompterManager.notchBottomRadius
             )
         )
+        .compositingGroup()
         .scaleEffect(
             x: manager.notchPresented ? 1 : 0.52,
             y: manager.notchPresented ? 1 : 0.12,
             anchor: .top
         )
         .opacity(manager.notchPresented ? 1 : 0)
-        .onReceive(ticker) { _ in
-            guard viewModel.isPlaying else { return }
-            let pixelsPerFrame = AppConstants.basePixelsPerSecond * viewModel.scrollSpeed / 60.0
-            xOffset -= pixelsPerFrame
-            if textWidth > 0 && xOffset < -(textWidth + 20) {
-                xOffset = containerWidth
-                viewModel.notchProgress = 0
-                viewModel.pause()
-                viewModel.isFinished = true
-            } else if textWidth > 0 {
-                let totalSpan = containerWidth + textWidth
-                if totalSpan > 0 {
-                    viewModel.notchProgress = Double(max(0, min(1, (containerWidth - xOffset) / totalSpan)))
-                }
-            }
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onReceive(ticker) { _ in tickScroll() }
         .onReceive(viewModel.notchSeekRequest) { fraction in
-            guard textWidth > 0 else { return }
-            let totalSpan = containerWidth + textWidth
-            xOffset = containerWidth - CGFloat(fraction) * totalSpan
+            guard contentSize > 0 else { return }
+            let totalSpan = viewportSize + contentSize
+            scrollOffset = viewportSize - CGFloat(fraction) * totalSpan
             viewModel.notchProgress = fraction
         }
         .onReceive(manager.notchScrollDelta) { delta in
-            xOffset += delta
+            scrollOffset += delta
         }
-        .onChange(of: text) { _, _ in
-            xOffset = containerWidth
-            viewModel.notchProgress = 0
-        }
+        .onChange(of: text) { _, _ in resetScroll(viewport: viewportSize) }
+        .onChange(of: isVertical) { _, _ in resetScroll(viewport: viewportSize) }
         .onReceive(viewModel.resetPublisher) {
-            xOffset = containerWidth
-            viewModel.notchProgress = 0
+            resetScroll(viewport: viewportSize)
         }
         .onTapGesture {
             viewModel.togglePlayPause()
         }
         .onHover { hovering in
             if hovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+        }
+    }
+
+    @ViewBuilder
+    private func scrollingText(in geo: GeometryProxy) -> some View {
+        if isVertical {
+            Text(text)
+                .font(.system(size: manager.notchFontSize, weight: .semibold))
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.horizontal, FloatingTeleprompterManager.notchTopRadius + 6)
+                .frame(width: geo.size.width, alignment: .top)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(contentSizeReader(viewport: geo.size.height))
+                .offset(y: scrollOffset)
+        } else {
+            Text(text)
+                .font(.system(size: manager.notchFontSize, weight: .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .fixedSize()
+                .background(contentSizeReader(viewport: geo.size.width))
+                .offset(x: scrollOffset)
+        }
+    }
+
+    private func contentSizeReader(viewport: CGFloat) -> some View {
+        GeometryReader { tg in
+            Color.clear
+                .onAppear {
+                    contentSize = primaryAxis(of: tg.size)
+                    viewportSize = viewport
+                    scrollOffset = viewport
+                }
+                .onChange(of: tg.size.width) { _, w in
+                    if !isVertical { contentSize = w }
+                }
+                .onChange(of: tg.size.height) { _, h in
+                    if isVertical { contentSize = h }
+                }
+        }
+    }
+
+    private func primaryAxis(of size: CGSize) -> CGFloat {
+        isVertical ? size.height : size.width
+    }
+
+    private func resetScroll(viewport: CGFloat) {
+        viewportSize = viewport
+        scrollOffset = viewport
+        viewModel.notchProgress = 0
+    }
+
+    private func tickScroll() {
+        guard viewModel.isPlaying else { return }
+        let pixelsPerFrame = AppConstants.basePixelsPerSecond * viewModel.scrollSpeed / 60.0
+        scrollOffset -= pixelsPerFrame
+        if contentSize > 0 && scrollOffset < -(contentSize + 20) {
+            scrollOffset = viewportSize
+            viewModel.notchProgress = 0
+            viewModel.pause()
+            viewModel.isFinished = true
+        } else if contentSize > 0 {
+            let totalSpan = viewportSize + contentSize
+            if totalSpan > 0 {
+                viewModel.notchProgress = Double(max(0, min(1, (viewportSize - scrollOffset) / totalSpan)))
+            }
         }
     }
 }

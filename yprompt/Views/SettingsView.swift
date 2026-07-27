@@ -83,6 +83,7 @@ struct SettingsView: View {
                         notchModeCard(settings)
                         playbackCard(settings)
                     }
+                    sliderHoldCard
                     manageTagsCard
                     languageCard
                 }
@@ -255,8 +256,25 @@ struct SettingsView: View {
                         try? modelContext.save()
                         FloatingTeleprompterManager.shared.notchFontSize = v
                     }),
-                range: 8...16, step: 1,
+                range: 8...32, step: 1,
                 display: "\(Int(settings.notchFontSize))pt")
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Scroll Vertically")
+                    Text("Multiline text scrolls up in the notch")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { settings.notchScrollVertical },
+                    set: { v in
+                        settings.notchScrollVertical = v
+                        try? modelContext.save()
+                        FloatingTeleprompterManager.shared.setNotchScrollVertical(v)
+                    }
+                ))
+                .labelsHidden()
+            }
         }
     }
 
@@ -326,6 +344,21 @@ struct SettingsView: View {
                 }
                 Spacer()
                 Button("Reset…", role: .destructive) { showingResetConfirm = true }
+            }
+        }
+    }
+
+    private var sliderHoldCard: some View {
+        macCard {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Slider Hold to Confirm").font(.headline)
+                    Text("Hold 1 second before a slider change takes effect.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Toggle("", isOn: $sliderRequiresLongPress)
+                    .labelsHidden()
             }
         }
     }

@@ -163,7 +163,6 @@ struct TeleprompterView: View {
     @Namespace private var modeNamespace
     @State private var backgroundMode: BackgroundMode = .solidColor
     @State private var fullPanelHeight: CGFloat = 280
-    @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @State private var showNextBanner = false
     @State private var nextCountdown = 5
     @State private var countdownTask: Task<Void, Never>? = nil
@@ -176,6 +175,9 @@ struct TeleprompterView: View {
     @State private var isExitingPlayMode = false
     @State private var didRestoreTabBar = false
     @State private var didRestoreProgress = false
+#endif
+#if !os(watchOS)
+    @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
 #endif
 #if !os(watchOS) && !os(iOS)
     @State private var macTimedEnabled = false
@@ -1280,7 +1282,8 @@ struct TeleprompterView: View {
                 MusicSlider(
                     value: $viewModel.scrollSpeed,
                     range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                    step: 0.1
+                    step: 0.1,
+                    requiresLongPress: sliderRequiresLongPress
                 )
 
                 Text(String(format: "%.1fx", viewModel.scrollSpeed))
