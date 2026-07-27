@@ -47,6 +47,9 @@ struct EditorView: View {
     @State private var saveTask: Task<Void, Never>?
     @State private var cachedRTFData = Data()
     @State private var isLoaded = false
+    #if os(iOS)
+    @State private var showingTeleprompter = false
+    #endif
 
     private var rtfFilename: String {
         let unsafe = CharacterSet(charactersIn: "/\\:*?\"<>|")
@@ -55,6 +58,14 @@ struct EditorView: View {
             .joined(separator: "_")
             .trimmingCharacters(in: .whitespaces)
         return "\(clean.isEmpty ? "Untitled" : clean).rtf"
+    }
+
+    private var wordCount: Int {
+        script.content.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.count
+    }
+
+    private var readTimeMinutes: Int {
+        max(1, Int((Double(wordCount) / 130.0).rounded(.up)))
     }
 
     var body: some View {
@@ -68,6 +79,12 @@ struct EditorView: View {
             .onChange(of: script.title) { _, new in NSApp.mainWindow?.title = new }
             #endif
             .toolbar { toolbarItems }
+            #if os(iOS)
+            .navigationDestination(isPresented: $showingTeleprompter) {
+                TeleprompterView(script: script)
+                    .environment(storeKit)
+            }
+            #endif
             .sheet(isPresented: $showingCustomization) {
                 CustomizationView(script: script)
                     .environment(storeKit)
@@ -130,6 +147,28 @@ struct EditorView: View {
             onUnderline: applyUnderline,
             onStrikethrough: applyStrikethrough
         )
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            wordCountBar
+        }
+    }
+
+    private var wordCountBar: some View {
+        HStack {
+            Spacer()
+            Group {
+                if wordCount == 0 {
+                    Text("Empty script")
+                        .foregroundStyle(.tertiary)
+                } else {
+                    Text("\(wordCount) word\(wordCount == 1 ? "" : "s")  ·  ~\(readTimeMinutes) min")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.caption2.monospacedDigit())
+            Spacer()
+        }
+        .padding(.vertical, 6)
+        .background(.bar)
     }
 
     // MARK: - Navigation Toolbar
@@ -177,11 +216,11 @@ struct EditorView: View {
             .disabled(script.content.isEmpty)
         }
         #else
-        // iOS: Play button
+        // iOS: Play button — hide tab bar with a slide-down before pushing play mode
         ToolbarItem(placement: .topBarTrailing) {
-            NavigationLink {
-                TeleprompterView(script: script)
-                    .environment(storeKit)
+            Button {
+                TabBarAnimator.setHidden(true, animated: true)
+                showingTeleprompter = true
             } label: {
                 Label("Present", systemImage: "play.fill")
             }

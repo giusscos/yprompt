@@ -48,6 +48,7 @@ struct ScriptsListView: View {
     @State private var selectionOrder: [UUID] = []
     @State private var showingQueuePlayer = false
     @State private var queueToPlay: [Script] = []
+    @State private var showDeleteSelectedConfirm = false
     #endif
 
     private var allTags: [String] {
@@ -67,6 +68,15 @@ struct ScriptsListView: View {
         return result
     }
 
+    private var emptyFilterMessage: String {
+        if !searchText.isEmpty {
+            return String(localized: "No results for \"\(searchText)\"")
+        } else if let tag = selectedTag {
+            return String(localized: "No scripts tagged \"\(tag)\"")
+        }
+        return String(localized: "No scripts found")
+    }
+
     var body: some View {
         Group {
             if scripts.isEmpty {
@@ -83,9 +93,24 @@ struct ScriptsListView: View {
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                #if os(iOS)
+                if editMode == .active {
+                    Button(role: .destructive) { showDeleteSelectedConfirm = true } label: {
+                        Label("Delete Selected", systemImage: "trash")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .disabled(selectedIDs.isEmpty)
+                } else {
+                    Button(action: requestCreateScript) {
+                        Label("New Script", systemImage: "plus")
+                    }
+                }
+                #else
                 Button(action: requestCreateScript) {
                     Label("New Script", systemImage: "plus")
                 }
+                #endif
             }
             if let tag = selectedTag, !filtered.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
@@ -171,6 +196,18 @@ struct ScriptsListView: View {
         } message: { script in
             Text("This will permanently delete \"\(script.title)\".")
         }
+        #if os(iOS)
+        .confirmationDialog(
+            "Delete \(selectedIDs.count) Script\(selectedIDs.count == 1 ? "" : "s")?",
+            isPresented: $showDeleteSelectedConfirm
+        ) {
+            Button("Delete \(selectedIDs.count) Script\(selectedIDs.count == 1 ? "" : "s")", role: .destructive) {
+                deleteSelected()
+            }
+        } message: {
+            Text("This will permanently delete the selected scripts.")
+        }
+        #endif
         .alert("New Script", isPresented: $showingNewScriptAlert) {
             TextField("Title", text: $newScriptTitle)
             Button("Create") { createScript(title: newScriptTitle) }
@@ -353,6 +390,25 @@ struct ScriptsListView: View {
                     .tint(.orange)
                 }
         }
+        if filtered.isEmpty && (!searchText.isEmpty || selectedTag != nil) {
+            Section {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 10) {
+                        Image(systemName: searchText.isEmpty ? "tag.slash" : "magnifyingglass")
+                            .font(.title2)
+                            .foregroundStyle(.tertiary)
+                        Text(emptyFilterMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, 24)
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+            }
+        }
     }
 
     @ViewBuilder
@@ -431,6 +487,7 @@ struct ScriptsListView: View {
         editMode = .inactive
         selectedIDs = []
         selectionOrder = []
+        TabBarAnimator.setHidden(true, animated: true)
         showingQueuePlayer = true
         #endif
     }
@@ -453,7 +510,16 @@ struct ScriptsListView: View {
         editMode = .inactive
         selectedIDs = []
         selectionOrder = []
+        TabBarAnimator.setHidden(true, animated: true)
         showingQueuePlayer = true
+    }
+
+    private func deleteSelected() {
+        let toDelete = scripts.filter { selectedIDs.contains($0.id) }
+        for script in toDelete { delete(script) }
+        editMode = .inactive
+        selectedIDs = []
+        selectionOrder = []
     }
     #endif
 }
@@ -783,6 +849,14 @@ struct ScriptRowView: View {
     var queuePosition: Int? = nil
     var isSelectMode: Bool = false
 
+    private var wordCount: Int {
+        script.content.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.count
+    }
+
+    private var readTimeMinutes: Int {
+        max(1, Int((Double(wordCount) / 130.0).rounded(.up)))
+    }
+
     var body: some View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 4) {
@@ -791,10 +865,13 @@ struct ScriptRowView: View {
                     .lineLimit(1)
 
                 if !script.content.isEmpty {
-                    Text(script.content)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    HStack(spacing: 4) {
+                        Text("\(wordCount) words")
+                        Text("·")
+                        Text("~\(readTimeMinutes) min")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
 
                 if !script.tags.isEmpty {
@@ -850,5 +927,17 @@ struct ScriptRowView: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
+        .overlay(alignment: .bottom) {
+            if script.lastProgress > 0 && script.lastProgress < 1 {
+                GeometryReader { geo in
+                    Capsule()
+                        .fill(Color.accentColor.opacity(0.45))
+                        .frame(width: geo.size.width * CGFloat(script.lastProgress), height: 2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(height: 2)
+                .padding(.horizontal, 12)
+            }
+        }
     }
 }

@@ -61,7 +61,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3B632FFD2FA35FBB00066314"
             BuildableName = "yprompt watch Watch App.app"
-            BlueprintName = "yprompt watch Watch App"
             ReferencedContainer = "container:yprompt.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -81,7 +80,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3B632FFD2FA35FBB00066314"
             BuildableName = "yprompt watch Watch App.app"
-            BlueprintName = "yprompt watch Watch App"
             ReferencedContainer = "container:yprompt.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

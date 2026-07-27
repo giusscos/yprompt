@@ -11,13 +11,20 @@ final class VoiceScrollService {
     private(set) var currentPower: Float = -80
     var speechThreshold: Float = -30
     private(set) var isRunning: Bool = false
+    private(set) var isSpeaking: Bool = false
 
-    var isSpeaking: Bool { currentPower > speechThreshold }
     var normalizedLevel: Float { Self.normalize(currentPower) }
     var normalizedThreshold: Float { Self.normalize(speechThreshold) }
 
     private let engine = AVAudioEngine()
-    private let smoothingFactor: Float = 0.15
+    // Asymmetric smoothing: fast attack so speech onset is detected quickly,
+    // slow release so short silent gaps don't cut the scroll mid-word.
+    private let attackFactor: Float = 0.35
+    private let releaseFactor: Float = 0.07
+    // Keep isSpeaking true for this long after power drops below threshold,
+    // bridging natural pauses between words.
+    private let hangDuration: TimeInterval = 0.4
+    @ObservationIgnored private var lastSpeechDate: Date = .distantPast
 
     // MARK: - Permission
 
@@ -48,7 +55,9 @@ final class VoiceScrollService {
         #if os(iOS)
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .measurement,
+            // .voiceChat applies OS-level noise suppression and echo cancellation,
+            // significantly improving speech detection over background noise.
+            try session.setCategory(.playAndRecord, mode: .voiceChat,
                                     options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
             try session.setActive(true)
         } catch {
@@ -62,7 +71,14 @@ final class VoiceScrollService {
             let power = Self.calculatePower(buffer: buffer)
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                self.currentPower = self.currentPower * (1 - self.smoothingFactor) + power * self.smoothingFactor
+                let factor = power > self.currentPower ? self.attackFactor : self.releaseFactor
+                self.currentPower = self.currentPower * (1 - factor) + power * factor
+                if self.currentPower > self.speechThreshold {
+                    self.lastSpeechDate = Date()
+                    if !self.isSpeaking { self.isSpeaking = true }
+                } else if self.isSpeaking && Date().timeIntervalSince(self.lastSpeechDate) > self.hangDuration {
+                    self.isSpeaking = false
+                }
             }
         }
 
@@ -83,6 +99,8 @@ final class VoiceScrollService {
         engine.stop()
         isRunning = false
         currentPower = -80
+        isSpeaking = false
+        lastSpeechDate = .distantPast
 
         #if os(iOS)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)

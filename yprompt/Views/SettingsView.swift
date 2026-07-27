@@ -13,6 +13,7 @@ struct SettingsView: View {
     @Environment(StoreKitService.self) private var storeKit
     @Query private var settingsArray: [AppSettings]
 
+    @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @State private var showingOnboarding = false
     @State private var showingResetConfirm = false
     @State private var showingPaywall = false
@@ -483,6 +484,13 @@ struct SettingsView: View {
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
+                }
+            }
+            Toggle(isOn: $sliderRequiresLongPress) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Slider Hold to Confirm")
+                    Text("Hold 1 second before a slider change takes effect.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
             }
             Picker("Language", selection: $selectedLanguage) {

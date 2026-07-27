@@ -4,6 +4,7 @@
 //
 
 import WatchConnectivity
+import WatchKit
 import Foundation
 import Combine
 
@@ -110,8 +111,16 @@ extension WatchRemoteService: WCSessionDelegate {
         }
     }
 
-    // Receives script list + mode state pushed by the iPhone relay.
+    // Receives messages pushed by the iPhone relay (script list updates and haptic cues).
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        // Haptic cue: iPhone crossed a script cue point during playback
+        if let cmd = message["command"] as? String, cmd == "hapticCue" {
+            Task { @MainActor in
+                WKInterfaceDevice.current().play(.click)
+            }
+            return
+        }
+
         guard let scriptDicts = message["scripts"] as? [[String: String]] else { return }
         let parsed = scriptDicts.compactMap { dict -> WatchScriptInfo? in
             guard let id = dict["id"], let title = dict["title"] else { return nil }

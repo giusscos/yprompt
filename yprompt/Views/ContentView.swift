@@ -175,17 +175,21 @@ struct ContentView: View {
     }
 
     private var emptyDetail: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "doc.text")
-                .font(.system(size: 56))
-                .foregroundStyle(.tertiary)
-            Text("No Script Selected")
-                .font(.title2.bold())
-            Text("Choose a script from the sidebar or create a new one.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+        VStack(spacing: 20) {
+            Image(systemName: "doc.richtext")
+                .font(.system(size: 64, weight: .light))
+                .foregroundStyle(.quaternary)
+            VStack(spacing: 8) {
+                Text("No Script Selected")
+                    .font(.title2.bold())
+                Text("Select a script from the sidebar, or press ⌘N to create a new one.")
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 260)
+            }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     #endif
 

@@ -82,6 +82,7 @@ final class Script: Hashable {
     var isFavorite: Bool = false
     var cuePointsData: Data?
     var tagsData: Data?
+    var lastProgress: Double = 0
 
     var attributedContent: AttributedString {
         get {

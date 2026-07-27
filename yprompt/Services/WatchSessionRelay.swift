@@ -75,6 +75,12 @@ final class WatchSessionRelay: NSObject {
         if let timedDuration { message["timedDuration"] = timedDuration }
         WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: nil)
     }
+
+    // Sends a haptic pulse to the Watch when a cue point is crossed.
+    func sendHapticCue() {
+        guard WCSession.default.isReachable else { return }
+        WCSession.default.sendMessage(["command": "hapticCue"], replyHandler: nil, errorHandler: nil)
+    }
 }
 
 extension WatchSessionRelay: WCSessionDelegate {
