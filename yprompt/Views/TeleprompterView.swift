@@ -180,6 +180,7 @@ struct TeleprompterView: View {
 #if !os(watchOS) && !os(iOS)
     @State private var macTimedEnabled = false
     @State private var macTimedMinutes: Int = 3
+    @State private var didRestoreProgress = false
 #endif
 
     private var currentScript: Script { queueScripts[queueIndex] }

@@ -7,6 +7,55 @@
 import SwiftUI
 import Combine
 
+/// MacBook-style notch silhouette: concave top corners that flare into the bezel
+/// with a log-like ease (hug the top, then fall into the side), plus rounded bottoms.
+struct NotchShape: Shape {
+    var topRadius: CGFloat = 12
+    var bottomRadius: CGFloat = 14
+
+    func path(in rect: CGRect) -> Path {
+        let tr = min(topRadius, rect.width / 4)
+        let br = min(bottomRadius, max(0, rect.width / 2 - tr), max(0, rect.height - tr))
+        var path = Path()
+
+        // Top-left inverted corner — log-like cubic: stays along the bezel, then eases down.
+        // Tangents: horizontal at the tip, vertical where it meets the side.
+        path.move(to: CGPoint(x: 0, y: 0))
+        path.addCurve(
+            to: CGPoint(x: tr, y: tr),
+            control1: CGPoint(x: tr * 0.72, y: 0),
+            control2: CGPoint(x: tr, y: tr * 0.28)
+        )
+
+        // Left edge → bottom-left
+        path.addLine(to: CGPoint(x: tr, y: rect.height - br))
+        path.addCurve(
+            to: CGPoint(x: tr + br, y: rect.height),
+            control1: CGPoint(x: tr, y: rect.height - br * 0.45),
+            control2: CGPoint(x: tr + br * 0.45, y: rect.height)
+        )
+
+        // Bottom edge → bottom-right
+        path.addLine(to: CGPoint(x: rect.width - tr - br, y: rect.height))
+        path.addCurve(
+            to: CGPoint(x: rect.width - tr, y: rect.height - br),
+            control1: CGPoint(x: rect.width - tr - br * 0.45, y: rect.height),
+            control2: CGPoint(x: rect.width - tr, y: rect.height - br * 0.45)
+        )
+
+        // Right edge → top-right inverted corner (mirror of top-left)
+        path.addLine(to: CGPoint(x: rect.width - tr, y: tr))
+        path.addCurve(
+            to: CGPoint(x: rect.width, y: 0),
+            control1: CGPoint(x: rect.width - tr, y: tr * 0.28),
+            control2: CGPoint(x: rect.width - tr * 0.72, y: 0)
+        )
+
+        path.closeSubpath()
+        return path
+    }
+}
+
 struct NotchTeleprompterView: View {
     private let manager = FloatingTeleprompterManager.shared
     private var viewModel: TeleprompterViewModel { manager.viewModel }
@@ -55,15 +104,19 @@ struct NotchTeleprompterView: View {
                 .clipped()
                 .onChange(of: geo.size.width) { _, w in containerWidth = w }
             }
-            .clipShape(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 0,
-                    bottomLeadingRadius: 12,
-                    bottomTrailingRadius: 12,
-                    topTrailingRadius: 0
-                )
-            )
         }
+        .clipShape(
+            NotchShape(
+                topRadius: FloatingTeleprompterManager.notchTopRadius,
+                bottomRadius: FloatingTeleprompterManager.notchBottomRadius
+            )
+        )
+        .scaleEffect(
+            x: manager.notchPresented ? 1 : 0.52,
+            y: manager.notchPresented ? 1 : 0.12,
+            anchor: .top
+        )
+        .opacity(manager.notchPresented ? 1 : 0)
         .onReceive(ticker) { _ in
             guard viewModel.isPlaying else { return }
             let pixelsPerFrame = AppConstants.basePixelsPerSecond * viewModel.scrollSpeed / 60.0

@@ -17,9 +17,15 @@ final class FloatingTeleprompterManager {
     var backgroundOpacity: Double = 0.92
     var blurAmount: Double = 0.0
     var notchMode: Bool = false
+    /// Drives the notch bounce appear/disappear spring in `NotchTeleprompterView`.
+    var notchPresented: Bool = false
     var notchFontSize: CGFloat = 11 {
         didSet { updateNotchPanelFrame() }
     }
+
+    static let notchTopRadius: CGFloat = 12
+    static let notchBottomRadius: CGFloat = 14
+    static let notchBodyWidth: CGFloat = 260
     var floatingFontSize: CGFloat = 19
     var showQueueBanner: Bool = false
     var queueCountdown: Int = 5
@@ -61,6 +67,7 @@ final class FloatingTeleprompterManager {
     private var keyEventMonitor: Any?
     private var notchRemoteScrollTask: Task<Void, Never>?
     private var queueCountdownTask: Task<Void, Never>?
+    private var notchAnimationTask: Task<Void, Never>?
 
     private init() {
         viewModel.onFinished = { [weak self] in
@@ -84,11 +91,17 @@ final class FloatingTeleprompterManager {
         if let storeKit { self.storeKit = storeKit }
         viewModel.isNotchMode = notchMode
         viewModel.resetToTop()
+        let alreadyShowingNotch = isVisible && notchMode && notchPresented
         if notchMode {
             panel?.orderOut(nil)
             if notchPanel == nil { buildNotchPanel() }
-            notchPanel?.orderFront(nil)
+            if alreadyShowingNotch {
+                notchPanel?.orderFront(nil)
+            } else {
+                animateNotchIn()
+            }
         } else {
+            notchPresented = false
             notchPanel?.orderOut(nil)
             if panel == nil { buildPanel() }
             panel?.orderFront(nil)
@@ -136,16 +149,23 @@ final class FloatingTeleprompterManager {
     func switchDisplayMode(notch: Bool) {
         suppressModeRestart = true
         notchMode = notch
-        viewModel.isNotchMode = notch
+        applyVisibleModeChange()
+    }
+
+    /// Swaps floating ↔ notch panels for an already-visible teleprompter.
+    /// Assumes `notchMode` is already set (e.g. by a picker binding).
+    func applyVisibleModeChange() {
+        viewModel.isNotchMode = notchMode
         guard isVisible else { return }
-        if notch {
+        if notchMode {
             panel?.orderOut(nil)
             if notchPanel == nil { buildNotchPanel() }
-            notchPanel?.orderFront(nil)
+            animateNotchIn()
         } else {
-            notchPanel?.orderOut(nil)
-            if panel == nil { buildPanel() }
-            panel?.orderFront(nil)
+            animateNotchOut {
+                if self.panel == nil { self.buildPanel() }
+                self.panel?.orderFront(nil)
+            }
         }
     }
 
@@ -155,8 +175,40 @@ final class FloatingTeleprompterManager {
         stopNotchRemoteScroll()
         stopArrowKeyMonitor()
         panel?.orderOut(nil)
-        notchPanel?.orderOut(nil)
         isVisible = false
+        if notchPresented {
+            animateNotchOut()
+        } else {
+            notchPanel?.orderOut(nil)
+        }
+    }
+
+    // MARK: - Notch appear / disappear bounce
+
+    private func animateNotchIn() {
+        notchAnimationTask?.cancel()
+        notchPresented = false
+        notchPanel?.orderFront(nil)
+        notchAnimationTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
+                notchPresented = true
+            }
+        }
+    }
+
+    private func animateNotchOut(completion: (() -> Void)? = nil) {
+        notchAnimationTask?.cancel()
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+            notchPresented = false
+        }
+        notchAnimationTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 340_000_000)
+            guard !Task.isCancelled else { return }
+            notchPanel?.orderOut(nil)
+            completion?()
+        }
     }
 
     // MARK: - Arrow Key Monitor (↑↓ always active while visible)
@@ -298,7 +350,8 @@ final class FloatingTeleprompterManager {
         let sf = screen.frame
         let menuBarH = NSStatusBar.system.thickness
         let textBandH = notchFontSize + 19
-        let panelWidth: CGFloat = 260
+        // Extra width for inverted top-corner “ears”
+        let panelWidth = Self.notchBodyWidth + 2 * Self.notchTopRadius
         let panelHeight = menuBarH + textBandH
         let originX = sf.minX + (sf.width - panelWidth) / 2
         let originY = sf.maxY - panelHeight

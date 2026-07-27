@@ -174,10 +174,7 @@ struct MenuBarView: View {
                     manager.suppressModeRestart = false
                     return
                 }
-                if manager.isVisible, let script = manager.currentScript {
-                    manager.hide()
-                    manager.show(script: script)
-                }
+                manager.applyVisibleModeChange()
             }
         }
     }
