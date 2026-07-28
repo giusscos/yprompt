@@ -13,7 +13,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Recordings are saved to your photo library.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>YPrompt needs local network access to connect your iPhone as a teleprompter remote control.</string>
+	<string>yPrompt needs local network access to connect your iPhone as a teleprompter remote control.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_yprmpt-ctrl._tcp</string>

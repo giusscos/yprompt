@@ -116,12 +116,12 @@
 
 /* Settings */
 "Account" = "Account";
-"YPrompt Pro" = "YPrompt Pro";
+"yPrompt Pro" = "yPrompt Pro";
 "Lifetime Access" = "Lifetime Access";
 "Subscription Active" = "Subscription Active";
 "All Pro features unlocked" = "All Pro features unlocked";
 "Manage Subscription" = "Manage Subscription";
-"YPrompt Free" = "YPrompt Free";
+"yPrompt Free" = "yPrompt Free";
 "Free Plan" = "Free Plan";
 "Limited to %lld scripts." = "Limited to %lld scripts.";
 "Limited to %lld scripts" = "Limited to %lld scripts";
@@ -135,7 +135,7 @@
 "Scroll Speed" = "Scroll Speed";
 "About" = "About";
 "Version" = "Version";
-"Rate YPrompt" = "Rate YPrompt";
+"Rate yPrompt" = "Rate yPrompt";
 "Send Feedback" = "Send Feedback";
 "Show App Tour" = "Show App Tour";
 "Danger Zone" = "Danger Zone";
@@ -169,11 +169,11 @@
 "Control your Mac teleprompter from your iPhone over Wi-Fi or Bluetooth." = "Control your Mac teleprompter from your iPhone over Wi-Fi or Bluetooth.";
 "Unlock Premium" = "Unlock Premium";
 "Searching for your Mac…" = "Searching for your Mac…";
-"Make sure YPrompt is open on your Mac." = "Make sure YPrompt is open on your Mac.";
+"Make sure yPrompt is open on your Mac." = "Make sure yPrompt is open on your Mac.";
 "Available Macs" = "Available Macs";
 
 /* Paywall */
-"Unlock YPrompt Pro" = "Unlock YPrompt Pro";
+"Unlock yPrompt Pro" = "Unlock yPrompt Pro";
 "Professional tools for every presenter." = "Professional tools for every presenter.";
 "Camera Mode" = "Camera Mode";
 "Hands-free scrolling driven by your voice" = "Hands-free scrolling driven by your voice";

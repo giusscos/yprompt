@@ -204,7 +204,7 @@ struct ContentView: View {
                     Text(script.title).font(.headline)
                 }
             }
-            .navigationTitle("YPrompt")
+            .navigationTitle("yPrompt")
             .navigationDestination(for: Script.self) { script in
                 TeleprompterView(script: script)
             }

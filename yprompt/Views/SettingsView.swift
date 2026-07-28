@@ -134,7 +134,7 @@ struct SettingsView: View {
             } else {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("YPrompt Free").font(.headline)
+                        Text("yPrompt Free").font(.headline)
                         Text("Limited to \(AppConstants.freeScriptLimit) scripts")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -318,7 +318,7 @@ struct SettingsView: View {
             }
             Divider()
             HStack {
-                Button("Rate YPrompt") { requestReview() }
+                Button("Rate yPrompt") { requestReview() }
                 Spacer()
             }
             Divider()
@@ -432,7 +432,7 @@ struct SettingsView: View {
     }
 
     private var purchaseSection: some View {
-        Section("YPrompt Pro") {
+        Section("yPrompt Pro") {
             if storeKit.isPremium {
                 if storeKit.isLifetimePurchased {
                     Label("Lifetime Access", systemImage: "checkmark.seal.fill")
@@ -553,7 +553,7 @@ struct SettingsView: View {
                 Spacer()
                 Text("\(appVersion) (\(buildNumber))").foregroundStyle(.secondary)
             }
-            Button("Rate YPrompt") { requestReview() }
+            Button("Rate yPrompt") { requestReview() }
             Button("Send Feedback") { sendFeedback() }
             Button("Show App Tour") { showingOnboarding = true }
         }

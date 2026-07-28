@@ -66,7 +66,7 @@ struct ypromptApp: App {
                 .modelContainer(sharedModelContainer)
         }
 
-        MenuBarExtra("YPrompt", systemImage: "scroll") {
+        MenuBarExtra("yPrompt", systemImage: "scroll") {
             MenuBarScriptsLoader()
                 .modelContainer(sharedModelContainer)
         }

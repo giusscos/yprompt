@@ -31,14 +31,15 @@ class StoreKitService {
     }
 
     var isSubscribed: Bool {
-        purchasedProductIDs.contains(AppConstants.monthlySubscriptionID) ||
-        purchasedProductIDs.contains(AppConstants.yearlySubscriptionID)
+        purchasedProductIDs.contains(AppConstants.weeklySubscriptionID) ||
+        purchasedProductIDs.contains(AppConstants.yearlySubscriptionID) ||
+        purchasedProductIDs.contains(AppConstants.monthlySubscriptionID) // legacy
     }
 
     var isPremium: Bool { isLifetimePurchased || isSubscribed }
 
     var lifetimeProduct: Product? { products.first { $0.id == AppConstants.lifetimeProductID } }
-    var monthlyProduct: Product? { products.first { $0.id == AppConstants.monthlySubscriptionID } }
+    var weeklyProduct: Product? { products.first { $0.id == AppConstants.weeklySubscriptionID } }
     var yearlyProduct: Product? { products.first { $0.id == AppConstants.yearlySubscriptionID } }
 
     // MARK: - Load
@@ -49,7 +50,7 @@ class StoreKitService {
         do {
             let ids: Set<String> = [
                 AppConstants.lifetimeProductID,
-                AppConstants.monthlySubscriptionID,
+                AppConstants.weeklySubscriptionID,
                 AppConstants.yearlySubscriptionID
             ]
             products = try await Product.products(for: ids)

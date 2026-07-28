@@ -53,7 +53,7 @@
     "_developerTeamID" : "MA7MBQ947C",
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 802453047.69247603,
+    "_lastSynchronizedDate" : 806920045.01850796,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
@@ -62,6 +62,9 @@
     ],
     "_timeRate" : 0
   },
+  "subscriptionBundleGroups" : [
+
+  ],
   "subscriptionGroups" : [
     {
       "id" : "22138765",
@@ -96,7 +99,7 @@
           "internalID" : "6777460158",
           "introductoryOffer" : {
             "billingPlanType" : "BILLED_UPFRONT",
-            "internalID" : "7B2787C3",
+            "internalID" : "eyJzIjoiNjc3NzQ2MDE1OCIsImQiOjE3ODA3MjkyMDAsImkiOiJVUyIsInQiOiIiLCJwIjoiMCJ9",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
@@ -104,7 +107,7 @@
           "introductoryOffers" : [
             {
               "billingPlanType" : "BILLED_UPFRONT",
-              "internalID" : "7B2787C3",
+              "internalID" : "eyJzIjoiNjc3NzQ2MDE1OCIsImQiOjE3ODA3MjkyMDAsImkiOiJVUyIsInQiOiIiLCJwIjoiMCJ9",
               "numberOfPeriods" : 1,
               "paymentMode" : "free",
               "subscriptionPeriod" : "P1W"
@@ -122,8 +125,8 @@
               "locale" : "en_US"
             },
             {
-              "description" : "Accès Pro complet, facturé chaque mois.",
-              "displayName" : "Mensuel",
+              "description" : "Accès Pro complet, facturé une fois par an.",
+              "displayName" : "Annuel",
               "locale" : "fr"
             },
             {
@@ -148,47 +151,47 @@
           "billingPlans" : [
             {
               "billingPlanType" : "BILLED_UPFRONT",
-              "commitmentDisplayPrice" : "4.99",
-              "displayPrice" : "4.99",
-              "internalID" : "6777457120_BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "5.99",
+              "displayPrice" : "5.99",
+              "internalID" : "6795453947_BILLED_UPFRONT",
               "isEnabled" : true
             }
           ],
           "codeOffers" : [
 
           ],
-          "displayPrice" : "4.99",
+          "displayPrice" : "5.99",
           "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "6777457120",
+          "groupNumber" : 2,
+          "internalID" : "6795453947",
           "introductoryOffers" : [
 
           ],
           "localizations" : [
             {
-              "description" : "Accesso Pro completo, fatturato ogni mese.",
-              "displayName" : "Mensile",
-              "locale" : "it"
+              "description" : "Accès Pro complet, facturé chaque semaine.",
+              "displayName" : "Hebdomadaire",
+              "locale" : "fr"
             },
             {
-              "description" : "Full Pro access, billed monthly",
-              "displayName" : "Monthly",
-              "locale" : "en_US"
-            },
-            {
-              "description" : "Acceso Pro completo, facturado mensualmente.",
-              "displayName" : "Mensual",
+              "description" : "Acceso Pro completo, facturado semanalmente.",
+              "displayName" : "Semanal",
               "locale" : "es_ES"
             },
             {
-              "description" : "Accès Pro complet, facturé chaque mois.",
-              "displayName" : "Mensuel",
-              "locale" : "fr"
+              "description" : "Accesso Pro completo, fatturato ogni settimana.",
+              "displayName" : "Settimanale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Full Pro access, billed weekly.",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
             }
           ],
-          "productID" : "yp_499_1m",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Monthly",
+          "productID" : "yp_599_1w",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly",
           "subscriptionGroupID" : "22138765",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -198,8 +201,11 @@
       ]
     }
   ],
+  "subscriptionSuiteGroups" : [
+
+  ],
   "version" : {
-    "major" : 5,
-    "minor" : 0
+    "major" : 6,
+    "minor" : 3
   }
 }

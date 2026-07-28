@@ -111,7 +111,7 @@ struct RemoteControlView: View {
                     VStack(spacing: 8) {
                         Text("Searching for your Mac…")
                             .font(.headline)
-                        Text("Make sure YPrompt is open on your Mac.")
+                        Text("Make sure yPrompt is open on your Mac.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

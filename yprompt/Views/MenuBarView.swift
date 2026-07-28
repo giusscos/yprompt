@@ -59,12 +59,12 @@ struct MenuBarView: View {
         .alert("Premium Feature", isPresented: $showTimedUpgradeAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Timer mode is available with YPrompt Premium. Open the main app to upgrade.")
+            Text("Timer mode is available with yPrompt Premium. Open the main app to upgrade.")
         }
         .alert("Premium Feature", isPresented: $showVoiceUpgradeAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Voice Scroll is available with YPrompt Premium. Open the main app to upgrade.")
+            Text("Voice Scroll is available with yPrompt Premium. Open the main app to upgrade.")
         }
         .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
             Button("Open Settings") {
@@ -108,7 +108,7 @@ struct MenuBarView: View {
         HStack {
             Image(systemName: "scroll")
                 .foregroundStyle(.tint)
-            Text("YPrompt").font(.headline)
+            Text("yPrompt").font(.headline)
             Spacer()
             Button {
                 NSApp.activate(ignoringOtherApps: true)
@@ -130,7 +130,7 @@ struct MenuBarView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Quit YPrompt")
+            .help("Quit yPrompt")
         }
         .padding(12)
     }

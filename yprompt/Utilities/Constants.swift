@@ -8,13 +8,15 @@ import SwiftUI
 enum AppConstants {
     // MARK: - Demo StoreKit Product IDs
     // static let lifetimeProductID = "com.yprompt.lifetime"
-    // static let monthlySubscriptionID = "com.yprompt.monthly"
+    // static let weeklySubscriptionID = "com.yprompt.weekly"
     // static let yearlySubscriptionID = "com.yprompt.yearly"
     
     // MARK: - StoreKit Product IDs
     static let lifetimeProductID = "yp_8999_lifetime"
-    static let monthlySubscriptionID = "yp_499_1m"
+    static let weeklySubscriptionID = "yp_599_1w"
     static let yearlySubscriptionID = "yp_4999_1y"
+    /// Legacy — removed from sale; kept so existing monthly subscribers retain access.
+    static let monthlySubscriptionID = "yp_499_1m"
 
     // MARK: - Legal URLs
     static let privacyPolicyURL = URL(string: "https://yprompt.app/privacy")!

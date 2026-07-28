@@ -56,35 +56,26 @@
           "adHocOffers" : [
 
           ],
-          "billingPlans" : [
-            {
-              "billingPlanType" : "BILLED_UPFRONT",
-              "commitmentDisplayPrice" : "0.99",
-              "displayPrice" : "0.99",
-              "internalID" : "B2C29D8D",
-              "isEnabled" : true
-            }
-          ],
           "codeOffers" : [
 
           ],
-          "displayPrice" : "2.99",
+          "displayPrice" : "5.99",
           "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "449C70B0",
+          "groupNumber" : 2,
+          "internalID" : "A1F7C2D4",
           "introductoryOffers" : [
 
           ],
           "localizations" : [
             {
-              "description" : "Monthly pro access",
-              "displayName" : "Monthly sub",
+              "description" : "Weekly pro access",
+              "displayName" : "Weekly sub",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.yprompt.monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Monthly Sub",
+          "productID" : "com.yprompt.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly Sub",
           "subscriptionGroupID" : "1463E71B",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

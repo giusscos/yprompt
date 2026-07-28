@@ -116,12 +116,12 @@
 
 /* Settings */
 "Account" = "Compte";
-"YPrompt Pro" = "YPrompt Pro";
+"yPrompt Pro" = "yPrompt Pro";
 "Lifetime Access" = "Accès à Vie";
 "Subscription Active" = "Abonnement Actif";
 "All Pro features unlocked" = "Toutes les fonctionnalités Pro débloquées";
 "Manage Subscription" = "Gérer l'Abonnement";
-"YPrompt Free" = "YPrompt Gratuit";
+"yPrompt Free" = "yPrompt Gratuit";
 "Free Plan" = "Plan Gratuit";
 "Limited to %lld scripts." = "Limité à %lld scripts.";
 "Limited to %lld scripts" = "Limité à %lld scripts";
@@ -135,7 +135,7 @@
 "Scroll Speed" = "Vitesse de Défilement";
 "About" = "À Propos";
 "Version" = "Version";
-"Rate YPrompt" = "Évaluer YPrompt";
+"Rate yPrompt" = "Évaluer yPrompt";
 "Send Feedback" = "Envoyer des Commentaires";
 "Show App Tour" = "Afficher la Visite de l'App";
 "Danger Zone" = "Zone Dangereuse";
@@ -169,11 +169,11 @@
 "Control your Mac teleprompter from your iPhone over Wi-Fi or Bluetooth." = "Contrôlez votre prompteur Mac depuis votre iPhone via Wi-Fi ou Bluetooth.";
 "Unlock Premium" = "Débloquer Premium";
 "Searching for your Mac…" = "Recherche de votre Mac…";
-"Make sure YPrompt is open on your Mac." = "Assurez-vous que YPrompt est ouvert sur votre Mac.";
+"Make sure yPrompt is open on your Mac." = "Assurez-vous que yPrompt est ouvert sur votre Mac.";
 "Available Macs" = "Macs Disponibles";
 
 /* Paywall */
-"Unlock YPrompt Pro" = "Débloquer YPrompt Pro";
+"Unlock yPrompt Pro" = "Débloquer yPrompt Pro";
 "Professional tools for every presenter." = "Des outils professionnels pour chaque présentateur.";
 "Camera Mode" = "Mode Caméra";
 "Hands-free scrolling driven by your voice" = "Défilement mains libres guidé par votre voix";

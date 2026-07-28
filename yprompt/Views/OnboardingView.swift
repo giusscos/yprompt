@@ -543,7 +543,7 @@ struct OnboardingView: View {
                     Task { try? await storeKit.purchase(p) }
                 }
             }
-            if let p = storeKit.monthlyProduct {
+            if let p = storeKit.weeklyProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
                     Task { try? await storeKit.purchase(p) }
                 }

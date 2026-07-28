@@ -28,7 +28,7 @@ struct PaywallView: View {
                 }
                 .padding()
             }
-            .navigationTitle("YPrompt Pro")
+            .navigationTitle("yPrompt Pro")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -61,7 +61,7 @@ struct PaywallView: View {
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.yellow)
             VStack(spacing: 6) {
-                Text("Unlock YPrompt Pro")
+                Text("Unlock yPrompt Pro")
                     .font(.title2.bold())
                 Text("Professional tools for every presenter.")
                     .font(.body)
@@ -113,7 +113,7 @@ struct PaywallView: View {
             if let p = storeKit.yearlyProduct {
                 productCard(p, badge: nil, highlighted: false)
             }
-            if let p = storeKit.monthlyProduct {
+            if let p = storeKit.weeklyProduct {
                 productCard(p, badge: nil, highlighted: false)
             }
             if storeKit.products.isEmpty {

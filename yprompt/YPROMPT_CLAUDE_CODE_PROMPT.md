@@ -1,4 +1,4 @@
-# YPrompt - Cross-Platform Teleprompter App
+# yPrompt - Cross-Platform Teleprompter App
 ## Complete Build Prompt for Claude Code in Xcode
 
 ---
@@ -406,7 +406,7 @@ Manages teleprompter playback state:
 
 ## Summary
 
-You're building **YPrompt**, a minimal, cross-platform teleprompter with:
+You're building **yPrompt**, a minimal, cross-platform teleprompter with:
 - Full customization (fonts, colors, transparency, speed)
 - Local persistence (SwiftData) + iCloud sync (CloudKit)
 - Freemium monetization (StoreKit 2)
