@@ -8,6 +8,7 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.purchase) private var purchase
     @Environment(StoreKitService.self) private var storeKit
 
     @State private var isPurchasing = false
@@ -129,7 +130,7 @@ struct PaywallView: View {
         Button {
             Task {
                 isPurchasing = true
-                do { try await storeKit.purchase(product) } catch { errorMessage = error.localizedDescription }
+                do { try await storeKit.purchase(product, using: purchase) } catch { errorMessage = error.localizedDescription }
                 isPurchasing = false
             }
         } label: {

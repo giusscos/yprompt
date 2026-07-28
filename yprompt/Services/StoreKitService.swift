@@ -62,8 +62,10 @@ class StoreKitService {
 
     // MARK: - Purchase
 
-    func purchase(_ product: Product) async throws {
-        let result = try await product.purchase()
+    /// Prefer `PurchaseAction` from `@Environment(\.purchase)` — required on visionOS
+    /// (where `Product.purchase(options:)` is unavailable) and the recommended path for SwiftUI.
+    func purchase(_ product: Product, using purchaseAction: PurchaseAction) async throws {
+        let result = try await purchaseAction(product)
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)

@@ -11,6 +11,7 @@ struct OnboardingView: View {
 
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.purchase) private var purchase
     @Environment(StoreKitService.self) private var storeKit
 
     @State private var teleprompterOffset: CGFloat = 80
@@ -535,17 +536,17 @@ struct OnboardingView: View {
         VStack(spacing: 10) {
             if let p = storeKit.lifetimeProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: "Best Value", highlighted: true) {
-                    Task { try? await storeKit.purchase(p) }
+                    Task { try? await storeKit.purchase(p, using: purchase) }
                 }
             }
             if let p = storeKit.yearlyProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p) }
+                    Task { try? await storeKit.purchase(p, using: purchase) }
                 }
             }
             if let p = storeKit.weeklyProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p) }
+                    Task { try? await storeKit.purchase(p, using: purchase) }
                 }
             }
             if storeKit.products.isEmpty {
