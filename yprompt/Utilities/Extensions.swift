@@ -102,6 +102,16 @@ extension View {
         #endif
     }
 
+    /// Plain glass button style, falling back to bordered on visionOS.
+    @ViewBuilder
+    func ypGlassButtonStyle() -> some View {
+        #if os(visionOS)
+        self.buttonStyle(.bordered)
+        #else
+        self.buttonStyle(.glass)
+        #endif
+    }
+
     /// Default glass fill in a rounded rect; material fallback on visionOS.
     @ViewBuilder
     func ypGlassEffect(cornerRadius: CGFloat) -> some View {
@@ -136,6 +146,21 @@ extension View {
         } else {
             self.glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
         }
+        #endif
+    }
+}
+
+// MARK: - Haptics (no-op on visionOS)
+enum YPHaptics {
+    static func light() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #endif
+    }
+
+    static func medium() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         #endif
     }
 }

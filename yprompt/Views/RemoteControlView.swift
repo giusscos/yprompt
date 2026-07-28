@@ -27,7 +27,9 @@ struct RemoteControlView: View {
             }
         }
         .navigationTitle("Remote")
+        #if os(iOS)
         .navigationSubtitle(remote.isConnected ? (remote.connectedPeers.first?.displayName ?? "Connected") : "")
+        #endif
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if remote.isConnected {
@@ -44,7 +46,7 @@ struct RemoteControlView: View {
                                 remote.send(command: .selectScript(id))
                                 remote.currentRemoteScriptID = id
                                 isPlayingLocal = false
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                YPHaptics.medium()
                             }
                         )) {
                             Text("Select script…").tag(Optional<UUID>.none)
@@ -187,14 +189,14 @@ struct RemoteControlView: View {
         Button {
             isPlayingLocal.toggle()
             remote.send(command: .togglePlayPause)
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            YPHaptics.medium()
         } label: {
             Image(systemName: isPlayingLocal ? "pause.fill" : "play.fill")
                 .font(.system(size: 32, weight: .semibold))
                 .padding(20)
                 .symbolEffect(.bounce, value: isPlayingLocal)
         }
-        .buttonStyle(.glass)
+        .ypGlassButtonStyle()
     }
 
     // MARK: - Speed
@@ -209,13 +211,13 @@ struct RemoteControlView: View {
                     let newSpeed = max(AppConstants.minScrollSpeed, (round((localSpeed - 0.1) * 10) / 10))
                     localSpeed = newSpeed
                     remote.send(command: .setSpeed(newSpeed))
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    YPHaptics.light()
                 } label: {
                     Image(systemName: "minus")
                         .font(.system(size: 20, weight: .semibold))
                         .padding(14)
                 }
-                .buttonStyle(.glass)
+                .ypGlassButtonStyle()
                 .disabled(localSpeed <= AppConstants.minScrollSpeed)
 
                 Text(String(format: "%.1f", localSpeed))
@@ -228,13 +230,13 @@ struct RemoteControlView: View {
                     let newSpeed = min(AppConstants.maxScrollSpeed, (round((localSpeed + 0.1) * 10) / 10))
                     localSpeed = newSpeed
                     remote.send(command: .setSpeed(newSpeed))
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    YPHaptics.light()
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 20, weight: .semibold))
                         .padding(14)
                 }
-                .buttonStyle(.glass)
+                .ypGlassButtonStyle()
                 .disabled(localSpeed >= AppConstants.maxScrollSpeed)
             }
         }
@@ -320,7 +322,7 @@ private struct DPadArrow: View {
                     .onChanged { _ in
                         guard activeDirection == nil else { return }
                         activeDirection = direction
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        YPHaptics.medium()
                         onPress()
                     }
                     .onEnded { _ in
@@ -359,7 +361,7 @@ private struct DPadCenter: View {
                     }
                     .onEnded { _ in
                         pressed = false
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        YPHaptics.medium()
                         onTap()
                     }
             )
