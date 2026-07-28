@@ -50,7 +50,7 @@ struct PaywallView: View {
                 Text(errorMessage ?? "")
             }
         }
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        .ypScrollEdgeEffect()
     }
 
     // MARK: - Header
@@ -87,7 +87,7 @@ struct PaywallView: View {
             featureRow("sparkles",          .orange, "All Future Features", "Lifetime includes every new feature")
         }
         .padding(16)
-        .glassEffect(in: .rect(cornerRadius: 16))
+        .ypGlassEffect(cornerRadius: 16)
     }
 
     private func featureRow(_ icon: String, _ color: Color, _ title: String, _ desc: String) -> some View {
@@ -150,7 +150,7 @@ struct PaywallView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity)
-            .glassEffect(highlighted ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .rect(cornerRadius: 14))
+            .ypGlassEffect(cornerRadius: 14, highlighted: highlighted)
             .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)

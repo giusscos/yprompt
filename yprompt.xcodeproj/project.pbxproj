@@ -262,7 +262,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = yprompt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = yPrompt;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera mode lets you record yourself reading the teleprompter.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "yPrompt needs local network access to connect your iPhone as a teleprompter remote control.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voice Scroll uses the microphone to detect when you are speaking and automatically scroll the teleprompter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Recordings are saved to your photo library.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -310,7 +315,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = yprompt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = yPrompt;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera mode lets you record yourself reading the teleprompter.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "yPrompt needs local network access to connect your iPhone as a teleprompter remote control.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voice Scroll uses the microphone to detect when you are speaking and automatically scroll the teleprompter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Recordings are saved to your photo library.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

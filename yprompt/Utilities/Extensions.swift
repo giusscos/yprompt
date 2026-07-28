@@ -79,3 +79,63 @@ extension View {
         #endif
     }
 }
+
+// MARK: - visionOS-compatible glass / scroll-edge APIs
+extension View {
+    /// Soft top scroll-edge effect where available (not on visionOS).
+    @ViewBuilder
+    func ypScrollEdgeEffect() -> some View {
+        #if os(visionOS)
+        self
+        #else
+        self.scrollEdgeEffectStyle(.soft, for: .top)
+        #endif
+    }
+
+    /// Glass prominent button style, falling back to bordered prominent on visionOS.
+    @ViewBuilder
+    func ypGlassProminentButtonStyle() -> some View {
+        #if os(visionOS)
+        self.buttonStyle(.borderedProminent)
+        #else
+        self.buttonStyle(.glassProminent)
+        #endif
+    }
+
+    /// Default glass fill in a rounded rect; material fallback on visionOS.
+    @ViewBuilder
+    func ypGlassEffect(cornerRadius: CGFloat) -> some View {
+        #if os(visionOS)
+        self.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+        #else
+        self.glassEffect(in: .rect(cornerRadius: cornerRadius))
+        #endif
+    }
+
+    /// Interactive glass (optionally accent-tinted); material fallback on visionOS.
+    @ViewBuilder
+    func ypGlassEffect(cornerRadius: CGFloat, highlighted: Bool) -> some View {
+        #if os(visionOS)
+        self.background {
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    if highlighted {
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1.5)
+                            .background(
+                                RoundedRectangle(cornerRadius: cornerRadius)
+                                    .fill(Color.accentColor.opacity(0.1))
+                            )
+                    }
+                }
+        }
+        #else
+        if highlighted {
+            self.glassEffect(.regular.tint(.accentColor).interactive(), in: .rect(cornerRadius: cornerRadius))
+        } else {
+            self.glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+        }
+        #endif
+    }
+}

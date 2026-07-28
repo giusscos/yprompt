@@ -32,7 +32,7 @@ struct OnboardingView: View {
                     }
                 }
         }
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        .ypScrollEdgeEffect()
         .presentationBackground(.ultraThinMaterial)
         .interactiveDismissDisabled(!isOnDemand)
         .onChange(of: storeKit.isPremium) { _, isPremium in
@@ -50,7 +50,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
         }
-        .buttonStyle(.glassProminent)
+        .ypGlassProminentButtonStyle()
         .buttonBorderShape(.capsule)
         .tint(Color.accentColor)
         .padding(.horizontal, 24)
@@ -69,7 +69,7 @@ struct OnboardingView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
-            .buttonStyle(.glassProminent)
+            .ypGlassProminentButtonStyle()
             .buttonBorderShape(.capsule)
             .tint(Color.accentColor)
 
@@ -268,7 +268,7 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .glassEffect(in: .rect(cornerRadius: 14))
+                .ypGlassEffect(cornerRadius: 14)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 24)
@@ -339,7 +339,7 @@ struct OnboardingView: View {
             }
         }
         .padding(4)
-        .glassEffect(in: .rect(cornerRadius: 12))
+        .ypGlassEffect(cornerRadius: 12)
     }
 
     // MARK: - Page 4: Platform-specific preview
@@ -511,7 +511,7 @@ struct OnboardingView: View {
                     featureRow("sparkles",          .orange, "All Future Features","Every update included with Lifetime access.")
                 }
                 .padding(16)
-                .glassEffect(in: .rect(cornerRadius: 16))
+                .ypGlassEffect(cornerRadius: 16)
             }
             .padding(24)
         }
@@ -573,7 +573,7 @@ struct OnboardingView: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity)
-            .glassEffect(highlighted ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .rect(cornerRadius: 12))
+            .ypGlassEffect(cornerRadius: 12, highlighted: highlighted)
             .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)
