@@ -233,10 +233,14 @@ struct ContentView: View {
             .tabItem { Label("Settings", systemImage: "gearshape") }
         }
         .onAppear {
+            #if os(iOS)
             WatchSessionRelay.shared.localScripts = scripts
+            #endif
         }
         .onChange(of: scripts) { _, newScripts in
+            #if os(iOS)
             WatchSessionRelay.shared.localScripts = newScripts
+            #endif
         }
     }
     #endif
