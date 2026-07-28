@@ -130,7 +130,11 @@ struct PaywallView: View {
         Button {
             Task {
                 isPurchasing = true
-                do { try await storeKit.purchase(product, using: purchase) } catch { errorMessage = error.localizedDescription }
+                do {
+                    try await storeKit.purchase(product) { try await purchase($0) }
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
                 isPurchasing = false
             }
         } label: {

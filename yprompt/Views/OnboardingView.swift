@@ -536,17 +536,17 @@ struct OnboardingView: View {
         VStack(spacing: 10) {
             if let p = storeKit.lifetimeProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: "Best Value", highlighted: true) {
-                    Task { try? await storeKit.purchase(p, using: purchase) }
+                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
                 }
             }
             if let p = storeKit.yearlyProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p, using: purchase) }
+                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
                 }
             }
             if let p = storeKit.weeklyProduct {
                 pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p, using: purchase) }
+                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
                 }
             }
             if storeKit.products.isEmpty {
