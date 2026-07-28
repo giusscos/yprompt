@@ -47,7 +47,7 @@ struct EditorView: View {
     @State private var saveTask: Task<Void, Never>?
     @State private var cachedRTFData = Data()
     @State private var isLoaded = false
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     @State private var showingTeleprompter = false
     #endif
 
@@ -70,16 +70,16 @@ struct EditorView: View {
 
     var body: some View {
         editorArea
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationTitle(script.title)
             .navigationBarTitleDisplayMode(.inline)
-            #else
+            #elseif os(macOS)
             // Set macOS window title directly — avoids the always-black auto-title in the toolbar
             .onAppear { NSApp.mainWindow?.title = script.title }
             .onChange(of: script.title) { _, new in NSApp.mainWindow?.title = new }
             #endif
             .toolbar { toolbarItems }
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationDestination(isPresented: $showingTeleprompter) {
                 TeleprompterView(script: script)
                     .environment(storeKit)
@@ -99,7 +99,7 @@ struct EditorView: View {
                     importFile(from: url)
                 }
             }
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .fileExporter(
                 isPresented: $showingRTFExporter,
                 document: rtfDocument,
@@ -216,10 +216,12 @@ struct EditorView: View {
             .disabled(script.content.isEmpty)
         }
         #else
-        // iOS: Play button — hide tab bar with a slide-down before pushing play mode
+        // iOS / visionOS: Play button — hide tab bar with a slide-down before pushing play mode
         ToolbarItem(placement: .topBarTrailing) {
             Button {
+                #if os(iOS)
                 TabBarAnimator.setHidden(true, animated: true)
+                #endif
                 showingTeleprompter = true
             } label: {
                 Label("Present", systemImage: "play.fill")
@@ -228,7 +230,7 @@ struct EditorView: View {
             .disabled(script.content.isEmpty)
         }
 
-        // iOS: More menu — group 1: Rename + Customize
+        // iOS / visionOS: More menu — Rename + Customize + Import/Export
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button {

@@ -141,7 +141,7 @@ struct OnboardingView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) { navCTABar(next: .scripts) }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
-#if os(iOS)
+#if os(iOS) || os(visionOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button { dismiss() } label: {
@@ -519,7 +519,7 @@ struct OnboardingView: View {
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-#if os(iOS)
+#if os(iOS) || os(visionOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button { dismiss() } label: {

@@ -29,8 +29,8 @@ final class VoiceScrollService {
     // MARK: - Permission
 
     func requestPermission() async -> Bool {
-        #if os(iOS)
-        if #available(iOS 17.0, *) {
+        #if os(iOS) || os(visionOS)
+        if #available(iOS 17.0, visionOS 1.0, *) {
             return await AVAudioApplication.requestRecordPermission()
         } else {
             return await withCheckedContinuation { continuation in
@@ -52,7 +52,7 @@ final class VoiceScrollService {
     func start() -> Bool {
         guard !isRunning else { return true }
 
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         do {
             let session = AVAudioSession.sharedInstance()
             // .voiceChat applies OS-level noise suppression and echo cancellation,
@@ -102,7 +102,7 @@ final class VoiceScrollService {
         isSpeaking = false
         lastSpeechDate = .distantPast
 
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         #endif
     }

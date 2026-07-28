@@ -42,7 +42,7 @@ struct ScriptsListView: View {
     @State private var tagQueueOrdered: [Script] = []
     @State private var pendingPlay = false
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     @State private var editMode: EditMode = .inactive
     @State private var selectedIDs: Set<UUID> = []
     @State private var selectionOrder: [UUID] = []
@@ -86,14 +86,14 @@ struct ScriptsListView: View {
             }
         }
         .navigationTitle("Scripts")
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search")
         #else
         .searchable(text: $searchText, prompt: "Search")
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                #if os(iOS)
+                #if os(iOS) || os(visionOS)
                 if editMode == .active {
                     Button(role: .destructive) { showDeleteSelectedConfirm = true } label: {
                         Label("Delete Selected", systemImage: "trash")
@@ -131,7 +131,7 @@ struct ScriptsListView: View {
                 }
             }
             #endif
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             ToolbarItem(placement: .topBarLeading) {
                 Button(editMode == .active ? "Done" : "Select") {
                     if editMode == .active {
@@ -171,7 +171,7 @@ struct ScriptsListView: View {
                 #endif
             }
         }
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .onChange(of: showTagQueueOrderSheet) { _, isShowing in
             if !isShowing && pendingPlay {
                 pendingPlay = false
@@ -179,7 +179,7 @@ struct ScriptsListView: View {
             }
         }
         #endif
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .navigationDestination(isPresented: $showingQueuePlayer) {
             TeleprompterView(queue: queueToPlay)
                 .environment(storeKit)
@@ -196,7 +196,7 @@ struct ScriptsListView: View {
         } message: { script in
             Text("This will permanently delete \"\(script.title)\".")
         }
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .confirmationDialog(
             "Delete \(selectedIDs.count) Script\(selectedIDs.count == 1 ? "" : "s")?",
             isPresented: $showDeleteSelectedConfirm
@@ -288,7 +288,7 @@ struct ScriptsListView: View {
     // MARK: - List
 
     private var listContent: some View {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         List(selection: $selectedIDs) {
             listRows
         }
@@ -487,7 +487,9 @@ struct ScriptsListView: View {
         editMode = .inactive
         selectedIDs = []
         selectionOrder = []
+        #if os(iOS)
         TabBarAnimator.setHidden(true, animated: true)
+        #endif
         showingQueuePlayer = true
         #endif
     }
@@ -502,7 +504,7 @@ struct ScriptsListView: View {
     }
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private func playQueue() {
         let ordered = selectionOrder.compactMap { id in filtered.first { $0.id == id } }
         guard !ordered.isEmpty else { return }
@@ -510,7 +512,9 @@ struct ScriptsListView: View {
         editMode = .inactive
         selectedIDs = []
         selectionOrder = []
+        #if os(iOS)
         TabBarAnimator.setHidden(true, animated: true)
+        #endif
         showingQueuePlayer = true
     }
 
@@ -589,7 +593,7 @@ struct TagQueueOrderSheet: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .environment(\.editMode, .constant(.active))
         #endif
     }

@@ -1370,7 +1370,7 @@ struct TeleprompterView: View {
 
 #if !os(watchOS)
     private func openMicSettings() {
-#if os(iOS)
+#if os(iOS) || os(visionOS)
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }

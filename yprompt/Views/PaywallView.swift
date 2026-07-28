@@ -30,7 +30,7 @@ struct PaywallView: View {
                 .padding()
             }
             .navigationTitle("yPrompt Pro")
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
