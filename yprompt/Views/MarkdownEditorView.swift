@@ -40,14 +40,14 @@ struct MarkdownEditorView: View {
         TextEditor(text: $text, selection: $selection)
             .font(.body)
             .focused($isFocused)
-            #if os(iOS) || os(visionOS)
+            #if os(iOS)
             .toolbar { keyboardToolbar }
             #endif
     }
 
-    // MARK: - iOS / visionOS Keyboard Toolbar
+    // MARK: - iOS Keyboard Toolbar (`.keyboard` placement unavailable on visionOS)
 
-    #if os(iOS) || os(visionOS)
+    #if os(iOS)
     @ToolbarContentBuilder
     private var keyboardToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
