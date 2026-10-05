@@ -36,10 +36,15 @@ struct ContentView: View {
                 }
             #endif
         }
+        #if DEBUG
+        // Sample scripts for development and App Store screenshots only; release builds start empty.
         .task { seedDemoScriptsIfNeeded() }
+        #endif
     }
 
     // MARK: - Demo Seeding
+
+    #if DEBUG
 
     private func seedDemoScriptsIfNeeded() {
         guard scripts.isEmpty else { return }
@@ -140,6 +145,7 @@ struct ContentView: View {
             modelContext.insert(script)
         }
     }
+    #endif
 
     // MARK: - macOS
 
