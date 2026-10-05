@@ -80,52 +80,84 @@ extension View {
     }
 }
 
-// MARK: - visionOS-compatible glass / scroll-edge APIs
+// MARK: - Glass / scroll-edge APIs
+// Liquid Glass needs iOS / macOS 26. visionOS and older systems get material and bordered fallbacks.
 extension View {
-    /// Soft top scroll-edge effect where available (not on visionOS).
+    /// Soft top scroll-edge effect where available.
     @ViewBuilder
     func ypScrollEdgeEffect() -> some View {
         #if os(visionOS)
         self
         #else
-        self.scrollEdgeEffectStyle(.soft, for: .top)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            self
+        }
         #endif
     }
 
-    /// Glass prominent button style, falling back to bordered prominent on visionOS.
+    /// Glass prominent button style, falling back to bordered prominent.
     @ViewBuilder
     func ypGlassProminentButtonStyle() -> some View {
         #if os(visionOS)
         self.buttonStyle(.borderedProminent)
         #else
-        self.buttonStyle(.glassProminent)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.buttonStyle(.glassProminent)
+        } else {
+            self.buttonStyle(.borderedProminent)
+        }
         #endif
     }
 
-    /// Plain glass button style, falling back to bordered on visionOS.
+    /// Plain glass button style, falling back to bordered.
     @ViewBuilder
     func ypGlassButtonStyle() -> some View {
         #if os(visionOS)
         self.buttonStyle(.bordered)
         #else
-        self.buttonStyle(.glass)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.buttonStyle(.glass)
+        } else {
+            self.buttonStyle(.bordered)
+        }
         #endif
     }
 
-    /// Default glass fill in a rounded rect; material fallback on visionOS.
+    /// Default glass fill in a rounded rect; material fallback.
     @ViewBuilder
     func ypGlassEffect(cornerRadius: CGFloat) -> some View {
         #if os(visionOS)
         self.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
         #else
-        self.glassEffect(in: .rect(cornerRadius: cornerRadius))
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.glassEffect(in: .rect(cornerRadius: cornerRadius))
+        } else {
+            self.background(.ultraThinMaterial, in: .rect(cornerRadius: cornerRadius))
+        }
         #endif
     }
 
-    /// Interactive glass (optionally accent-tinted); material fallback on visionOS.
+    /// Interactive glass (optionally accent-tinted); material fallback.
     @ViewBuilder
     func ypGlassEffect(cornerRadius: CGFloat, highlighted: Bool) -> some View {
         #if os(visionOS)
+        self.ypMaterialCard(cornerRadius: cornerRadius, highlighted: highlighted)
+        #else
+        if #available(iOS 26.0, macOS 26.0, *) {
+            if highlighted {
+                self.glassEffect(.regular.tint(.accentColor).interactive(), in: .rect(cornerRadius: cornerRadius))
+            } else {
+                self.glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+            }
+        } else {
+            self.ypMaterialCard(cornerRadius: cornerRadius, highlighted: highlighted)
+        }
+        #endif
+    }
+
+    private func ypMaterialCard(cornerRadius: CGFloat, highlighted: Bool) -> some View {
         self.background {
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(.ultraThinMaterial)
@@ -140,13 +172,28 @@ extension View {
                     }
                 }
         }
-        #else
-        if highlighted {
-            self.glassEffect(.regular.tint(.accentColor).interactive(), in: .rect(cornerRadius: cornerRadius))
+    }
+}
+
+extension View {
+    /// Navigation subtitle where available (iOS / macOS 26); nothing on older systems.
+    @ViewBuilder
+    func ypNavigationSubtitle(_ subtitle: String) -> some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.navigationSubtitle(subtitle)
         } else {
-            self.glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+            self
         }
-        #endif
+    }
+}
+
+// MARK: - Font traits without a resolution context
+extension Font {
+    /// Bold / italic as applied by the editor's formatting actions, detected by value equality.
+    /// Works on every OS version and outside SwiftUI rendering, unlike `Font.resolve(in:)`.
+    var ypEditorTraits: (isBold: Bool, isItalic: Bool) {
+        let boldItalic = self == Font.body.bold().italic() || self == Font.body.italic().bold()
+        return (boldItalic || self == Font.body.bold(), boldItalic || self == Font.body.italic())
     }
 }
 

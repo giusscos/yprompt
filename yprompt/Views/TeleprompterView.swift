@@ -315,7 +315,7 @@ struct TeleprompterView: View {
     private var iOSBody: some View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
-            content: textBody(textColor: cameraService.isCameraActive ? .white : nil, horizontalPadding: liveHorizontalPadding),
+            content: textBody(textColor: (cameraService.isCameraActive || backgroundMode == .camera) ? .white : nil, horizontalPadding: liveHorizontalPadding),
             onHeights: { contentHeight, screenHeight in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
                 viewModel.contentHeight = contentHeight

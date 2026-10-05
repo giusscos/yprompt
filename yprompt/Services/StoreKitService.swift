@@ -12,6 +12,8 @@ class StoreKitService {
     var purchasedProductIDs: Set<String> = []
     var isLoading = false
     var errorMessage: String?
+    /// Length of the yearly plan's free trial, when this Apple ID is still eligible for it.
+    var yearlyTrialDays: Int?
 
     @ObservationIgnored nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
 
@@ -36,7 +38,13 @@ class StoreKitService {
         purchasedProductIDs.contains(AppConstants.monthlySubscriptionID) // legacy
     }
 
-    var isPremium: Bool { isLifetimePurchased || isSubscribed }
+    var isPremium: Bool {
+        #if DEBUG
+        // Unlocks Pro for App Store screenshot captures: launch with `-ypDemoPro`.
+        if ProcessInfo.processInfo.arguments.contains("-ypDemoPro") { return true }
+        #endif
+        return isLifetimePurchased || isSubscribed
+    }
 
     var lifetimeProduct: Product? { products.first { $0.id == AppConstants.lifetimeProductID } }
     var weeklyProduct: Product? { products.first { $0.id == AppConstants.weeklySubscriptionID } }
@@ -55,6 +63,7 @@ class StoreKitService {
             ]
             products = try await Product.products(for: ids)
             await updatePurchasedProducts()
+            await updateYearlyTrialEligibility()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -93,6 +102,24 @@ class StoreKitService {
     }
 
     // MARK: - Helpers
+
+    private func updateYearlyTrialEligibility() async {
+        guard let subscription = yearlyProduct?.subscription,
+              let offer = subscription.introductoryOffer,
+              offer.paymentMode == .freeTrial,
+              await subscription.isEligibleForIntroOffer else {
+            yearlyTrialDays = nil
+            return
+        }
+        let value = offer.period.value
+        switch offer.period.unit {
+        case .day:   yearlyTrialDays = value
+        case .week:  yearlyTrialDays = value * 7
+        case .month: yearlyTrialDays = value * 30
+        case .year:  yearlyTrialDays = value * 365
+        @unknown default: yearlyTrialDays = nil
+        }
+    }
 
     private func updatePurchasedProducts() async {
         var purchased: Set<String> = []

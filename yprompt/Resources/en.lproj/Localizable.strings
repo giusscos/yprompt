@@ -227,3 +227,7 @@
 "Privacy Policy" = "Privacy Policy";
 "Terms of Use" = "Terms of Use";
 " & " = " & ";
+"%lld Days Free" = "%lld Days Free";
+"Just %@ per week" = "Just %@ per week";
+"Start %lld-Day Free Trial" = "Start %lld-Day Free Trial";
+"%lld days free, then %@/year. Cancel anytime." = "%lld days free, then %@/year. Cancel anytime.";

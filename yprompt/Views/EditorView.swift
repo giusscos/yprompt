@@ -29,12 +29,11 @@ private struct RichTextFile: FileDocument {
 
 struct EditorView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.fontResolutionContext) private var fontContext
     @Environment(StoreKitService.self) private var storeKit
     @Bindable var script: Script
 
     @State private var attrText = AttributedString()
-    @State private var selection = AttributedTextSelection()
+    @State private var formatRequest: TextFormat?
 
     @State private var showingCustomization = false
     @State private var isSaving = false
@@ -141,11 +140,7 @@ struct EditorView: View {
     private var editorArea: some View {
         MarkdownEditorView(
             text: $attrText,
-            selection: $selection,
-            onBold: applyBold,
-            onItalic: applyItalic,
-            onUnderline: applyUnderline,
-            onStrikethrough: applyStrikethrough
+            formatRequest: $formatRequest
         )
         .safeAreaInset(edge: .bottom, spacing: 0) {
             wordCountBar
@@ -186,10 +181,12 @@ struct EditorView: View {
             .buttonStyle(.borderedProminent)
             .disabled(script.content.isEmpty)
 
-            Button { applyBold() } label: { Label("Bold", systemImage: "bold") }
-            Button { applyItalic() } label: { Label("Italic", systemImage: "italic") }
-            Button { applyUnderline() } label: { Label("Underline", systemImage: "underline") }
-            Button { applyStrikethrough() } label: { Label("Strikethrough", systemImage: "strikethrough") }
+            if MarkdownEditorView.supportsFormatting {
+                Button { formatRequest = .bold } label: { Label("Bold", systemImage: "bold") }
+                Button { formatRequest = .italic } label: { Label("Italic", systemImage: "italic") }
+                Button { formatRequest = .underline } label: { Label("Underline", systemImage: "underline") }
+                Button { formatRequest = .strikethrough } label: { Label("Strikethrough", systemImage: "strikethrough") }
+            }
         }
 
         // Secondary group 1: Rename + Customize
@@ -273,72 +270,18 @@ struct EditorView: View {
         scheduleSave(attributedText: attrText)
     }
 
-    // MARK: - Formatting
-
-    private var isSelectionBold: Bool {
-        let font = selection.typingAttributes(in: attrText).font ?? .default
-        return font.resolve(in: fontContext).isBold
-    }
-    private var isSelectionItalic: Bool {
-        let font = selection.typingAttributes(in: attrText).font ?? .default
-        return font.resolve(in: fontContext).isItalic
-    }
-    private var isSelectionUnderline: Bool {
-        selection.typingAttributes(in: attrText).underlineStyle != nil
-    }
-    private var isSelectionStrikethrough: Bool {
-        selection.typingAttributes(in: attrText).strikethroughStyle != nil
-    }
-
-    private func applyBold() {
-        let newBold = !isSelectionBold
-        attrText.transformAttributes(in: &selection) { container in
-            container.font = (container.font ?? .body).bold(newBold)
-        }
-    }
-
-    private func applyItalic() {
-        let newItalic = !isSelectionItalic
-        attrText.transformAttributes(in: &selection) { container in
-            container.font = (container.font ?? .body).italic(newItalic)
-        }
-    }
-
-    private func applyUnderline() {
-        let newStyle: Text.LineStyle? = isSelectionUnderline ? nil : Text.LineStyle(pattern: .solid)
-        attrText.transformAttributes(in: &selection) { container in
-            container.underlineStyle = newStyle
-        }
-    }
-
-    private func applyStrikethrough() {
-        let newStyle: Text.LineStyle? = isSelectionStrikethrough ? nil : Text.LineStyle(pattern: .solid)
-        attrText.transformAttributes(in: &selection) { container in
-            container.strikethroughStyle = newStyle
-        }
-    }
-
     // MARK: - RTF Export
 
     private func makeRTFData(from attrStr: AttributedString) -> Data {
         let nsAttr = NSMutableAttributedString()
         let baseFontSize: CGFloat = 16
 
-        // Pre-compute known font variants — bold/italic detection via value equality
-        // avoids Font.resolve(in:) which is only safe during SwiftUI rendering.
-        let boldFont = Font.body.bold()
-        let italicFont = Font.body.italic()
-        let boldItalicA = Font.body.bold().italic()
-        let boldItalicB = Font.body.italic().bold()
-
         for run in attrStr.runs {
             let substr = String(attrStr[run.range].characters)
             guard !substr.isEmpty else { continue }
             var nsAttrs: [NSAttributedString.Key: Any] = [:]
 
-            let f = run.font
-            let isBold = f == boldFont || f == boldItalicA || f == boldItalicB
-            let isItalic = f == italicFont || f == boldItalicA || f == boldItalicB
+            let (isBold, isItalic) = run.font?.ypEditorTraits ?? (false, false)
 
             #if os(macOS)
             var nsFont = NSFont.systemFont(ofSize: baseFontSize)

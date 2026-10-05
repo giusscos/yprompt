@@ -8,10 +8,9 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.purchase) private var purchase
     @Environment(StoreKitService.self) private var storeKit
 
-    @State private var isPurchasing = false
+    @State private var selectedPlanID = AppConstants.yearlySubscriptionID
     @State private var errorMessage: String?
 
     var body: some View {
@@ -19,12 +18,12 @@ struct PaywallView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     headerSection
-                    featuresSection
                     if storeKit.isLoading {
                         ProgressView("Loading products…").padding()
                     } else {
                         productsSection
                     }
+                    featuresSection
                     legalSection
                 }
                 .padding()
@@ -107,64 +106,17 @@ struct PaywallView: View {
     // MARK: - Products
 
     private var productsSection: some View {
-        VStack(spacing: 12) {
-            if let p = storeKit.lifetimeProduct {
-                productCard(p, badge: "Best Value", highlighted: true)
-            }
-            if let p = storeKit.yearlyProduct {
-                productCard(p, badge: nil, highlighted: false)
-            }
-            if let p = storeKit.weeklyProduct {
-                productCard(p, badge: nil, highlighted: false)
-            }
+        VStack(spacing: 16) {
+            PlanPicker(selectedID: $selectedPlanID)
             if storeKit.products.isEmpty {
                 Text("Products unavailable. Check your connection.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+            } else {
+                PlanPurchaseButton(selectedID: selectedPlanID) { errorMessage = $0.localizedDescription }
             }
         }
-    }
-
-    private func productCard(_ product: Product, badge: String?, highlighted: Bool) -> some View {
-        Button {
-            Task {
-                isPurchasing = true
-                do {
-                    try await storeKit.purchase(product) { try await purchase($0) }
-                } catch {
-                    errorMessage = error.localizedDescription
-                }
-                isPurchasing = false
-            }
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(product.displayName).font(.headline)
-                    Text(product.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text(product.displayPrice).font(.title3.bold())
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity)
-            .ypGlassEffect(cornerRadius: 14, highlighted: highlighted)
-            .overlay(alignment: .topTrailing) {
-                if let badge {
-                    Text(badge)
-                        .font(.caption2.bold())
-                        .foregroundStyle(.black)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.yellow, in: Capsule())
-                        .offset(x: -10, y: -10)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .disabled(isPurchasing)
     }
 
     // MARK: - Legal

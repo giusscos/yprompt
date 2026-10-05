@@ -58,10 +58,16 @@ struct FloatingTeleprompterView: View {
         var result = input
         for run in result.runs {
             guard let font = run.font else { continue }
-            let resolved = font.resolve(in: fontContext)
+            let isBold: Bool, isItalic: Bool
+            if #available(macOS 26.0, *) {
+                let resolved = font.resolve(in: fontContext)
+                (isBold, isItalic) = (resolved.isBold, resolved.isItalic)
+            } else {
+                (isBold, isItalic) = font.ypEditorTraits
+            }
             var scaled = Font.system(size: manager.floatingFontSize)
-            if resolved.isBold { scaled = scaled.bold() }
-            if resolved.isItalic { scaled = scaled.italic() }
+            if isBold { scaled = scaled.bold() }
+            if isItalic { scaled = scaled.italic() }
             result[run.range].font = scaled
         }
         return result

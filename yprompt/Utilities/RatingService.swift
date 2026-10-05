@@ -10,7 +10,7 @@ final class RatingService {
 
     private let sessionCountKey = "yprompt.completedSessions"
     private let lastRequestDateKey = "yprompt.lastReviewRequest"
-    private let minimumSessions = 3
+    private let minimumSessions = 1
     private let minimumDaysBetweenRequests = 60
 
     private init() {}

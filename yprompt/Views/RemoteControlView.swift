@@ -28,7 +28,7 @@ struct RemoteControlView: View {
         }
         .navigationTitle("Remote")
         #if os(iOS)
-        .navigationSubtitle(remote.isConnected ? (remote.connectedPeers.first?.displayName ?? "Connected") : "")
+        .ypNavigationSubtitle(remote.isConnected ? (remote.connectedPeers.first?.displayName ?? "Connected") : "")
         #endif
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

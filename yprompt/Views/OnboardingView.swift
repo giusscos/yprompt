@@ -11,10 +11,10 @@ struct OnboardingView: View {
 
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.purchase) private var purchase
     @Environment(StoreKitService.self) private var storeKit
 
     @State private var teleprompterOffset: CGFloat = 80
+    @State private var selectedPlanID = AppConstants.yearlySubscriptionID
 
     private enum Step: Hashable {
         case scripts, modes, platform, pro
@@ -61,17 +61,18 @@ struct OnboardingView: View {
 
     private var proBottomBar: some View {
         VStack(spacing: 12) {
+            if !storeKit.products.isEmpty {
+                PlanPurchaseButton(selectedID: selectedPlanID)
+            }
+
             Button {
                 if isOnDemand { dismiss() } else { hasSeenOnboarding = true }
             } label: {
                 Text("Get Started for Free")
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
             }
-            .ypGlassProminentButtonStyle()
-            .buttonBorderShape(.capsule)
-            .tint(Color.accentColor)
+            .buttonStyle(.borderless)
 
             HStack(spacing: 0) {
                 Link("Privacy Policy", destination: URL(string: "https://yprompt.app/privacy")!)
@@ -534,21 +535,7 @@ struct OnboardingView: View {
 
     private var inlinePricingCards: some View {
         VStack(spacing: 10) {
-            if let p = storeKit.lifetimeProduct {
-                pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: "Best Value", highlighted: true) {
-                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
-                }
-            }
-            if let p = storeKit.yearlyProduct {
-                pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
-                }
-            }
-            if let p = storeKit.weeklyProduct {
-                pricingCard(name: p.displayName, price: p.displayPrice, desc: p.description, badge: nil, highlighted: false) {
-                    Task { try? await storeKit.purchase(p) { try await purchase($0) } }
-                }
-            }
+            PlanPicker(selectedID: $selectedPlanID)
             if storeKit.products.isEmpty {
                 Text("Products unavailable — check your connection.")
                     .font(.caption)
@@ -557,35 +544,6 @@ struct OnboardingView: View {
                     .padding(.vertical, 8)
             }
         }
-    }
-
-    private func pricingCard(name: String, price: String, desc: String, badge: String?, highlighted: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(name).font(.headline)
-                    Text(desc)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text(price).font(.title3.bold())
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity)
-            .ypGlassEffect(cornerRadius: 12, highlighted: highlighted)
-            .overlay(alignment: .topTrailing) {
-                if let badge {
-                    Text(badge)
-                        .font(.caption2.bold())
-                        .foregroundStyle(.black)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(.yellow, in: Capsule())
-                        .offset(x: -10, y: -10)
-                }
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Shared helpers
