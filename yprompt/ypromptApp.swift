@@ -28,6 +28,7 @@ private struct MenuBarScriptsLoader: View {
 @main
 struct ypromptApp: App {
     @State private var storeKit = StoreKitService()
+    @Environment(\.scenePhase) private var scenePhase
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Script.self, AppSettings.self])
@@ -55,6 +56,9 @@ struct ypromptApp: App {
                 #endif
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await storeKit.refreshEntitlements() } }
+        }
         #if os(macOS)
         .defaultSize(width: 1000, height: 750)
         #endif

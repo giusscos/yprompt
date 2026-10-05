@@ -231,3 +231,5 @@
 "Just %@ per week" = "Seulement %@ par semaine";
 "Start %lld-Day Free Trial" = "Essai Gratuit de %lld Jours";
 "%lld days free, then %@/year. Cancel anytime." = "%lld jours gratuits, puis %@/an. Annulable à tout moment.";
+"Your purchase is pending approval. Pro unlocks as soon as it's confirmed." = "Votre achat est en attente d'approbation. Pro sera débloqué dès sa confirmation.";
+"Purchase verification failed." = "La vérification de l'achat a échoué.";

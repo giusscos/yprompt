@@ -20,14 +20,9 @@
       "internalID" : "6777462736",
       "localizations" : [
         {
-          "description" : "Todas las funciones Pro, para siempre.",
-          "displayName" : "Acceso de por Vida",
-          "locale" : "es_ES"
-        },
-        {
-          "description" : "All Pro features, forever. No subscription.",
-          "displayName" : "Lifetime",
-          "locale" : "en_US"
+          "description" : "Alle Pro-Funktionen, für immer.",
+          "displayName" : "Lebenslanger Zugang",
+          "locale" : "de"
         },
         {
           "description" : "Tutte le funzionalità Pro, per sempre.",
@@ -35,9 +30,34 @@
           "locale" : "it"
         },
         {
+          "description" : "All Pro features, forever. No subscription.",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Todas las funciones Pro, para siempre.",
+          "displayName" : "Acceso de por Vida",
+          "locale" : "es_MX"
+        },
+        {
           "description" : "Toutes les fonctions Pro, pour toujours.",
           "displayName" : "Accès à Vie",
           "locale" : "fr"
+        },
+        {
+          "description" : "Todos os recursos Pro, para sempre.",
+          "displayName" : "Acesso Vitalício",
+          "locale" : "pt_BR"
+        },
+        {
+          "description" : "Toutes les fonctions Pro, pour toujours.",
+          "displayName" : "Accès à Vie",
+          "locale" : "fr_CA"
+        },
+        {
+          "description" : "Todas las funciones Pro, para siempre.",
+          "displayName" : "Acceso de por Vida",
+          "locale" : "es_ES"
         }
       ],
       "productID" : "yp_8999_lifetime",
@@ -53,7 +73,7 @@
     "_developerTeamID" : "MA7MBQ947C",
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 806920045.01850796,
+    "_lastSynchronizedDate" : 812904582.04533005,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
@@ -72,7 +92,47 @@
         {
           "description" : "",
           "displayName" : "yPrompt Pro",
+          "locale" : "it"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "fr"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "de"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
           "locale" : "en_US"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "pt_BR"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "fr_CA"
+        },
+        {
+          "description" : "",
+          "displayName" : "yPrompt Pro",
+          "locale" : "es_MX"
         }
       ],
       "name" : "yPrompt Pro",
@@ -115,6 +175,11 @@
           ],
           "localizations" : [
             {
+              "description" : "Accès Pro complet, facturé une fois par an.",
+              "displayName" : "Annuel",
+              "locale" : "fr"
+            },
+            {
               "description" : "Accesso Pro completo, fatturato una volta all'anno.",
               "displayName" : "Annuale",
               "locale" : "it"
@@ -125,8 +190,43 @@
               "locale" : "en_US"
             },
             {
+              "description" : "Acceso Pro completo, facturado una vez al año.",
+              "displayName" : "Anual",
+              "locale" : "es_ES"
+            },
+            {
               "description" : "Accès Pro complet, facturé une fois par an.",
               "displayName" : "Annuel",
+              "locale" : "fr_CA"
+            },
+            {
+              "description" : "Voller Pro-Zugang, jährlich abgerechnet.",
+              "displayName" : "Jährlich",
+              "locale" : "de"
+            },
+            {
+              "description" : "Acceso Pro completo, facturado una vez al año.",
+              "displayName" : "Anual",
+              "locale" : "es_MX"
+            },
+            {
+              "description" : "Acesso Pro completo, cobrado uma vez por ano.",
+              "displayName" : "Anual",
+              "locale" : "pt_BR"
+            },
+            {
+              "description" : "Accesso Pro completo, fatturato una volta all'anno.",
+              "displayName" : "Annuale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Full Pro access, billed once a year.",
+              "displayName" : "Annual",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Accès Pro complet, facturé chaque mois.",
+              "displayName" : "Mensuel",
               "locale" : "fr"
             },
             {
@@ -174,9 +274,39 @@
               "locale" : "fr"
             },
             {
+              "description" : "Accès Pro complet, facturé chaque semaine.",
+              "displayName" : "Hebdomadaire",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Accès Pro complet, facturé chaque semaine.",
+              "displayName" : "Hebdomadaire",
+              "locale" : "fr_CA"
+            },
+            {
               "description" : "Acceso Pro completo, facturado semanalmente.",
               "displayName" : "Semanal",
               "locale" : "es_ES"
+            },
+            {
+              "description" : "Acesso Pro completo, cobrado toda semana.",
+              "displayName" : "Semanal",
+              "locale" : "pt_BR"
+            },
+            {
+              "description" : "Acceso Pro completo, facturado semanalmente.",
+              "displayName" : "Semanal",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Acceso Pro completo, facturado semanalmente.",
+              "displayName" : "Semanal",
+              "locale" : "es_MX"
+            },
+            {
+              "description" : "Accesso Pro completo, fatturato ogni settimana.",
+              "displayName" : "Settimanale",
+              "locale" : "it"
             },
             {
               "description" : "Accesso Pro completo, fatturato ogni settimana.",
@@ -187,6 +317,16 @@
               "description" : "Full Pro access, billed weekly.",
               "displayName" : "Weekly",
               "locale" : "en_US"
+            },
+            {
+              "description" : "Full Pro access, billed weekly.",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Voller Pro-Zugang, wöchentlich abgerechnet.",
+              "displayName" : "Wöchentlich",
+              "locale" : "de"
             }
           ],
           "productID" : "yp_599_1w",

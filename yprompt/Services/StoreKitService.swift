@@ -5,6 +5,9 @@
 
 import Foundation
 import StoreKit
+import os
+
+private let log = Logger(subsystem: "com.giusscos.yprompt", category: "StoreKit")
 
 @Observable @MainActor
 class StoreKitService {
@@ -19,7 +22,10 @@ class StoreKitService {
 
     init() {
         transactionListener = listenForTransactions()
-        Task { await loadProducts() }
+        Task {
+            await refreshEntitlements()
+            await loadProducts()
+        }
     }
 
     deinit {
@@ -62,8 +68,8 @@ class StoreKitService {
                 AppConstants.yearlySubscriptionID
             ]
             products = try await Product.products(for: ids)
-            await updatePurchasedProducts()
             await updateYearlyTrialEligibility()
+            await refreshEntitlements()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -81,11 +87,15 @@ class StoreKitService {
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)
+            log.info("Purchased \(Self.describe(transaction), privacy: .public)")
             if transaction.revocationDate == nil {
                 purchasedProductIDs.insert(transaction.productID)
             }
             await transaction.finish()
-        case .userCancelled, .pending:
+        case .pending:
+            // Ask to Buy or extra payment confirmation; the entitlement arrives later via Transaction.updates.
+            throw StoreKitServiceError.pending
+        case .userCancelled:
             break
         @unknown default:
             break
@@ -95,7 +105,7 @@ class StoreKitService {
     func restorePurchases() async {
         do {
             try await AppStore.sync()
-            await updatePurchasedProducts()
+            await refreshEntitlements()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -121,20 +131,59 @@ class StoreKitService {
         }
     }
 
-    private func updatePurchasedProducts() async {
+    /// Re-reads what the user owns. Independent of product loading, so Pro status is restored
+    /// even when the product request fails; also called when the app becomes active.
+    ///
+    /// `Transaction.currentEntitlements` alone is not reliable: it has been seen returning nothing
+    /// for an active, verified subscription. So the result is the union of three sources:
+    /// current entitlements, each product's latest transaction, and the subscription group status.
+    func refreshEntitlements() async {
         var purchased: Set<String> = []
+
         for await result in Transaction.currentEntitlements {
-            guard let transaction = try? checkVerified(result) else { continue }
-            if transaction.revocationDate == nil {
-                purchased.insert(transaction.productID)
+            if let t = try? checkVerified(result), t.revocationDate == nil {
+                purchased.insert(t.productID)
             }
         }
+
+        for id in Self.ownedProductIDs {
+            guard let result = await Transaction.latest(for: id),
+                  let t = try? checkVerified(result),
+                  t.revocationDate == nil, !t.isUpgraded else { continue }
+            if let expiration = t.expirationDate, expiration <= .now { continue }
+            purchased.insert(t.productID)
+        }
+
+        // Covers billing retry and grace period, where the latest transaction may have expired.
+        if let groupID = (yearlyProduct ?? weeklyProduct)?.subscription?.subscriptionGroupID,
+           let statuses = try? await Product.SubscriptionInfo.status(for: groupID) {
+            for status in statuses where [.subscribed, .inGracePeriod, .inBillingRetryPeriod].contains(status.state) {
+                if let t = try? checkVerified(status.transaction), t.revocationDate == nil {
+                    purchased.insert(t.productID)
+                }
+            }
+        }
+
+        log.info("Entitlements: \(purchased.sorted(), privacy: .public)")
         purchasedProductIDs = purchased
+    }
+
+    private static let ownedProductIDs = [
+        AppConstants.lifetimeProductID,
+        AppConstants.yearlySubscriptionID,
+        AppConstants.weeklySubscriptionID,
+        AppConstants.monthlySubscriptionID
+    ]
+
+    private static func describe(_ t: Transaction) -> String {
+        "\(t.productID) id=\(t.id) env=\(t.environment.rawValue) purchased=\(t.purchaseDate) expires=\(t.expirationDate.map { "\($0)" } ?? "-") revoked=\(t.revocationDate.map { "\($0)" } ?? "-") upgraded=\(t.isUpgraded)"
     }
 
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
-        case .unverified: throw StoreKitServiceError.failedVerification
+        case .unverified(_, let error):
+            log.error("Unverified transaction: \(error.localizedDescription, privacy: .public)")
+            throw StoreKitServiceError.failedVerification
         case .verified(let value): return value
         }
     }
@@ -144,12 +193,9 @@ class StoreKitService {
             for await result in Transaction.updates {
                 guard let self else { continue }
                 guard let transaction = try? await self.checkVerified(result) else { continue }
-                if transaction.revocationDate == nil {
-                    _ = await MainActor.run { self.purchasedProductIDs.insert(transaction.productID) }
-                } else {
-                    await self.updatePurchasedProducts()
-                }
                 await transaction.finish()
+                // Renewals, refunds, Ask to Buy approvals and purchases made on other devices.
+                await self.refreshEntitlements()
             }
         }
     }
@@ -157,6 +203,12 @@ class StoreKitService {
 
 enum StoreKitServiceError: LocalizedError {
     case failedVerification
+    case pending
 
-    var errorDescription: String? { "Purchase verification failed." }
+    var errorDescription: String? {
+        switch self {
+        case .failedVerification: String(localized: "Purchase verification failed.")
+        case .pending: String(localized: "Your purchase is pending approval. Pro unlocks as soon as it's confirmed.")
+        }
+    }
 }

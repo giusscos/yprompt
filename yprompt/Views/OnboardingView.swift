@@ -15,6 +15,7 @@ struct OnboardingView: View {
 
     @State private var teleprompterOffset: CGFloat = 80
     @State private var selectedPlanID = AppConstants.yearlySubscriptionID
+    @State private var purchaseError: String?
 
     private enum Step: Hashable {
         case scripts, modes, platform, pro
@@ -36,9 +37,22 @@ struct OnboardingView: View {
         .presentationBackground(.ultraThinMaterial)
         .interactiveDismissDisabled(!isOnDemand)
         .onChange(of: storeKit.isPremium) { _, isPremium in
-            guard isPremium else { return }
-            if isOnDemand { dismiss() } else { hasSeenOnboarding = true }
+            if isPremium { close() }
         }
+        .alert("Purchase Error", isPresented: Binding(
+            get: { purchaseError != nil },
+            set: { if !$0 { purchaseError = nil } }
+        )) {
+            Button("OK") { purchaseError = nil }
+        } message: {
+            Text(purchaseError ?? "")
+        }
+    }
+
+    /// First run: the onboarding is shown while `hasSeenOnboarding` is false, so mark it seen.
+    /// Opened again from Settings: a regular dismissal.
+    private func close() {
+        if isOnDemand { dismiss() } else { hasSeenOnboarding = true }
     }
 
     // MARK: - Shared bottom bar
@@ -62,11 +76,11 @@ struct OnboardingView: View {
     private var proBottomBar: some View {
         VStack(spacing: 12) {
             if !storeKit.products.isEmpty {
-                PlanPurchaseButton(selectedID: selectedPlanID)
+                PlanPurchaseButton(selectedID: selectedPlanID) { purchaseError = $0.localizedDescription }
             }
 
             Button {
-                if isOnDemand { dismiss() } else { hasSeenOnboarding = true }
+                close()
             } label: {
                 Text("Get Started for Free")
                     .font(.subheadline.weight(.semibold))
@@ -145,7 +159,7 @@ struct OnboardingView: View {
 #if os(iOS) || os(visionOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button { dismiss() } label: {
+                Button { close() } label: {
                     Label("Close", systemImage: "xmark")
                         .labelStyle(.iconOnly)
                         .fontWeight(.semibold)
@@ -523,7 +537,7 @@ struct OnboardingView: View {
 #if os(iOS) || os(visionOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button { dismiss() } label: {
+                Button { close() } label: {
                     Label("Close", systemImage: "xmark")
                         .labelStyle(.iconOnly)
                         .fontWeight(.semibold)

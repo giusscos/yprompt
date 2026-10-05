@@ -417,6 +417,9 @@ struct SettingsView: View {
             preferencesSection
             scriptsSection
             aboutSection
+            #if DEBUG
+            debugSection
+            #endif
             dangerSection
         }
         .navigationTitle("Settings")
@@ -558,6 +561,20 @@ struct SettingsView: View {
             Button("Show App Tour") { showingOnboarding = true }
         }
     }
+
+    #if DEBUG
+    @AppStorage(AppConstants.debugDemoCameraKey) private var useDemoCameraBackground = false
+
+    private var debugSection: some View {
+        Section {
+            Toggle("Demo Camera Background", isOn: $useDemoCameraBackground)
+        } header: {
+            Text(verbatim: "Debug")
+        } footer: {
+            Text(verbatim: "Shows the bundled demo photo instead of a blank background in camera mode, for App Store screenshots. Debug builds only.")
+        }
+    }
+    #endif
 
     private var dangerSection: some View {
         Section("Danger Zone") {

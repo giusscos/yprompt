@@ -22,6 +22,10 @@ enum AppConstants {
     static let privacyPolicyURL = URL(string: "https://yprompt.app/privacy")!
     static let termsOfUseURL = URL(string: "https://yprompt.app/terms")!
 
+    // MARK: - Debug
+    /// Debug builds only: show the bundled demo photo as the camera background (for App Store screenshots).
+    static let debugDemoCameraKey = "debug.demoCameraBackground"
+
     // MARK: - Free Tier
     static let freeScriptLimit = 3
 

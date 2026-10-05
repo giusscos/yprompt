@@ -103,11 +103,11 @@ final class CameraRecordingService: NSObject, ObservableObject {
     }
 
     private func saveToPhotoLibrary(url: URL) {
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
             guard status == .authorized || status == .limited else { return }
             PHPhotoLibrary.shared().performChanges({
                 PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
-            }) { success, _ in
+            }) { [weak self] success, _ in
                 Task { @MainActor [weak self] in
                     if success { self?.recordingSaved = true }
                     try? FileManager.default.removeItem(at: url)

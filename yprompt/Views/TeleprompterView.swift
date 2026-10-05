@@ -162,6 +162,9 @@ struct TeleprompterView: View {
     @State private var teleprompterMode: TeleprompterMode = .auto
     @Namespace private var modeNamespace
     @State private var backgroundMode: BackgroundMode = .solidColor
+    #if DEBUG
+    @AppStorage(AppConstants.debugDemoCameraKey) private var useDemoCameraBackground = false
+    #endif
     @State private var fullPanelHeight: CGFloat = 280
     @State private var showNextBanner = false
     @State private var nextCountdown = 5
@@ -310,12 +313,35 @@ struct TeleprompterView: View {
     }
     
     // MARK: - iOS Body (Music Player Layout)
-    
+
 #if os(iOS)
+    /// Routes the paywall to whichever view can present it: the player sheet when it is up,
+    /// otherwise the teleprompter itself (e.g. landscape, where the player sheet is hidden).
+    private func paywallBinding(fromPlayerSheet: Bool) -> Binding<Bool> {
+        Binding(
+            get: { showingPaywall && isSheetPresented == fromPlayerSheet },
+            set: { if !$0 { showingPaywall = false } }
+        )
+    }
+
+    /// Debug builds: camera mode shows the bundled demo photo instead of the live camera.
+    private var showsDemoCamera: Bool {
+        #if DEBUG
+        return backgroundMode == .camera && useDemoCameraBackground
+        #else
+        return false
+        #endif
+    }
+
+    /// True when a camera image sits behind the text: the live feed, or the debug demo photo.
+    private var showsCameraImage: Bool {
+        showsDemoCamera || cameraService.isCameraActive
+    }
+
     private var iOSBody: some View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
-            content: textBody(textColor: (cameraService.isCameraActive || backgroundMode == .camera) ? .white : nil, horizontalPadding: liveHorizontalPadding),
+            content: textBody(textColor: showsCameraImage ? .white : nil, horizontalPadding: liveHorizontalPadding),
             onHeights: { contentHeight, screenHeight in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
                 viewModel.contentHeight = contentHeight
@@ -343,16 +369,7 @@ struct TeleprompterView: View {
         )
         .ignoresSafeArea()
         .background {
-            if let session = cameraService.captureSession {
-                ZStack {
-                    CameraPreviewRepresentable(session: session, verticalSizeClass: verticalSizeClass)
-                        .ignoresSafeArea()
-                    Color.black.opacity(0.42)
-                        .ignoresSafeArea()
-                }
-                .allowsHitTesting(false)
-            } else if backgroundMode == .camera {
-                #if DEBUG
+            if showsDemoCamera {
                 ZStack {
                     Image("CameraDemoBackground")
                         .resizable()
@@ -362,9 +379,14 @@ struct TeleprompterView: View {
                         .ignoresSafeArea()
                 }
                 .allowsHitTesting(false)
-                #else
-                contentBackground.ignoresSafeArea()
-                #endif
+            } else if let session = cameraService.captureSession {
+                ZStack {
+                    CameraPreviewRepresentable(session: session, verticalSizeClass: verticalSizeClass)
+                        .ignoresSafeArea()
+                    Color.black.opacity(0.42)
+                        .ignoresSafeArea()
+                }
+                .allowsHitTesting(false)
             } else {
                 contentBackground.ignoresSafeArea()
             }
@@ -420,11 +442,16 @@ struct TeleprompterView: View {
                         .frame(minWidth: 280)
                         .presentationCompactAdaptation(.popover)
                 }
+                // A view covered by the player sheet can't present another sheet,
+                // so while the player sheet is up the paywall is presented from it.
+                .sheet(isPresented: paywallBinding(fromPlayerSheet: true)) {
+                    PaywallView().environment(storeKit)
+                }
         }
         .onChange(of: isSheetPresented) { _, presented in
             if !presented { showDisplayAdjustments = false }
         }
-        .sheet(isPresented: $showingPaywall) {
+        .sheet(isPresented: paywallBinding(fromPlayerSheet: false)) {
             PaywallView().environment(storeKit)
         }
         .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
@@ -1057,7 +1084,11 @@ struct TeleprompterView: View {
         if backgroundMode == .camera { cameraService.stopCamera() }
         if mode == .camera {
             guard storeKit.isPremium else { showingPaywall = true; return }
+            #if DEBUG
+            if !useDemoCameraBackground { Task { await cameraService.requestPermissionsAndStart() } }
+            #else
             Task { await cameraService.requestPermissionsAndStart() }
+            #endif
         }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) { backgroundMode = mode }
     }
