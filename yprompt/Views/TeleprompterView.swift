@@ -180,6 +180,7 @@ struct TeleprompterView: View {
     @State private var liveFontSize: CGFloat = AppConstants.defaultFontSize
     @State private var lastCrossedCueProgress: Double = -1
     @State private var showDisplayAdjustments = false
+    @State private var showCameraSettings = false
     @State private var isExitingPlayMode = false
     @State private var didRestoreTabBar = false
     @State private var didRestoreProgress = false
@@ -390,11 +391,7 @@ struct TeleprompterView: View {
                 .resizable()
                 .scaledToFill()
         } else if let session = cameraService.captureSession {
-            CameraPreviewRepresentable(
-                session: session,
-                verticalSizeClass: verticalSizeClass,
-                position: cameraService.cameraPosition
-            )
+            CameraPreviewRepresentable(session: session, camera: cameraService)
         }
     }
 
@@ -545,6 +542,17 @@ struct TeleprompterView: View {
                         .frame(minWidth: 280)
                         .presentationCompactAdaptation(.popover)
                 }
+                // Separate anchor: one view can't host two popovers.
+                .background {
+                    Color.clear
+                        .popover(isPresented: $showCameraSettings, arrowEdge: .bottom) {
+                            ScrollView {
+                                CameraSettingsView(camera: cameraService).padding()
+                            }
+                            .frame(idealHeight: 460)
+                            .presentationCompactAdaptation(.popover)
+                        }
+                }
                 // A view covered by the player sheet can't present another sheet,
                 // so while the player sheet is up the paywall is presented from it.
                 .sheet(isPresented: paywallBinding(fromPlayerSheet: true)) {
@@ -552,7 +560,10 @@ struct TeleprompterView: View {
                 }
         }
         .onChange(of: isSheetPresented) { _, presented in
-            if !presented { showDisplayAdjustments = false }
+            if !presented {
+                showDisplayAdjustments = false
+                showCameraSettings = false
+            }
         }
         .sheet(isPresented: paywallBinding(fromPlayerSheet: false)) {
             PaywallView().environment(storeKit)
@@ -666,6 +677,13 @@ struct TeleprompterView: View {
                         }
                         .disabled(cameraService.isRecording)
                     }
+                    if cameraService.isCameraActive {
+                        Button {
+                            presentFromPlayerSheet { showCameraSettings = true }
+                        } label: {
+                            Label("Camera Settings…", systemImage: "camera.aperture")
+                        }
+                    }
                     if canSplitCamera {
                         Toggle(isOn: $isSplitCamera.animation(sheetMorphAnimation)) {
                             Label("Split Screen", systemImage: "rectangle.split.2x1")
@@ -689,18 +707,24 @@ struct TeleprompterView: View {
                 if isSheetPresented {
                     showDisplayAdjustments.toggle()
                 } else {
-                    isPlayerExpanded = true
-                    isSheetPresented = true
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(400))
-                        showDisplayAdjustments = true
-                    }
+                    presentFromPlayerSheet { showDisplayAdjustments = true }
                 }
             } label: {
                 Image(systemName: "slider.horizontal.3")
                     .symbolVariant(showDisplayAdjustments ? .fill : .none)
             }
             .accessibilityLabel("Display adjustments")
+        }
+    }
+
+    /// Popovers hang off the player sheet; bring it up first when it's hidden (e.g. landscape).
+    private func presentFromPlayerSheet(_ present: @escaping () -> Void) {
+        guard !isSheetPresented else { present(); return }
+        isPlayerExpanded = true
+        isSheetPresented = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            present()
         }
     }
 
@@ -1648,69 +1672,25 @@ private struct TeleprompterScrollView<Content: View>: UIViewRepresentable {
 #if os(iOS)
 private struct CameraPreviewRepresentable: UIViewRepresentable {
     let session: AVCaptureSession
-    // Passed so updateUIView is triggered on device rotation.
-    let verticalSizeClass: UserInterfaceSizeClass?
-    // Passed so updateUIView re-applies rotation after a camera switch.
-    let position: AVCaptureDevice.Position
+    let camera: CameraRecordingService
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
         view.previewLayer.session = session
         view.previewLayer.videoGravity = .resizeAspectFill
+        // The service's rotation coordinator keeps this layer (and recordings) level.
+        camera.attachPreviewLayer(view.previewLayer)
         return view
     }
 
     func updateUIView(_ uiView: PreviewView, context: Context) {
-        uiView.cameraPosition = position
-        uiView.applyCurrentOrientation()
+        if uiView.previewLayer.session !== session { uiView.previewLayer.session = session }
+        camera.attachPreviewLayer(uiView.previewLayer)
     }
 
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var previewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
-        var cameraPosition: AVCaptureDevice.Position = .front
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            applyCurrentOrientation()
-        }
-
-        func applyCurrentOrientation() {
-            guard let connection = previewLayer.connection else { return }
-            let orientation: UIInterfaceOrientation
-            if #available(iOS 26.0, *) {
-                orientation = window?.windowScene?.effectiveGeometry.interfaceOrientation ?? .portrait
-            } else {
-                orientation = window?.windowScene?.interfaceOrientation ?? .portrait
-            }
-            if #available(iOS 17.0, *) {
-                let isFront = cameraPosition == .front
-                let angle: CGFloat
-                switch orientation {
-                // Front camera mirror swaps landscape directions
-                case .landscapeLeft:      angle = isFront ? 0 : 180
-                case .landscapeRight:     angle = isFront ? 180 : 0
-                case .portraitUpsideDown: angle = 270
-                default:                  angle = 90
-                }
-                if connection.isVideoRotationAngleSupported(angle) {
-                    connection.videoRotationAngle = angle
-                }
-            } else {
-                let isFront = cameraPosition == .front
-                let avOrientation: AVCaptureVideoOrientation
-                switch orientation {
-                // Front camera mirror swaps landscape directions
-                case .landscapeLeft:      avOrientation = isFront ? .landscapeRight : .landscapeLeft
-                case .landscapeRight:     avOrientation = isFront ? .landscapeLeft : .landscapeRight
-                case .portraitUpsideDown: avOrientation = .portraitUpsideDown
-                default:                  avOrientation = .portrait
-                }
-                if connection.isVideoOrientationSupported {
-                    connection.videoOrientation = avOrientation
-                }
-            }
-        }
     }
 }
 #endif
