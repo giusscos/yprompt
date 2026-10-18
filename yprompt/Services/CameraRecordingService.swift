@@ -14,9 +14,17 @@ final class CameraRecordingService: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var permissionDenied = false
     @Published var recordingSaved = false
+    @Published private(set) var cameraPosition: AVCaptureDevice.Position = .front
 
     private(set) var captureSession: AVCaptureSession?
     private var movieOutput: AVCaptureMovieFileOutput?
+    private var videoInput: AVCaptureDeviceInput?
+
+    /// True when the device has a camera on the other side to switch to.
+    var canSwitchCamera: Bool {
+        AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) != nil
+            && AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) != nil
+    }
 
     func requestPermissionsAndStart() async {
         var cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
@@ -47,7 +55,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         session.sessionPreset = .high
 
         guard
-            let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
+            let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: cameraPosition),
             let cameraInput = try? AVCaptureDeviceInput(device: camera),
             session.canAddInput(cameraInput)
         else {
@@ -55,6 +63,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
             return
         }
         session.addInput(cameraInput)
+        videoInput = cameraInput
 
         if let mic = AVCaptureDevice.default(for: .audio),
            let micInput = try? AVCaptureDeviceInput(device: mic),
@@ -77,6 +86,30 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
     }
 
+    /// Swaps between the front and back camera, keeping the running session.
+    func switchCamera() {
+        let newPosition: AVCaptureDevice.Position = cameraPosition == .front ? .back : .front
+        guard let session = captureSession else {
+            cameraPosition = newPosition
+            return
+        }
+        guard !isRecording,
+              let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
+              let newInput = try? AVCaptureDeviceInput(device: camera)
+        else { return }
+
+        session.beginConfiguration()
+        if let videoInput { session.removeInput(videoInput) }
+        if session.canAddInput(newInput) {
+            session.addInput(newInput)
+            videoInput = newInput
+            cameraPosition = newPosition
+        } else if let videoInput {
+            session.addInput(videoInput)
+        }
+        session.commitConfiguration()
+    }
+
     func stopCamera() {
         if isRecording { movieOutput?.stopRecording() }
         let session = captureSession
@@ -84,6 +117,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         isCameraActive = false
         isRecording = false
         movieOutput = nil
+        videoInput = nil
         Task.detached(priority: .userInitiated) {
             session?.stopRunning()
         }

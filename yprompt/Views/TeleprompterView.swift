@@ -156,6 +156,11 @@ struct TeleprompterView: View {
 #endif
 #if os(iOS)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @AppStorage("splitCameraLayout") private var isSplitCamera = false
+    @AppStorage("splitCameraPromptOnLeading") private var promptOnLeading = false
+    @State private var layoutFrame: CGRect = .zero
+    @State private var playerPanelFrame: CGRect = .zero
     @State private var isPlayerExpanded: Bool = true
     @State private var isSheetPresented: Bool = true
     @State private var liveHorizontalPadding: CGFloat = 16
@@ -210,7 +215,7 @@ struct TeleprompterView: View {
     }
 
     private var isBackgroundDark: Bool {
-        if cameraService.isCameraActive { return true }
+        if cameraBehindText { return true }
         let uiColor = UIColor(Color(hex: customization.backgroundColorHex))
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
         uiColor.getRed(&r, green: &g, blue: &b, alpha: nil)
@@ -342,10 +347,90 @@ struct TeleprompterView: View {
         showsDemoCamera || cameraService.isCameraActive
     }
 
+    /// Split needs room for two usable halves: the unfolded iPhone Duo, or an iPad.
+    private var canSplitCamera: Bool { horizontalSizeClass == .regular }
+
+    /// Camera preview in one half, prompt in the other. Side by side on wide layouts,
+    /// prompt on top (nearest the front camera) on tall ones.
+    private var splitAxis: Axis? {
+        guard isSplitCamera, canSplitCamera, backgroundMode == .camera, showsCameraImage,
+              layoutSize.width > 0 else { return nil }
+        return layoutSize.width >= layoutSize.height ? .horizontal : .vertical
+    }
+
+    private var cameraBehindText: Bool { showsCameraImage && splitAxis == nil }
+
+    private var layoutSize: CGSize { layoutFrame.size }
+
+    /// Side-by-side camera pane: half the width, widened so the floating player card
+    /// (which sits bottom-leading on regular widths) never overlaps the prompt.
+    private var cameraPaneWidth: CGFloat {
+        let half = layoutSize.width / 2
+        guard isSheetPresented, !promptOnLeading, playerPanelFrame.width > 0 else { return half }
+        let cardEdge = playerPanelFrame.maxX - layoutFrame.minX + 12
+        return cardEdge > half && cardEdge < layoutSize.width * 0.6 ? cardEdge : half
+    }
+
+    /// The player sheet floats over the camera half in split mode, so it only
+    /// shortens the readable area when it sits on top of the prompt.
+    private var sheetCoversPrompt: Bool {
+        guard isSheetPresented else { return false }
+        switch splitAxis {
+        case .vertical: return false
+        case .horizontal: return promptOnLeading
+        case nil: return true
+        }
+    }
+
+    /// Live camera feed, or the bundled demo photo in debug builds.
+    @ViewBuilder
+    private var cameraFeed: some View {
+        if showsDemoCamera {
+            Image("CameraDemoBackground")
+                .resizable()
+                .scaledToFill()
+        } else if let session = cameraService.captureSession {
+            CameraPreviewRepresentable(
+                session: session,
+                verticalSizeClass: verticalSizeClass,
+                position: cameraService.cameraPosition
+            )
+        }
+    }
+
+    /// Prompt background on one half, unobscured camera preview on the other.
+    private func splitCameraBackground(axis: Axis) -> some View {
+        // Only the split dimension is fixed; the other stretches into the safe areas.
+        let cameraEdges: Edge.Set
+        let alignment: Alignment
+        let paneWidth: CGFloat?
+        let paneHeight: CGFloat?
+        switch axis {
+        case .horizontal:
+            cameraEdges = [promptOnLeading ? .trailing : .leading, .vertical]
+            alignment = promptOnLeading ? .trailing : .leading
+            (paneWidth, paneHeight) = (cameraPaneWidth, nil)
+        case .vertical:
+            cameraEdges = [.bottom, .horizontal]
+            alignment = .bottom
+            (paneWidth, paneHeight) = (nil, layoutSize.height / 2)
+        }
+        return ZStack(alignment: alignment) {
+            Color(hex: customization.backgroundColorHex)
+                .ignoresSafeArea()
+            cameraFeed
+                .frame(width: paneWidth, height: paneHeight)
+                .frame(maxWidth: paneWidth == nil ? .infinity : nil, maxHeight: paneHeight == nil ? .infinity : nil)
+                .clipped()
+                .ignoresSafeArea(edges: cameraEdges)
+        }
+        .allowsHitTesting(false)
+    }
+
     private var iOSBody: some View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
-            content: textBody(textColor: showsCameraImage ? .white : nil, horizontalPadding: liveHorizontalPadding),
+            content: textBody(textColor: cameraBehindText ? .white : nil, horizontalPadding: liveHorizontalPadding),
             onHeights: { contentHeight, screenHeight, widthChanged in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
                 if widthChanged && didRestoreProgress && !viewModel.pendingAutoPlay && viewModel.contentHeight > 0 {
@@ -360,7 +445,7 @@ struct TeleprompterView: View {
                 viewModel.contentHeight = contentHeight
                 // screenHeight is full height below nav bar; subtract the sheet so maxOffset
                 // reflects only the readable area above the sheet.
-                viewModel.screenHeight = max(100, screenHeight - (isSheetPresented ? activeSheetHeight : 0))
+                viewModel.screenHeight = max(100, screenHeight - (sheetCoversPrompt ? activeSheetHeight : 0))
                 // SwiftUI re-measures the rewrapped text a pass after the width changes;
                 // re-anchor until the new height lands.
                 if let p = reflowProgress {
@@ -381,28 +466,23 @@ struct TeleprompterView: View {
                     viewModel.play()
                 }
             },
-            bottomInset: isSheetPresented ? activeSheetHeight : 0,
+            bottomInset: sheetCoversPrompt ? activeSheetHeight : 0,
             scriptID: currentScript.id,
             fontSize: liveFontSize,
             horizontalPadding: liveHorizontalPadding
         )
+        .padding(.leading, splitAxis == .horizontal && !promptOnLeading ? cameraPaneWidth : 0)
+        .padding(.trailing, splitAxis == .horizontal && promptOnLeading ? cameraPaneWidth : 0)
+        .padding(.bottom, splitAxis == .vertical ? layoutSize.height / 2 : 0)
         // Vertical only: side insets (landscape notch, iPhone Duo's camera/toolbar rail when folded)
         // must stay clear or the ends of lines get covered.
         .ignoresSafeArea(edges: .vertical)
         .background {
-            if showsDemoCamera {
+            if let axis = splitAxis {
+                splitCameraBackground(axis: axis)
+            } else if showsCameraImage {
                 ZStack {
-                    Image("CameraDemoBackground")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
-                    Color.black.opacity(0.42)
-                        .ignoresSafeArea()
-                }
-                .allowsHitTesting(false)
-            } else if let session = cameraService.captureSession {
-                ZStack {
-                    CameraPreviewRepresentable(session: session, verticalSizeClass: verticalSizeClass)
+                    cameraFeed
                         .ignoresSafeArea()
                     Color.black.opacity(0.42)
                         .ignoresSafeArea()
@@ -412,6 +492,7 @@ struct TeleprompterView: View {
                 contentBackground.ignoresSafeArea()
             }
         }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { layoutFrame = $0 }
         .onAppear {
             viewModel.scrollSpeed = customization.scrollSpeed
             viewModel.transparency = customization.transparency
@@ -439,6 +520,7 @@ struct TeleprompterView: View {
         }
         .sheet(isPresented: $isSheetPresented) {
             iOSPlayerPanel
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { playerPanelFrame = $0 }
                 .onPreferenceChange(PanelContentHeightKey.self) { h in
                     guard isPlayerExpanded, h > 0, abs(h - fullPanelHeight) > 1 else { return }
                     withAnimation(sheetMorphAnimation) {
@@ -569,6 +651,32 @@ struct TeleprompterView: View {
                     Label("Camera", systemImage: "camera.fill")
                     if backgroundMode == .camera {
                         Image(systemName: "checkmark")
+                    }
+                }
+                if backgroundMode == .camera {
+                    Divider()
+                    if cameraService.canSwitchCamera {
+                        Button {
+                            cameraService.switchCamera()
+                        } label: {
+                            Label(
+                                cameraService.cameraPosition == .front ? "Use Back Camera" : "Use Front Camera",
+                                systemImage: "arrow.triangle.2.circlepath.camera"
+                            )
+                        }
+                        .disabled(cameraService.isRecording)
+                    }
+                    if canSplitCamera {
+                        Toggle(isOn: $isSplitCamera.animation(sheetMorphAnimation)) {
+                            Label("Split Screen", systemImage: "rectangle.split.2x1")
+                        }
+                        if isSplitCamera {
+                            Button {
+                                withAnimation(sheetMorphAnimation) { promptOnLeading.toggle() }
+                            } label: {
+                                Label("Swap Sides", systemImage: "arrow.left.arrow.right")
+                            }
+                        }
                     }
                 }
             } label: {
@@ -1542,6 +1650,8 @@ private struct CameraPreviewRepresentable: UIViewRepresentable {
     let session: AVCaptureSession
     // Passed so updateUIView is triggered on device rotation.
     let verticalSizeClass: UserInterfaceSizeClass?
+    // Passed so updateUIView re-applies rotation after a camera switch.
+    let position: AVCaptureDevice.Position
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
@@ -1551,12 +1661,14 @@ private struct CameraPreviewRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: PreviewView, context: Context) {
+        uiView.cameraPosition = position
         uiView.applyCurrentOrientation()
     }
 
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var previewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
+        var cameraPosition: AVCaptureDevice.Position = .front
 
         override func layoutSubviews() {
             super.layoutSubviews()
@@ -1572,11 +1684,12 @@ private struct CameraPreviewRepresentable: UIViewRepresentable {
                 orientation = window?.windowScene?.interfaceOrientation ?? .portrait
             }
             if #available(iOS 17.0, *) {
+                let isFront = cameraPosition == .front
                 let angle: CGFloat
                 switch orientation {
                 // Front camera mirror swaps landscape directions
-                case .landscapeLeft:      angle = 0
-                case .landscapeRight:     angle = 180
+                case .landscapeLeft:      angle = isFront ? 0 : 180
+                case .landscapeRight:     angle = isFront ? 180 : 0
                 case .portraitUpsideDown: angle = 270
                 default:                  angle = 90
                 }
@@ -1584,11 +1697,12 @@ private struct CameraPreviewRepresentable: UIViewRepresentable {
                     connection.videoRotationAngle = angle
                 }
             } else {
+                let isFront = cameraPosition == .front
                 let avOrientation: AVCaptureVideoOrientation
                 switch orientation {
                 // Front camera mirror swaps landscape directions
-                case .landscapeLeft:      avOrientation = .landscapeRight
-                case .landscapeRight:     avOrientation = .landscapeLeft
+                case .landscapeLeft:      avOrientation = isFront ? .landscapeRight : .landscapeLeft
+                case .landscapeRight:     avOrientation = isFront ? .landscapeLeft : .landscapeRight
                 case .portraitUpsideDown: avOrientation = .portraitUpsideDown
                 default:                  avOrientation = .portrait
                 }
