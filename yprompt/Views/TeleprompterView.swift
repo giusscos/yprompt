@@ -178,6 +178,10 @@ struct TeleprompterView: View {
     @State private var isExitingPlayMode = false
     @State private var didRestoreTabBar = false
     @State private var didRestoreProgress = false
+    /// Reading position held while the text rewraps to a new width (rotation, Split View,
+    /// or folding/unfolding iPhone Duo), so the reader stays on the same line.
+    @State private var reflowProgress: Double? = nil
+    @State private var reflowStaleHeight: CGFloat = 0
 #endif
 #if !os(watchOS)
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
@@ -342,12 +346,27 @@ struct TeleprompterView: View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
             content: textBody(textColor: showsCameraImage ? .white : nil, horizontalPadding: liveHorizontalPadding),
-            onHeights: { contentHeight, screenHeight in
+            onHeights: { contentHeight, screenHeight, widthChanged in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
+                if widthChanged && didRestoreProgress && !viewModel.pendingAutoPlay && viewModel.contentHeight > 0 {
+                    // Capture progress with the old heights before they're overwritten.
+                    reflowProgress = viewModel.progress
+                    reflowStaleHeight = viewModel.contentHeight
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        reflowProgress = nil
+                    }
+                }
                 viewModel.contentHeight = contentHeight
                 // screenHeight is full height below nav bar; subtract the sheet so maxOffset
                 // reflects only the readable area above the sheet.
                 viewModel.screenHeight = max(100, screenHeight - (isSheetPresented ? activeSheetHeight : 0))
+                // SwiftUI re-measures the rewrapped text a pass after the width changes;
+                // re-anchor until the new height lands.
+                if let p = reflowProgress {
+                    viewModel.contentOffset = max(0, viewModel.contentHeight - viewModel.screenHeight + 80) * CGFloat(p)
+                    if contentHeight != reflowStaleHeight { reflowProgress = nil }
+                }
                 // Restore saved scroll position once layout is ready (only on first load, not queue advances).
                 if !didRestoreProgress && contentHeight > 0 {
                     didRestoreProgress = true
@@ -367,7 +386,9 @@ struct TeleprompterView: View {
             fontSize: liveFontSize,
             horizontalPadding: liveHorizontalPadding
         )
-        .ignoresSafeArea()
+        // Vertical only: side insets (landscape notch, iPhone Duo's camera/toolbar rail when folded)
+        // must stay clear or the ends of lines get covered.
+        .ignoresSafeArea(edges: .vertical)
         .background {
             if showsDemoCamera {
                 ZStack {
@@ -1418,19 +1439,22 @@ struct TeleprompterView: View {
 
 #if os(iOS)
 private final class _ScrollContainer: UIScrollView {
-    var onLayout: ((CGFloat, CGFloat) -> Void)?
+    var onLayout: ((CGFloat, CGFloat, Bool) -> Void)?
+    private var lastWidth: CGFloat = 0
     override func layoutSubviews() {
         super.layoutSubviews()
         let visibleHeight = bounds.height - adjustedContentInset.top
         guard contentSize.height > 0, visibleHeight > 0 else { return }
-        onLayout?(contentSize.height, visibleHeight)
+        let widthChanged = lastWidth > 0 && abs(bounds.width - lastWidth) > 0.5
+        lastWidth = bounds.width
+        onLayout?(contentSize.height, visibleHeight, widthChanged)
     }
 }
 
 private struct TeleprompterScrollView<Content: View>: UIViewRepresentable {
     @Binding var offset: CGFloat
     let content: Content
-    let onHeights: (CGFloat, CGFloat) -> Void
+    let onHeights: (CGFloat, CGFloat, Bool) -> Void
     var bottomInset: CGFloat = 0
     var scriptID: UUID? = nil
     var fontSize: CGFloat = 0
