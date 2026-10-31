@@ -200,6 +200,23 @@ struct ScriptsListView: View {
         .onChange(of: hasSeenOnboarding) { _, seen in
             if seen { openWelcomeScript() }
         }
+        #if DEBUG && !os(macOS)
+        // For App Store screenshots: launch with `-ypOpenFirstScript` to go straight to the player,
+        // or `-ypOpenEditor` for the editor.
+        .task {
+            let arguments = ProcessInfo.processInfo.arguments
+            guard arguments.contains("-ypOpenFirstScript") || arguments.contains("-ypOpenEditor") else { return }
+            try? await Task.sleep(for: .milliseconds(800))
+            guard let first = scripts.first else { return }
+            if arguments.contains("-ypOpenEditor") {
+                scriptToOpen = first
+                return
+            }
+            queueToPlay = [first]
+            TabBarAnimator.setHidden(true, animated: false)
+            showingQueuePlayer = true
+        }
+        #endif
         .confirmationDialog(
             "Delete Script?",
             isPresented: $showDeleteConfirm,
@@ -473,12 +490,12 @@ struct ScriptsListView: View {
     private func createScript(title: String) {
         let trimmed = title.trimmingCharacters(in: .whitespaces)
         let script = Script(title: trimmed.isEmpty ? "Untitled Script" : trimmed)
-        if let settings = settingsArray.first {
-            var customization = TextCustomization()
+        var customization = ReadingPreferences.newScriptStyle ?? TextCustomization()
+        if ReadingPreferences.newScriptStyle == nil, let settings = settingsArray.first {
             customization.fontSize = settings.defaultFontSize
             customization.scrollSpeed = settings.defaultScrollSpeed
-            script.customization = customization
         }
+        script.customization = customization
         modelContext.insert(script)
         try? modelContext.save()
         newScriptTitle = ""

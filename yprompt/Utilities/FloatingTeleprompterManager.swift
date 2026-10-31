@@ -14,8 +14,12 @@ final class FloatingTeleprompterManager {
 
     var isVisible = false
     var currentScript: Script?
-    var backgroundOpacity: Double = 0.92
-    var blurAmount: Double = 0.0
+    var backgroundOpacity: Double = UserDefaults.standard.object(forKey: "floating.opacity") as? Double ?? 0.92 {
+        didSet { UserDefaults.standard.set(backgroundOpacity, forKey: "floating.opacity") }
+    }
+    var blurAmount: Double = UserDefaults.standard.double(forKey: "floating.blur") {
+        didSet { UserDefaults.standard.set(blurAmount, forKey: "floating.blur") }
+    }
     var notchMode: Bool = false
     /// Drives the notch bounce appear/disappear spring in `NotchTeleprompterView`.
     var notchPresented: Bool = false
@@ -69,7 +73,9 @@ final class FloatingTeleprompterManager {
     var floatingWindowHeight: CGFloat = 116 {
         didSet { resizeFloatingPanel(width: floatingWindowWidth, height: floatingWindowHeight) }
     }
-    var horizontalPadding: CGFloat = 52
+    var horizontalPadding: CGFloat = (UserDefaults.standard.object(forKey: "floating.margins") as? Double).map { CGFloat($0) } ?? 52 {
+        didSet { UserDefaults.standard.set(Double(horizontalPadding), forKey: "floating.margins") }
+    }
     let viewModel = TeleprompterViewModel()
 
     var storeKit: StoreKitService?
@@ -139,6 +145,7 @@ final class FloatingTeleprompterManager {
         // A saved notch preference from before notch mode became Pro, or a lapsed subscription.
         if notchMode && !isPremium { notchMode = false }
         viewModel.load(words: script.scriptWords)
+        viewModel.scrollSpeed = ReadingPreferences.speed > 0 ? ReadingPreferences.speed : script.customization.scrollSpeed
         viewModel.isNotchMode = notchMode
         viewModel.resetToTop()
         let alreadyShowingNotch = isVisible && notchMode && notchPresented

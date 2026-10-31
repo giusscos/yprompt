@@ -19,6 +19,8 @@ class TeleprompterViewModel {
     var showVoiceMeter: Bool = true
     var micPermissionDenied: Bool = false
     var isFinished: Bool = false
+    // The reader is dragging the script to move through it.
+    private(set) var isScrubbing: Bool = false
     // Notch mode horizontal progress (0→1 over text width before looping)
     var notchProgress: Double = 0
     // Explicit flag set by FloatingTeleprompterManager; avoids relying on stale contentHeight
@@ -78,6 +80,7 @@ class TeleprompterViewModel {
     @ObservationIgnored nonisolated(unsafe) private var timedElapsedTask: Task<Void, Never>?
     // Distance "read" since the text stopped moving: the last screenful still has to be read.
     @ObservationIgnored private var lastScreenRead: CGFloat = 0
+    @ObservationIgnored private var resumeAfterScrub = false
     #if !os(watchOS)
     @ObservationIgnored private var aligner: WordAligner?
     @ObservationIgnored private var lastHeardDate: Date?
@@ -136,6 +139,7 @@ class TeleprompterViewModel {
             scrollSpeed = min(AppConstants.maxScrollSpeed, needed)
         }
         isPlaying = true
+        showControls = true
         if timedDuration != nil { startTimedElapsedTask() }
         #if !os(watchOS)
         if voiceScrollEnabled { voiceScrollService.start() }
@@ -146,6 +150,8 @@ class TeleprompterViewModel {
 
     func pause() {
         isPlaying = false
+        hideControlsTask?.cancel()
+        showControls = true
         scrollTask?.cancel()
         scrollTask = nil
         timedElapsedTask?.cancel()
@@ -157,6 +163,31 @@ class TeleprompterViewModel {
 
     func togglePlayPause() {
         if isPlaying { pause() } else { play() }
+    }
+
+    // MARK: - Scrubbing
+
+    func beginScrub() {
+        guard !isScrubbing else { return }
+        isScrubbing = true
+        resumeAfterScrub = isPlaying
+        if isPlaying { pause() }
+        isFinished = false
+    }
+
+    func endScrub() {
+        guard isScrubbing else { return }
+        isScrubbing = false
+        if resumeAfterScrub { play() }
+    }
+
+    func scrub(toWord index: Int) {
+        setWordPosition(Double(index))
+        syncAlignerToPosition()
+    }
+
+    func scrubClassic(to offset: CGFloat) {
+        contentOffset = min(max(0, offset), max(0, contentHeight - screenHeight + 80))
     }
 
     func resetToTop() {
@@ -276,7 +307,7 @@ class TeleprompterViewModel {
     // MARK: - Voice Scroll
 
     #if !os(watchOS)
-    func toggleVoiceScroll() async {
+    func toggleVoiceScroll(autoPlay: Bool = true) async {
         if voiceScrollEnabled {
             voiceScrollEnabled = false
             pause()
@@ -288,7 +319,7 @@ class TeleprompterViewModel {
                 syncAlignerToPosition()
                 if isPlaying {
                     voiceScrollService.start()
-                } else {
+                } else if autoPlay {
                     play()
                 }
             } else {
@@ -333,9 +364,20 @@ class TeleprompterViewModel {
 
     // MARK: - Controls Visibility
 
-    func showControlsTemporarily() {
+    func showControlsTemporarily(for seconds: TimeInterval = 3) {
         withAnimation { showControls = true }
-        scheduleHideControls()
+        scheduleHideControls(after: seconds)
+    }
+
+    /// While reading, a tap on the script hides or brings back the controls.
+    func toggleControls() {
+        guard isPlaying else { return }
+        if showControls {
+            hideControlsTask?.cancel()
+            withAnimation(.easeOut(duration: 0.3)) { showControls = false }
+        } else {
+            showControlsTemporarily()
+        }
     }
 
     // MARK: - Private
@@ -542,10 +584,14 @@ class TeleprompterViewModel {
         }
     }
 
-    private func scheduleHideControls() {
+    private func scheduleHideControls(after seconds: TimeInterval = 3) {
+        #if DEBUG
+        // For App Store screenshots of the controls during playback.
+        if ProcessInfo.processInfo.arguments.contains("-ypShotKeepControls") { return }
+        #endif
         hideControlsTask?.cancel()
         hideControlsTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            try? await Task.sleep(for: .seconds(seconds))
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.3)) { showControls = false }
         }

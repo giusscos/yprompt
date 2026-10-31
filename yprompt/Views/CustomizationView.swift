@@ -17,7 +17,10 @@ struct CustomizationView: View {
 
     init(script: Script) {
         self.script = script
-        self._customization = State(initialValue: script.customization)
+        var current = script.customization
+        if ReadingPreferences.fontSize > 0 { current.fontSize = ReadingPreferences.fontSize }
+        if ReadingPreferences.speed > 0 { current.scrollSpeed = ReadingPreferences.speed }
+        self._customization = State(initialValue: current)
     }
 
     var body: some View {
@@ -335,6 +338,9 @@ struct CustomizationView: View {
     private func applyAndDismiss() {
         script.customization = customization
         try? modelContext.save()
+        ReadingPreferences.fontSize = customization.fontSize
+        ReadingPreferences.speed = customization.scrollSpeed
+        ReadingPreferences.newScriptStyle = customization
         dismiss()
     }
 }

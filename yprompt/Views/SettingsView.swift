@@ -276,10 +276,14 @@ struct SettingsView: View {
             Divider()
             prefSliderRow("Scroll Speed",
                 value: Binding(
-                    get: { settings.defaultScrollSpeed },
-                    set: { v in settings.defaultScrollSpeed = v; try? modelContext.save() }),
+                    get: { ReadingPreferences.speed > 0 ? ReadingPreferences.speed : settings.defaultScrollSpeed },
+                    set: { v in
+                        settings.defaultScrollSpeed = v
+                        ReadingPreferences.speed = v
+                        try? modelContext.save()
+                    }),
                 range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed, step: 0.1,
-                display: String(format: "%.1fx", settings.defaultScrollSpeed))
+                display: String(format: "%.1fx", ReadingPreferences.speed > 0 ? ReadingPreferences.speed : settings.defaultScrollSpeed))
         }
     }
 
@@ -475,13 +479,17 @@ struct SettingsView: View {
                     Text("Font Size")
                     Slider(
                         value: Binding(
-                            get: { settings.defaultFontSize },
-                            set: { settings.defaultFontSize = $0; try? modelContext.save() }
+                            get: { ReadingPreferences.fontSize > 0 ? ReadingPreferences.fontSize : settings.defaultFontSize },
+                            set: {
+                                settings.defaultFontSize = $0
+                                ReadingPreferences.fontSize = $0
+                                try? modelContext.save()
+                            }
                         ),
                         in: AppConstants.minFontSize...AppConstants.maxFontSize,
                         step: 1
                     )
-                    Text("\(Int(settings.defaultFontSize))pt")
+                    Text("\(Int(ReadingPreferences.fontSize > 0 ? ReadingPreferences.fontSize : settings.defaultFontSize))pt")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
@@ -490,23 +498,20 @@ struct SettingsView: View {
                     Text("Scroll Speed")
                     Slider(
                         value: Binding(
-                            get: { settings.defaultScrollSpeed },
-                            set: { settings.defaultScrollSpeed = $0; try? modelContext.save() }
+                            get: { ReadingPreferences.speed > 0 ? ReadingPreferences.speed : settings.defaultScrollSpeed },
+                            set: {
+                                settings.defaultScrollSpeed = $0
+                                ReadingPreferences.speed = $0
+                                try? modelContext.save()
+                            }
                         ),
                         in: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
                         step: 0.1
                     )
-                    Text(String(format: "%.1fx", settings.defaultScrollSpeed))
+                    Text(String(format: "%.1fx", ReadingPreferences.speed > 0 ? ReadingPreferences.speed : settings.defaultScrollSpeed))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
-                }
-            }
-            Toggle(isOn: $sliderRequiresLongPress) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Slider Hold to Confirm")
-                    Text("Hold 1 second before a slider change takes effect.")
-                        .font(.caption).foregroundStyle(.secondary)
                 }
             }
             Picker("Language", selection: $selectedLanguage) {
@@ -576,6 +581,7 @@ struct SettingsView: View {
             try modelContext.fetch(FetchDescriptor<Script>()).forEach { modelContext.delete($0) }
             try modelContext.fetch(FetchDescriptor<AppSettings>()).forEach { modelContext.delete($0) }
             try modelContext.save()
+            ReadingPreferences.reset()
         } catch { print("Reset failed: \(error)") }
     }
 

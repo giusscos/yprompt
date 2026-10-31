@@ -15,8 +15,11 @@ struct MenuBarView: View {
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled: Bool = true
     @State private var selectedScriptID: Script.ID?
-    @State private var menuPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
-    @State private var menuTimedMinutes: Int = 3
+    @AppStorage("menu.playbackMode") private var savedPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
+    @AppStorage("menu.timedMinutes") private var menuTimedMinutes: Int = 3
+
+    /// Voice and Timer are Pro; the choice is kept in case a lapsed subscription comes back.
+    private var menuPlaybackMode: Int { manager.isPremium ? savedPlaybackMode : 0 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -49,6 +52,25 @@ struct MenuBarView: View {
             if selectedScriptID == nil {
                 selectedScriptID = scripts.first?.id
             }
+        }
+        .onChange(of: manager.floatingFontSize) { _, size in
+            settingsArray.first?.floatingFontSize = size
+            try? modelContext.save()
+        }
+        .onChange(of: manager.notchFontSize) { _, size in
+            settingsArray.first?.notchFontSize = size
+            try? modelContext.save()
+        }
+        .onChange(of: manager.notchMode) { _, notch in
+            settingsArray.first?.displayMode = notch ? .notch : .floatingWindow
+            try? modelContext.save()
+        }
+        .onChange(of: viewModel.scrollSpeed) { _, speed in
+            // Timer mode works out its own speed, which isn't the reader's choice.
+            if menuPlaybackMode == 0 { ReadingPreferences.speed = speed }
+        }
+        .onChange(of: manager.isVisible) { _, visible in
+            if visible && menuPlaybackMode == 2 { updateMenuTimedDuration() }
         }
         .onChange(of: manager.currentScript?.id) { _, newID in
             if let newID {
@@ -329,7 +351,7 @@ struct MenuBarView: View {
                     if newMode != 1 && viewModel.voiceScrollEnabled { Task { await viewModel.toggleVoiceScroll() } }
                     if newMode != 2 { viewModel.timedDuration = nil }
                     if newMode == 2 { updateMenuTimedDuration() }
-                    menuPlaybackMode = newMode
+                    savedPlaybackMode = newMode
                 }
             )) {
                 Text("Standard").tag(0)

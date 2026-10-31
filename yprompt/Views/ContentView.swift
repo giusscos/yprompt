@@ -12,6 +12,7 @@ struct ContentView: View {
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @Query private var settingsArray: [AppSettings]
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @AppStorage(WhatsNew.seenKey) private var whatsNewSeen = ""
 
     #if os(macOS)
     @State private var selectedScript: Script?
@@ -26,6 +27,11 @@ struct ContentView: View {
                         .environment(storeKit)
                         .frame(width: 520, height: 700)
                 }
+                .sheet(isPresented: isWhatsNewPresented) {
+                    WhatsNewView()
+                        .environment(storeKit)
+                        .frame(width: 460, height: 480)
+                }
             #elseif os(watchOS)
             watchOSContent
             #else
@@ -34,10 +40,25 @@ struct ContentView: View {
                     OnboardingView()
                         .environment(storeKit)
                 }
+                .sheet(isPresented: isWhatsNewPresented) {
+                    WhatsNewView()
+                        .environment(storeKit)
+                }
             #endif
         }
-        .task { seedStartingScripts() }
+        .task {
+            // A new install has nothing to catch up on.
+            if !hasSeenOnboarding { whatsNewSeen = WhatsNew.release }
+            seedStartingScripts()
+        }
         .onChange(of: scripts) { _, scripts in removeSyncedWelcomeCopies(in: scripts) }
+    }
+
+    private var isWhatsNewPresented: Binding<Bool> {
+        Binding(
+            get: { hasSeenOnboarding && whatsNewSeen != WhatsNew.release },
+            set: { if !$0 { whatsNewSeen = WhatsNew.release } }
+        )
     }
 
     // MARK: - Welcome Script

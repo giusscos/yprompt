@@ -15,13 +15,6 @@ private struct ContentHeightKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
-#if os(iOS)
-private struct PanelContentHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
-}
-#endif
-
 struct MusicSlider: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
@@ -118,22 +111,6 @@ struct MusicSlider: View {
 }
 
 #if os(iOS)
-private enum TeleprompterMode: String, CaseIterable {
-    case auto   = "Auto"
-    case tap    = "Tap"
-    case voice  = "Voice"
-    case timed  = "Timed"
-
-    var icon: String {
-        switch self {
-        case .auto:   return "scroll"
-        case .tap:    return "hand.tap.fill"
-        case .voice:  return "mic"
-        case .timed:  return "timer"
-        }
-    }
-}
-
 private enum BackgroundMode: Hashable {
     case solidColor
     case camera
@@ -164,28 +141,32 @@ struct TeleprompterView: View {
 #if os(iOS)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @AppStorage("splitCameraLayout") private var isSplitCamera = false
     @AppStorage("splitCameraPromptOnLeading") private var promptOnLeading = false
     @AppStorage("cameraUnderLens") private var prefersUnderCamera = true
     @State private var safeTopInset: CGFloat = 0
+    @State private var safeBottomInset: CGFloat = 0
+    @State private var safeLeadingInset: CGFloat = 0
+    @State private var safeTrailingInset: CGFloat = 0
+    @State private var stopCameraTask: Task<Void, Never>?
     @State private var layoutFrame: CGRect = .zero
-    @State private var playerPanelFrame: CGRect = .zero
-    @State private var isPlayerExpanded: Bool = true
-    @State private var isSheetPresented: Bool = true
     @State private var liveHorizontalPadding: CGFloat = 16
+    @AppStorage(ReadingPreferences.modeKey) private var savedMode = TeleprompterMode.auto.rawValue
+    @AppStorage(ReadingPreferences.backgroundKey) private var savedBackground = ReadingPreferences.colorBackground
+    @AppStorage(ReadingPreferences.marginsKey) private var savedMargins: Double = 16
+    @AppStorage(ReadingPreferences.timedSecondsKey) private var savedTimedSeconds = 180
     @State private var teleprompterMode: TeleprompterMode = .auto
-    @Namespace private var modeNamespace
     @State private var backgroundMode: BackgroundMode = .solidColor
     #if DEBUG
     @AppStorage(AppConstants.debugDemoCameraKey) private var useDemoCameraBackground = false
     #endif
-    @State private var fullPanelHeight: CGFloat = 280
     @State private var showNextBanner = false
     @State private var nextCountdown = 5
     @State private var countdownTask: Task<Void, Never>? = nil
     @State private var timedMinutes: Int = 3
     @State private var timedSeconds: Int = 0
-    @State private var resetCuePointsPrompt: Bool = false
+    @State private var classicScrubStart: CGFloat?
     @State private var liveFontSize: CGFloat = AppConstants.defaultFontSize
     @State private var lastCrossedCueProgress: Double = -1
     @State private var showDisplayAdjustments = false
@@ -230,27 +211,17 @@ struct TeleprompterView: View {
         return lyricsStyleEnabled && (storeKit.isPremium || currentScript.id == AppConstants.welcomeScriptID)
     }
 
-    private var contentBackground: Color {
-        cameraService.isCameraActive ? .clear : Color(hex: customization.backgroundColorHex)
-    }
-
     private var isBackgroundDark: Bool {
-        if cameraBehindText { return true }
+        if cameraBehindText || isUnderCamera { return true }
         let uiColor = UIColor(Color(hex: customization.backgroundColorHex))
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
         uiColor.getRed(&r, green: &g, blue: &b, alpha: nil)
         return 0.299 * r + 0.587 * g + 0.114 * b < 0.5
     }
 
-    private var miniDetentHeight: CGFloat { 72 }
-    /// Drag indicator + a little breathing room above home indicator.
-    private var sheetHeightPadding: CGFloat { 10 }
-    private var fullDetentHeight: CGFloat {
-        let fitted = fullPanelHeight + sheetHeightPadding
-        return verticalSizeClass == .compact ? min(fitted, 260) : fitted
-    }
-    private var activeSheetHeight: CGFloat { isPlayerExpanded ? fullDetentHeight : miniDetentHeight }
-    private var sheetMorphAnimation: Animation { .spring(response: 0.38, dampingFraction: 0.86) }
+    private var controlsAnimation: Animation { .spring(response: 0.38, dampingFraction: 0.86) }
+    /// Changing background or layout: everything moves together, without a bounce.
+    private var surfaceAnimation: Animation { .easeInOut(duration: 0.45) }
 #endif
     
     var body: some View {
@@ -341,30 +312,21 @@ struct TeleprompterView: View {
 #endif
     }
     
-    // MARK: - iOS Body (Music Player Layout)
+    // MARK: - iOS Body
 
 #if os(iOS)
-    /// Routes the paywall to whichever view can present it: the player sheet when it is up,
-    /// otherwise the teleprompter itself (e.g. landscape, where the player sheet is hidden).
-    private func paywallBinding(fromPlayerSheet: Bool) -> Binding<Bool> {
-        Binding(
-            get: { showingPaywall && isSheetPresented == fromPlayerSheet },
-            set: { if !$0 { showingPaywall = false } }
-        )
-    }
-
     /// Debug builds: camera mode shows the bundled demo photo instead of the live camera.
-    private var showsDemoCamera: Bool {
+    private var usesDemoCamera: Bool {
         #if DEBUG
-        return backgroundMode == .camera && useDemoCameraBackground
+        return useDemoCameraBackground
         #else
         return false
         #endif
     }
 
-    /// True when a camera image sits behind the text: the live feed, or the debug demo photo.
-    private var showsCameraImage: Bool {
-        showsDemoCamera || cameraService.isCameraActive
+    /// The image fades in once there is something to show, so the live camera never appears as a black flash.
+    private var isCameraFeedVisible: Bool {
+        backgroundMode == .camera && (usesDemoCamera || cameraService.isPreviewRunning)
     }
 
     /// Split needs room for two usable halves: the unfolded iPhone Duo, or an iPad.
@@ -373,12 +335,12 @@ struct TeleprompterView: View {
     /// Camera preview in one half, prompt in the other. Side by side on wide layouts,
     /// prompt on top (nearest the front camera) on tall ones.
     private var splitAxis: Axis? {
-        guard isSplitCamera, canSplitCamera, backgroundMode == .camera, showsCameraImage,
+        guard isSplitCamera, canSplitCamera, backgroundMode == .camera,
               layoutSize.width > 0 else { return nil }
         return layoutSize.width >= layoutSize.height ? .horizontal : .vertical
     }
 
-    private var cameraBehindText: Bool { showsCameraImage && splitAxis == nil }
+    private var cameraBehindText: Bool { backgroundMode == .camera && splitAxis == nil }
 
     private var cameraLayout: CameraLayout {
         get {
@@ -397,70 +359,85 @@ struct TeleprompterView: View {
 
     private var layoutSize: CGSize { layoutFrame.size }
 
-    /// Side-by-side camera pane: half the width, widened so the floating player card
-    /// (which sits bottom-leading on regular widths) never overlaps the prompt.
-    private var cameraPaneWidth: CGFloat {
-        let half = layoutSize.width / 2
-        guard isSheetPresented, !promptOnLeading, playerPanelFrame.width > 0 else { return half }
-        let cardEdge = playerPanelFrame.maxX - layoutFrame.minX + 12
-        return cardEdge > half && cardEdge < layoutSize.width * 0.6 ? cardEdge : half
-    }
+    /// Side-by-side camera pane: half the width.
+    private var cameraPaneWidth: CGFloat { layoutSize.width / 2 }
 
-    /// The player sheet floats over the camera half in split mode, so it only
-    /// shortens the readable area when it sits on top of the prompt.
-    private var sheetCoversPrompt: Bool {
-        guard isSheetPresented else { return false }
-        switch splitAxis {
-        case .vertical: return false
-        case .horizontal: return promptOnLeading
-        case nil: return true
-        }
+    /// Stacked camera pane: half the height, down to the very bottom of the screen.
+    private var cameraPaneHeight: CGFloat { layoutSize.height / 2 + safeBottomInset }
+
+    /// In split mode the controls float over the camera half, off the prompt.
+    private var dockCoversPrompt: Bool { splitAxis == nil }
+
+    /// Where the script starts, right under the toolbar.
+    private var readingTopInset: CGFloat { safeTopInset }
+
+    /// Fixed, whether or not the controls are showing, so the text never jumps when they fade.
+    private var readingBottomInset: CGFloat {
+        guard dockCoversPrompt else { return 0 }
+        return verticalSizeClass == .compact ? 84 : 190
     }
 
     /// Live camera feed, or the bundled demo photo in debug builds.
     @ViewBuilder
     private var cameraFeed: some View {
-        if showsDemoCamera {
-            Image("CameraDemoBackground")
-                .resizable()
-                .scaledToFill()
+        if usesDemoCamera {
+            // In an overlay, so a photo of another shape can't make the background overflow the screen.
+            Color.clear.overlay {
+                Image("CameraDemoBackground")
+                    .resizable()
+                    .scaledToFill()
+            }
         } else if let session = cameraService.captureSession {
             CameraPreviewRepresentable(session: session, camera: cameraService)
         }
     }
 
-    /// Prompt background on one half, unobscured camera preview on the other.
-    private func splitCameraBackground(axis: Axis) -> some View {
-        // Only the split dimension is fixed; the other stretches into the safe areas.
-        let cameraEdges: Edge.Set
-        let alignment: Alignment
-        let paneWidth: CGFloat?
-        let paneHeight: CGFloat?
-        switch axis {
-        case .horizontal:
-            cameraEdges = [promptOnLeading ? .trailing : .leading, .vertical]
-            alignment = promptOnLeading ? .trailing : .leading
-            (paneWidth, paneHeight) = (cameraPaneWidth, nil)
-        case .vertical:
-            cameraEdges = [.bottom, .horizontal]
-            alignment = .bottom
-            (paneWidth, paneHeight) = (nil, layoutSize.height / 2)
+    /// One set of layers for every background and layout, so changing between them is a
+    /// fade and the camera preview is never rebuilt.
+    private var readingBackground: some View {
+        let axis = splitAxis
+        let alignment: Alignment = switch axis {
+        case .horizontal: promptOnLeading ? .trailing : .leading
+        case .vertical: .bottom
+        case nil: .center
         }
         return ZStack(alignment: alignment) {
+            Color.black
             Color(hex: customization.backgroundColorHex)
-                .ignoresSafeArea()
+                .opacity(backgroundMode == .solidColor || axis != nil ? 1 : 0)
             cameraFeed
-                .frame(width: paneWidth, height: paneHeight)
-                .frame(maxWidth: paneWidth == nil ? .infinity : nil, maxHeight: paneHeight == nil ? .infinity : nil)
+                .frame(
+                    // Out to the screen edge on its own side only.
+                    width: axis == .horizontal ? cameraPaneWidth + (promptOnLeading ? safeTrailingInset : safeLeadingInset) : nil,
+                    height: axis == .vertical ? cameraPaneHeight : nil
+                )
+                .frame(
+                    maxWidth: axis == .horizontal ? nil : .infinity,
+                    maxHeight: axis == .vertical ? nil : .infinity
+                )
                 .clipped()
-                .ignoresSafeArea(edges: cameraEdges)
+                .opacity(isCameraFeedVisible ? 1 : 0)
+                .animation(.easeIn(duration: 0.35), value: isCameraFeedVisible)
+            Color.black.opacity(cameraBehindText && !isUnderCamera ? 0.42 : 0)
         }
+        .overlay(alignment: .top) { underCameraShade }
+        .ignoresSafeArea()
         .allowsHitTesting(false)
     }
 
-    /// Fades text out before it reaches the status bar and the buttons at the top.
-    private var topFadeMask: some View {
-        VStack(spacing: 0) {
+    /// How far down the text stays visible: the whole screen, or a few lines under the camera.
+    private var readingMask: some View {
+        let fadeHeight = isUnderCamera ? underCameraBandHeight * 0.32 : 40
+        let solidHeight: CGFloat
+        if isUnderCamera {
+            solidHeight = underCameraBandHeight * 0.62 + 8
+        } else if cameraBehindText {
+            // The controls' shade is see-through over the camera, so the text has to stop above them.
+            solidHeight = max(0, layoutSize.height + safeTopInset + safeBottomInset - readingBottomInset - readingTopInset - fadeHeight - 20)
+        } else {
+            solidHeight = layoutSize.height + safeTopInset + safeBottomInset
+        }
+        return VStack(spacing: 0) {
             LinearGradient(
                 stops: [
                     .init(color: .clear, location: 0),
@@ -470,40 +447,50 @@ struct TeleprompterView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: safeTopInset + 6)
-            Color.black
+            .frame(height: max(readingTopInset + 2, 18))
+            Color.black.frame(height: solidHeight)
+            LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: fadeHeight)
         }
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 
-    @ViewBuilder
+    /// The same text view in every word-style layout: changing layout restyles it in place.
     private var readingSurface: some View {
-        if isUnderCamera {
-            Color.clear
-        } else if viewModel.isWordMode, let words = viewModel.scriptWords {
-            WordTeleprompterView(
-                viewModel: viewModel,
-                words: words,
-                fontSize: liveFontSize,
-                lineHeightMultiple: customization.lineHeight,
-                textColor: cameraBehindText ? .white : Color(hex: customization.textColorHex),
-                alignment: customization.textAlignmentIndex,
-                horizontalPadding: liveHorizontalPadding,
-                topInset: safeTopInset + 8,
-                bottomInset: sheetCoversPrompt ? activeSheetHeight : 0,
-                isMirrored: customization.isMirrored,
-                upcomingOpacity: cameraBehindText ? 0.55 : 0.42
-            )
-            .mask { topFadeMask }
-        } else {
-            classicScrollView
-                .mask { topFadeMask }
+        ZStack {
+            if viewModel.isWordMode, let words = viewModel.scriptWords {
+                AnimatedWordSurface(
+                    viewModel: viewModel,
+                    words: words,
+                    fontSize: liveFontSize,
+                    lineHeightMultiple: customization.lineHeight,
+                    promptColor: Color(hex: customization.textColorHex),
+                    alignment: customization.textAlignmentIndex,
+                    horizontalPadding: liveHorizontalPadding,
+                    topInset: readingTopInset + 8,
+                    bottomInset: readingBottomInset,
+                    isMirrored: customization.isMirrored,
+                    onScrub: handleScrub,
+                    cameraAmount: cameraBehindText ? 1 : 0,
+                    underCameraAmount: isUnderCamera ? 1 : 0
+                )
+                .transition(.opacity)
+            } else {
+                classicScrollView
+                    .contentShape(Rectangle())
+                    .gesture(classicScrubGesture)
+                    .transition(.opacity)
+            }
         }
+        // Top-aligned: over a color the mask runs past the bottom of the screen.
+        .mask(alignment: .top) { readingMask }
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isWordMode)
     }
 
     private var classicScrollView: some View {
         TeleprompterScrollView(
             offset: $viewModel.contentOffset,
-            content: textBody(textColor: cameraBehindText ? .white : nil, horizontalPadding: liveHorizontalPadding, topInset: safeTopInset),
+            content: textBody(textColor: cameraBehindText ? .white : nil, horizontalPadding: liveHorizontalPadding, topInset: max(0, readingTopInset - 16)),
             onHeights: { contentHeight, screenHeight, widthChanged in
                 print("[Queue] onHeights — contentHeight=\(Int(contentHeight)) screenHeight=\(Int(screenHeight))")
                 if widthChanged && didRestoreProgress && !viewModel.pendingAutoPlay && viewModel.contentHeight > 0 {
@@ -516,9 +503,8 @@ struct TeleprompterView: View {
                     }
                 }
                 viewModel.contentHeight = contentHeight
-                // screenHeight is full height below nav bar; subtract the sheet so maxOffset
-                // reflects only the readable area above the sheet.
-                viewModel.screenHeight = max(100, screenHeight - (sheetCoversPrompt ? activeSheetHeight : 0))
+                // Subtract the controls' space so maxOffset reflects only the readable area above them.
+                viewModel.screenHeight = max(100, screenHeight - readingBottomInset)
                 // SwiftUI re-measures the rewrapped text a pass after the width changes;
                 // re-anchor until the new height lands.
                 if let p = reflowProgress {
@@ -540,11 +526,11 @@ struct TeleprompterView: View {
                     viewModel.play()
                 }
             },
-            bottomInset: sheetCoversPrompt ? activeSheetHeight : 0,
+            bottomInset: readingBottomInset,
             scriptID: currentScript.id,
             fontSize: liveFontSize,
             horizontalPadding: liveHorizontalPadding,
-            topInset: safeTopInset
+            topInset: readingTopInset
         )
     }
 
@@ -552,134 +538,65 @@ struct TeleprompterView: View {
         readingSurface
         .padding(.leading, splitAxis == .horizontal && !promptOnLeading ? cameraPaneWidth : 0)
         .padding(.trailing, splitAxis == .horizontal && promptOnLeading ? cameraPaneWidth : 0)
-        .padding(.bottom, splitAxis == .vertical ? layoutSize.height / 2 : 0)
+        .padding(.bottom, splitAxis == .vertical ? cameraPaneHeight : 0)
         // Vertical only: side insets (landscape notch, iPhone Duo's camera/toolbar rail when folded)
         // must stay clear or the ends of lines get covered.
         .ignoresSafeArea(edges: .vertical)
-        .background {
-            if let axis = splitAxis {
-                splitCameraBackground(axis: axis)
-            } else if isUnderCamera {
-                ZStack {
-                    Color.black.ignoresSafeArea()
-                    if showsCameraImage {
-                        cameraFeed.ignoresSafeArea()
-                    }
-                }
-                .allowsHitTesting(false)
-            } else if showsCameraImage {
-                ZStack {
-                    cameraFeed
-                        .ignoresSafeArea()
-                    Color.black.opacity(0.42)
-                        .ignoresSafeArea()
-                }
-                .allowsHitTesting(false)
-            } else {
-                contentBackground.ignoresSafeArea()
-            }
-        }
+        .background { readingBackground }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { layoutFrame = $0 }
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { safeTopInset = $0 }
-        .overlay {
-            if isUnderCamera {
-                underCameraOverlay
-            }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { inset in
+            // Hiding the toolbar shrinks the safe area; keep its space so the text doesn't jump.
+            safeTopInset = controlsVisible ? inset : max(safeTopInset, inset)
         }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { safeBottomInset = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.leading } action: { safeLeadingInset = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.trailing } action: { safeTrailingInset = $0 }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: handleSurfaceTap)
+        .overlay(alignment: .bottom) { bottomControls }
         .onAppear {
-            viewModel.scrollSpeed = customization.scrollSpeed
             viewModel.transparency = customization.transparency
-            liveFontSize = customization.fontSize
+            applyReadingPreferences()
             if viewModel.scriptWords == nil {
                 viewModel.load(words: currentScript.scriptWords)
             }
+            restoreModeAndBackground()
             viewModel.setWordMode(usesWordStyle)
             if viewModel.isWordMode && !didRestoreProgress {
                 didRestoreProgress = true
-                let p = currentScript.lastProgress
+                var p = currentScript.lastProgress
+                #if DEBUG
+                // For App Store screenshots: launch with `-ypShotProgress 0.2`.
+                let shot = UserDefaults.standard.double(forKey: "ypShotProgress")
+                if shot > 0 { p = shot }
+                #endif
                 if p > 0 && p < 1 { viewModel.seek(to: p) }
             }
         }
         .onChange(of: usesWordStyle) { _, usesWords in viewModel.setWordMode(usesWords) }
-        .onTapGesture {
-            if viewModel.isTapToAdvance { viewModel.tapAdvance() }
-        }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .background(NavigationInteractivePopGestureDisabler(disabled: true))
         .toolbarColorScheme(isBackgroundDark ? .dark : .light, for: .navigationBar)
         .toolbar { iOSToolbar }
-        .toolbar(isUnderCamera ? .hidden : .automatic, for: .navigationBar)
-        .statusBarHidden(isUnderCamera)
-        .onChange(of: verticalSizeClass) { _, newValue in
-            if newValue != .compact && !isExitingPlayMode && !isUnderCamera { isSheetPresented = true }
+        .toolbar(controlsVisible ? .visible : .hidden, for: .navigationBar)
+        .onChange(of: verticalSizeClass) {
+            // Rotating changes the toolbar's height, so show it to measure the new space.
+            if viewModel.isPlaying { viewModel.showControlsTemporarily() }
         }
-        .onChange(of: isUnderCamera) { _, underCamera in
-            // The under-camera layout keeps the preview clear; its controls can bring the panel back.
-            withAnimation(sheetMorphAnimation) {
-                isSheetPresented = !underCamera && verticalSizeClass != .compact
-            }
-        }
+        // Also gives the tab bar's space back: the animator only slides it out of sight.
+        .toolbar(.hidden, for: .tabBar)
+        .statusBarHidden(true)
         .opacity(viewModel.transparency)
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .overlay(alignment: .top) {
+            // Floats under the toolbar, so nothing on screen moves when it appears.
             if showNextBanner, let next = nextQueueScript {
                 nextScriptBanner(for: next)
                     .padding(.horizontal)
                     .padding(.top, 8)
-                    .padding(.bottom, 4)
             }
         }
-        .sheet(isPresented: $isSheetPresented) {
-            iOSPlayerPanel
-                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { playerPanelFrame = $0 }
-                .onPreferenceChange(PanelContentHeightKey.self) { h in
-                    guard isPlayerExpanded, h > 0, abs(h - fullPanelHeight) > 1 else { return }
-                    withAnimation(sheetMorphAnimation) {
-                        fullPanelHeight = h
-                    }
-                }
-                .presentationDetents(
-                    [.height(miniDetentHeight), .height(fullDetentHeight)],
-                    selection: Binding(
-                        get: { isPlayerExpanded ? .height(fullDetentHeight) : .height(miniDetentHeight) },
-                        set: { isPlayerExpanded = $0 != .height(miniDetentHeight) }
-                    )
-                )
-                .presentationDragIndicator(.visible)
-                .presentationBackground(.ultraThinMaterial)
-                .presentationBackgroundInteraction(.enabled(upThrough: .height(fullDetentHeight)))
-                .interactiveDismissDisabled(verticalSizeClass != .compact && !isUnderCamera)
-                // Presented from the sheet so the player sheet stays visible underneath.
-                .popover(isPresented: $showDisplayAdjustments, arrowEdge: .bottom) {
-                    displayAdjustmentsPopover
-                        .padding()
-                        .frame(minWidth: 280)
-                        .presentationCompactAdaptation(.popover)
-                }
-                // Separate anchor: one view can't host two popovers.
-                .background {
-                    Color.clear
-                        .popover(isPresented: $showCameraSettings, arrowEdge: .bottom) {
-                            ScrollView {
-                                CameraSettingsView(camera: cameraService).padding()
-                            }
-                            .frame(idealHeight: 460)
-                            .presentationCompactAdaptation(.popover)
-                        }
-                }
-                // A view covered by the player sheet can't present another sheet,
-                // so while the player sheet is up the paywall is presented from it.
-                .sheet(isPresented: paywallBinding(fromPlayerSheet: true)) {
-                    PaywallView(context: paywallContext).environment(storeKit)
-                }
-        }
-        .onChange(of: isSheetPresented) { _, presented in
-            if !presented {
-                showDisplayAdjustments = false
-                showCameraSettings = false
-            }
-        }
-        .sheet(isPresented: paywallBinding(fromPlayerSheet: false)) {
+        .sheet(isPresented: $showingPaywall) {
             PaywallView(context: paywallContext).environment(storeKit)
         }
         .onChange(of: showingPaywall) { _, showing in
@@ -694,6 +611,12 @@ struct TeleprompterView: View {
         } message: {
             Text("Voice Scroll needs microphone access to detect when you are speaking.")
         }
+        .onChange(of: viewModel.micPermissionDenied) { _, denied in
+            if denied {
+                savedMode = TeleprompterMode.auto.rawValue
+                withAnimation(controlsAnimation) { teleprompterMode = .auto }
+            }
+        }
         .alert("Camera & Microphone Access Required", isPresented: $cameraService.permissionDenied) {
             Button("Open Settings") { openMicSettings() }
             Button("Cancel", role: .cancel) {}
@@ -706,13 +629,10 @@ struct TeleprompterView: View {
             Text("Your recording has been saved to the Photos library.")
         }
         .onChange(of: cameraService.permissionDenied) { _, denied in
-            if denied { withAnimation { backgroundMode = .solidColor } }
-        }
-        .alert("Reset Cue Points?", isPresented: $resetCuePointsPrompt) {
-            Button("Cancel", role: .cancel) {}
-            Button("Reset", role: .destructive) { performResetCuePoints() }
-        } message: {
-            Text("This will remove all cue points for the current script.")
+            if denied {
+                savedBackground = ReadingPreferences.colorBackground
+                withAnimation { backgroundMode = .solidColor }
+            }
         }
         .onChange(of: viewModel.isFinished) { _, finished in
             guard finished else { return }
@@ -749,46 +669,54 @@ struct TeleprompterView: View {
         .onChange(of: timedSeconds) { _, _ in updateTimedDuration() }
     }
 
+    // MARK: - Toolbar
+
+    /// Back and settings, in the system's own positions on every device.
     @ToolbarContentBuilder
     private var iOSToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
-            Button {
-                exitPlayMode()
-            } label: {
+            Button(action: exitPlayMode) {
                 Image(systemName: "chevron.backward")
             }
             .accessibilityLabel("Go Back")
-            .disabled(isExitingPlayMode)
-        }
-        if verticalSizeClass == .compact && !isSheetPresented {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    isSheetPresented = true
-                } label: {
-                    Image(systemName: "slider.horizontal.below.rectangle")
-                }
-            }
+            // A take can't be left by accident.
+            .disabled(isExitingPlayMode || cameraService.isRecording)
         }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 backgroundMenuItems
+                    // Hiding the toolbar would close the menu. iOS doesn't report the menu
+                    // closing, so this is a long delay rather than a hold until it does.
+                    .onAppear { if viewModel.isPlaying { viewModel.showControlsTemporarily(for: 15) } }
             } label: {
                 Image(systemName: backgroundMode == .camera ? "camera.fill" : "paintpalette.fill")
             }
             .accessibilityLabel("Background")
+            .background {
+                // Separate anchor: a menu can't host the popover it opens.
+                Color.clear
+                    .popover(isPresented: $showCameraSettings, arrowEdge: .top) {
+                        ScrollView {
+                            CameraSettingsView(camera: cameraService).padding()
+                        }
+                        .frame(idealHeight: 460)
+                        .presentationCompactAdaptation(.popover)
+                    }
+            }
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                if isSheetPresented {
-                    showDisplayAdjustments.toggle()
-                } else {
-                    presentFromPlayerSheet { showDisplayAdjustments = true }
-                }
+                showDisplayAdjustments.toggle()
             } label: {
-                Image(systemName: "slider.horizontal.3")
-                    .symbolVariant(showDisplayAdjustments ? .fill : .none)
+                Image(systemName: "textformat.size")
             }
             .accessibilityLabel("Display adjustments")
+            .popover(isPresented: $showDisplayAdjustments, arrowEdge: .top) {
+                displayAdjustmentsPopover
+                    .padding()
+                    .frame(minWidth: 280)
+                    .presentationCompactAdaptation(.popover)
+            }
         }
     }
 
@@ -814,7 +742,7 @@ struct TeleprompterView: View {
             Divider()
             Picker("Layout", selection: Binding(
                 get: { cameraLayout },
-                set: { newLayout in withAnimation(sheetMorphAnimation) { cameraLayout = newLayout } }
+                set: { newLayout in withAnimation(surfaceAnimation) { cameraLayout = newLayout } }
             )) {
                 Label("Under the Camera", systemImage: "rectangle.topthird.inset.filled").tag(CameraLayout.underCamera)
                 Label("Full Screen", systemImage: "text.below.photo").tag(CameraLayout.fullScreen)
@@ -825,7 +753,7 @@ struct TeleprompterView: View {
             .pickerStyle(.inline)
             if cameraLayout == .split {
                 Button {
-                    withAnimation(sheetMorphAnimation) { promptOnLeading.toggle() }
+                    withAnimation(surfaceAnimation) { promptOnLeading.toggle() }
                 } label: {
                     Label("Swap Sides", systemImage: "arrow.left.arrow.right")
                 }
@@ -844,7 +772,7 @@ struct TeleprompterView: View {
             }
             if cameraService.isCameraActive {
                 Button {
-                    presentFromPlayerSheet { showCameraSettings = true }
+                    showCameraSettings = true
                 } label: {
                     Label("Camera Settings…", systemImage: "camera.aperture")
                 }
@@ -860,98 +788,19 @@ struct TeleprompterView: View {
         return lineHeight * 3
     }
 
-    /// The script sits right under the Dynamic Island or notch, so your eyes stay on the lens,
-    /// and the rest of the screen is an unobstructed preview.
-    private var underCameraOverlay: some View {
-        ZStack(alignment: .top) {
-            LinearGradient(
-                stops: [
-                    .init(color: .black.opacity(0.92), location: 0),
-                    .init(color: .black.opacity(0.78), location: 0.6),
-                    .init(color: .clear, location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: safeTopInset + underCameraBandHeight + 44)
-            .ignoresSafeArea(edges: [.top, .horizontal])
-            .allowsHitTesting(false)
-
-            VStack(spacing: 0) {
-                if let words = viewModel.scriptWords {
-                    WordTeleprompterView(
-                        viewModel: viewModel,
-                        words: words,
-                        fontSize: liveFontSize,
-                        lineHeightMultiple: customization.lineHeight,
-                        textColor: .white,
-                        alignment: customization.textAlignmentIndex,
-                        horizontalPadding: max(liveHorizontalPadding, 20),
-                        topInset: 6,
-                        anchor: 0,
-                        isMirrored: customization.isMirrored,
-                        upcomingOpacity: 0.55,
-                        pastOpacity: 0
-                    )
-                    .frame(height: underCameraBandHeight)
-                    // Without a notch or island (landscape, some iPads) the status row needs its own space.
-                    .padding(.top, safeTopInset < 20 ? 30 : 0)
-                    .mask {
-                        LinearGradient(
-                            stops: [
-                                .init(color: .black, location: 0),
-                                .init(color: .black, location: 0.62),
-                                .init(color: .clear, location: 0.94)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    }
-                }
-                Spacer(minLength: 0)
-                underCameraControls
-                    .padding(.bottom, 8)
-            }
-
-            underCameraStatusRow
-        }
-        .environment(\.colorScheme, .dark)
-    }
-
-    /// Either side of the Dynamic Island: recording time and reading speed.
-    private var underCameraStatusRow: some View {
-        HStack {
-            if cameraService.isRecording, let start = cameraService.recordingStartDate {
-                HStack(spacing: 6) {
-                    Circle().fill(.red).frame(width: 7, height: 7)
-                    Text("REC")
-                    recordingTime(since: start)
-                }
-                .transition(.opacity)
-            }
-            Spacer()
-            if teleprompterMode == .voice {
-                Image(systemName: viewModel.voiceScrollService.isSpeaking ? "waveform" : "mic.fill")
-                    .symbolEffect(.variableColor, isActive: viewModel.voiceScrollService.isSpeaking)
-                    .accessibilityLabel("Voice Scroll")
-            } else {
-                Menu {
-                    ForEach([0.8, 1.0, 1.2, 1.5, 2.0], id: \.self) { speed in
-                        Button(String(format: "%.1f×", speed)) { viewModel.scrollSpeed = speed }
-                    }
-                } label: {
-                    Text(String(format: "%.1f×", viewModel.scrollSpeed))
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel("Speed")
-            }
-        }
-        .font(.caption.weight(.semibold).monospacedDigit())
-        .foregroundStyle(.white)
-        .padding(.horizontal, 30)
-        .frame(height: max(safeTopInset, 32))
-        .offset(y: -max(safeTopInset, 0))
-        .animation(.easeInOut(duration: 0.2), value: cameraService.isRecording)
+    /// Keeps the lines under the camera readable over a bright preview.
+    private var underCameraShade: some View {
+        LinearGradient(
+            stops: [
+                .init(color: .black.opacity(0.92), location: 0),
+                .init(color: .black.opacity(0.78), location: 0.6),
+                .init(color: .clear, location: 1)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: readingTopInset + underCameraBandHeight + 44)
+        .opacity(isUnderCamera ? 1 : 0)
     }
 
     private func recordingTime(since start: Date) -> some View {
@@ -961,83 +810,11 @@ struct TeleprompterView: View {
         }
     }
 
-    private var underCameraControls: some View {
-        HStack(spacing: 10) {
-            circleControl("chevron.backward", label: "Go Back") { exitPlayMode() }
-                .disabled(isExitingPlayMode)
-            circleControl(viewModel.isPlaying ? "pause.fill" : "play.fill",
-                          label: viewModel.isPlaying ? "Pause" : "Play") {
-                viewModel.togglePlayPause()
-            }
-
-            Button(action: toggleUnderCameraRecording) {
-                HStack(spacing: 8) {
-                    if cameraService.isRecording, let start = cameraService.recordingStartDate {
-                        Circle().fill(.red).frame(width: 7, height: 7)
-                        recordingTime(since: start)
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.primary)
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 26, height: 26)
-                            .background(.red, in: Circle())
-                    } else {
-                        Circle().fill(.red).frame(width: 14, height: 14)
-                        Text("Record").font(.subheadline.weight(.semibold))
-                    }
-                }
-                .padding(.horizontal, 14)
-                .frame(height: 46)
-                .contentShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            .ypGlassEffect(cornerRadius: 23)
-            .accessibilityLabel(cameraService.isRecording ? "Stop Recording" : "Start Recording")
-
-            circleControl(teleprompterMode == .voice ? "mic.fill" : "mic",
-                          label: teleprompterMode == .voice ? "Disable Voice Scroll" : "Enable Voice Scroll") {
-                selectMode(teleprompterMode == .voice ? .auto : .voice)
-            }
-            Menu {
-                backgroundMenuItems
-                Divider()
-                Button {
-                    isPlayerExpanded = true
-                    isSheetPresented = true
-                } label: {
-                    Label("Show Controls", systemImage: "slider.horizontal.below.rectangle")
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.body.weight(.semibold))
-                    .frame(width: 46, height: 46)
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .ypGlassEffect(cornerRadius: 23)
-            .accessibilityLabel("More")
-        }
-        .foregroundStyle(.white)
-    }
-
-    private func circleControl(_ systemImage: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.body.weight(.semibold))
-                .contentTransition(.symbolEffect(.replace))
-                .frame(width: 46, height: 46)
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .ypGlassEffect(cornerRadius: 23)
-        .accessibilityLabel(label)
-    }
-
     /// One button for the take: recording and reading start and stop together.
-    private func toggleUnderCameraRecording() {
+    private func toggleRecording() {
         let starting = !cameraService.isRecording
         cameraService.toggleRecording()
+        guard teleprompterMode != .tap else { return }
         if starting {
             viewModel.play()
         } else {
@@ -1045,15 +822,388 @@ struct TeleprompterView: View {
         }
     }
 
-    /// Popovers hang off the player sheet; bring it up first when it's hidden (e.g. landscape).
-    private func presentFromPlayerSheet(_ present: @escaping () -> Void) {
-        guard !isSheetPresented else { present(); return }
-        isPlayerExpanded = true
-        isSheetPresented = true
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(400))
-            present()
+    // MARK: - Bottom controls
+
+    /// Reading comes first: while the script plays the controls get out of the way.
+    private var controlsVisible: Bool {
+        viewModel.showControls || !viewModel.isPlaying || viewModel.isScrubbing
+            || showDisplayAdjustments || showCameraSettings
+            || teleprompterMode == .tap || voiceOverEnabled
+    }
+
+    /// Over the camera, or anywhere dark, the controls are light on dark.
+    private var controlsAreDark: Bool { splitAxis != nil || isBackgroundDark }
+
+    private var bottomControls: some View {
+        ZStack(alignment: .bottom) {
+            bottomScrim
+            progressLineFade
+            VStack(spacing: 10) {
+                dock
+                    .opacity(controlsVisible ? 1 : 0)
+                    .offset(y: controlsVisible ? 0 : 10)
+                    .allowsHitTesting(controlsVisible)
+                ReadingProgressLine(
+                    progress: viewModel.progress,
+                    cuePositions: currentScript.cuePoints.map(\.position)
+                )
+                .padding(.horizontal, 28)
+                .opacity(controlsVisible ? 1 : 0.5)
+                .allowsHitTesting(false)
+            }
+            .frame(maxWidth: splitAxis == .horizontal ? cameraPaneWidth : .infinity)
+            .frame(maxWidth: .infinity, alignment: dockAlignment)
         }
+        .environment(\.colorScheme, controlsAreDark ? .dark : .light)
+        .tint(.primary)
+        .animation(.easeInOut(duration: 0.25), value: controlsVisible)
+        .animation(controlsAnimation, value: teleprompterMode)
+    }
+
+    private var dockAlignment: Alignment {
+        guard splitAxis == .horizontal else { return .center }
+        return promptOnLeading ? .trailing : .leading
+    }
+
+    /// Lets the text fade out behind the controls, and lifts them off a busy camera image.
+    private var bottomScrim: some View {
+        let color = backgroundMode == .camera ? Color.black.opacity(0.55) : Color(hex: customization.backgroundColorHex)
+        // In a full-height stack, so it reaches the very bottom of the screen.
+        return VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            LinearGradient(
+                stops: [
+                    .init(color: color.opacity(0), location: 0),
+                    .init(color: color, location: 0.2),
+                    .init(color: color, location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: readingBottomInset + 100)
+        }
+        .opacity(controlsVisible && readingBottomInset > 0 ? 1 : 0)
+        .ignoresSafeArea(edges: [.bottom, .horizontal])
+        .allowsHitTesting(false)
+    }
+
+    /// While reading with the controls hidden, text still fades out before the progress line.
+    private var progressLineFade: some View {
+        let color = Color(hex: customization.backgroundColorHex)
+        return VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            LinearGradient(
+                stops: [
+                    .init(color: color.opacity(0), location: 0),
+                    .init(color: color, location: 0.5),
+                    .init(color: color, location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 96)
+        }
+        .ignoresSafeArea(edges: [.bottom, .horizontal])
+        .opacity(backgroundMode == .solidColor && readingBottomInset > 0 ? 1 : 0)
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var dock: some View {
+        if verticalSizeClass == .compact {
+            HStack(spacing: 14) {
+                leadingTransportButton
+                primaryTransportButton(size: 54)
+                trailingTransportButton
+                modeStrip.frame(maxWidth: 300)
+                modeAccessory.frame(minWidth: 130)
+                recordingBadge
+            }
+            .padding(.horizontal, 16)
+        } else {
+            VStack(spacing: 12) {
+                modeAccessory
+                    .frame(minHeight: 34)
+                    .frame(maxWidth: .infinity)
+                    .overlay(alignment: .leading) { recordingBadge.padding(.leading, 6) }
+                modeStrip
+                HStack {
+                    leadingTransportButton
+                    Spacer(minLength: 0)
+                    primaryTransportButton(size: 68)
+                    Spacer(minLength: 0)
+                    trailingTransportButton
+                }
+                .padding(.horizontal, 22)
+            }
+            .frame(maxWidth: 460)
+            .padding(.horizontal, 16)
+        }
+    }
+
+    /// How long the take has been running.
+    @ViewBuilder
+    private var recordingBadge: some View {
+        if cameraService.isRecording, let start = cameraService.recordingStartDate {
+            HStack(spacing: 6) {
+                Circle().fill(.red).frame(width: 7, height: 7)
+                recordingTime(since: start)
+            }
+            .font(.caption.weight(.semibold).monospacedDigit())
+            .fixedSize()
+            .padding(.horizontal, 12)
+            .frame(height: 34)
+            .ypGlassEffect(cornerRadius: 17)
+            .transition(.opacity)
+        }
+    }
+
+    private var modeStrip: some View {
+        ReadingModeStrip(
+            selection: teleprompterMode,
+            highlight: controlsAreDark ? .yellow : .accentColor,
+            isLocked: { !storeKit.isPremium && ($0 == .voice || $0 == .timed) },
+            onSelect: selectMode
+        )
+    }
+
+    /// The one setting that matters for the current mode.
+    @ViewBuilder
+    private var modeAccessory: some View {
+        if viewModel.isScrubbing {
+            Text(String(format: "%d%%", Int(viewModel.progress * 100)))
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .contentTransition(.numericText())
+                .padding(.horizontal, 16)
+                .frame(height: 34)
+                .ypGlassEffect(cornerRadius: 17)
+        } else {
+            switch teleprompterMode {
+            case .auto:
+                ReadingValueStepper(
+                    value: String(format: "%.1f×", viewModel.scrollSpeed),
+                    onDecrease: { stepSpeed(by: -0.1) },
+                    onIncrease: { stepSpeed(by: 0.1) }
+                )
+                .transition(.blurReplace)
+            case .tap:
+                Text("Tap the script to advance")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .transition(.blurReplace)
+            case .voice:
+                voiceAccessory
+                    .transition(.blurReplace)
+            case .timed:
+                timedAccessory
+                    .transition(.blurReplace)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var voiceAccessory: some View {
+        let service = viewModel.voiceScrollService
+        if !service.isRunning {
+            Text("Press play and start reading")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else if service.isTrackingWords {
+            HStack(spacing: 8) {
+                VoiceLevelBars(service: service)
+                (service.isSpeaking ? Text("Following your words") : Text("Listening for your voice..."))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .animation(nil, value: service.isSpeaking)
+            }
+        } else {
+            // Without speech recognition, loudness moves the script, so the level can be tuned.
+            VoiceLevelMeterView(service: service, showStatus: true)
+                .padding(.horizontal, 22)
+        }
+    }
+
+    @ViewBuilder
+    private var timedAccessory: some View {
+        if viewModel.isPlaying {
+            Text("\(timeString(viewModel.remainingTime)) left")
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .contentTransition(.numericText())
+                .animation(.default, value: viewModel.remainingTime)
+        } else {
+            ReadingValueStepper(
+                value: timedDurationString,
+                onDecrease: { stepTimedDuration(by: -30) },
+                onIncrease: { stepTimedDuration(by: 30) }
+            )
+        }
+    }
+
+    private func stepSpeed(by amount: Double) {
+        let stepped = ((viewModel.scrollSpeed + amount) * 10).rounded() / 10
+        viewModel.scrollSpeed = min(AppConstants.maxScrollSpeed, max(AppConstants.minScrollSpeed, stepped))
+        ReadingPreferences.speed = viewModel.scrollSpeed
+        if viewModel.isPlaying { viewModel.showControlsTemporarily() }
+    }
+
+    // MARK: - Transport
+
+    private var leadingTransportButton: some View {
+        Button { viewModel.resetToTop() } label: {
+            transportIcon("arrow.counterclockwise")
+        }
+        .buttonStyle(.plain)
+        .ypGlassEffect(cornerRadius: 23)
+        .accessibilityLabel("Reset to top")
+    }
+
+    /// Play, or advance in tap mode. In camera mode the big button records, as in the Camera app.
+    @ViewBuilder
+    private func primaryTransportButton(size: CGFloat) -> some View {
+        if backgroundMode == .camera {
+            recordButton(size: size)
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
+        } else {
+            Button(action: readingAction) {
+                Image(systemName: readingActionIcon)
+                    .font(.system(size: size * 0.36, weight: .bold))
+                    .contentTransition(.symbolEffect(.replace))
+                    .foregroundStyle(controlsAreDark ? Color.black : Color.white)
+                    .frame(width: size, height: size)
+                    .background(controlsAreDark ? Color.white : Color.black, in: Circle())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isPlaying)
+            .accessibilityLabel(readingActionLabel)
+            .transition(.scale(scale: 0.85).combined(with: .opacity))
+        }
+    }
+
+    private func recordButton(size: CGFloat) -> some View {
+        let isRecording = cameraService.isRecording
+        return Button(action: toggleRecording) {
+            ZStack {
+                Circle()
+                    .strokeBorder(.white, lineWidth: 3.5)
+                RoundedRectangle(cornerRadius: isRecording ? 7 : size / 2)
+                    .fill(.red)
+                    .frame(width: isRecording ? size * 0.4 : size - 12, height: isRecording ? size * 0.4 : size - 12)
+            }
+            .frame(width: size, height: size)
+            .contentShape(Circle())
+            .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isRecording)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: isRecording)
+        .accessibilityLabel(isRecording ? "Stop Recording" : "Start Recording")
+    }
+
+    /// Next to the record button: play or advance. Otherwise: cue points.
+    @ViewBuilder
+    private var trailingTransportButton: some View {
+        if backgroundMode == .camera {
+            Button(action: readingAction) {
+                transportIcon(readingActionIcon)
+            }
+            .buttonStyle(.plain)
+            .ypGlassEffect(cornerRadius: 23)
+            .accessibilityLabel(readingActionLabel)
+        } else {
+            cueMenu
+        }
+    }
+
+    private var readingActionIcon: String {
+        if teleprompterMode == .tap { return "arrow.down" }
+        return viewModel.isPlaying ? "pause.fill" : "play.fill"
+    }
+
+    private var readingActionLabel: LocalizedStringKey {
+        if teleprompterMode == .tap { return "Advance" }
+        return viewModel.isPlaying ? "Pause" : "Play"
+    }
+
+    private func readingAction() {
+        if teleprompterMode == .tap {
+            viewModel.tapAdvance()
+        } else {
+            viewModel.togglePlayPause()
+        }
+    }
+
+    private func transportIcon(_ systemImage: String) -> some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(.primary)
+            .contentTransition(.symbolEffect(.replace))
+            .frame(width: 46, height: 46)
+            .contentShape(Circle())
+    }
+
+    /// Tap to mark the current place; press and hold to jump to a mark or clear them.
+    private var cueMenu: some View {
+        Menu {
+            ForEach(Array(currentScript.cuePoints.enumerated()), id: \.element.id) { index, cue in
+                Button {
+                    viewModel.jumpToCue(cue)
+                } label: {
+                    Label("Cue \(index + 1)", systemImage: "flag")
+                    Text(String(format: "%d%%", Int(cue.position * 100)))
+                }
+            }
+            if !currentScript.cuePoints.isEmpty {
+                Divider()
+                Button(role: .destructive) {
+                    performResetCuePoints()
+                } label: {
+                    Label("Reset Cue Points", systemImage: "flag.slash.fill")
+                }
+            }
+        } label: {
+            transportIcon("flag.fill")
+        } primaryAction: {
+            addCueAtCurrentPosition()
+        }
+        .buttonStyle(.plain)
+        .ypGlassEffect(cornerRadius: 23)
+        .opacity(viewModel.progress > 0 ? 1 : 0.4)
+        .sensoryFeedback(.impact(weight: .light), trigger: currentScript.cuePoints.count)
+        .accessibilityLabel("Add Cue Point")
+    }
+
+    // MARK: - Touching the script
+
+    private func handleSurfaceTap() {
+        if viewModel.isTapToAdvance {
+            viewModel.tapAdvance()
+        } else {
+            viewModel.toggleControls()
+        }
+    }
+
+    /// The script is its own scrubber: drag it to move through it.
+    private func handleScrub(_ isScrubbing: Bool) {
+        if isScrubbing {
+            viewModel.beginScrub()
+        } else {
+            viewModel.endScrub()
+        }
+    }
+
+    private var classicScrubGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                if classicScrubStart == nil {
+                    classicScrubStart = viewModel.contentOffset
+                    viewModel.beginScrub()
+                }
+                viewModel.scrubClassic(to: (classicScrubStart ?? 0) - value.translation.height)
+            }
+            .onEnded { _ in
+                classicScrubStart = nil
+                viewModel.endScrub()
+            }
     }
 
     private func handlePlayModeAppear() {
@@ -1070,6 +1220,7 @@ struct TeleprompterView: View {
         }
         saveLastProgress()
         viewModel.pause()
+        stopCameraTask?.cancel()
         cameraService.stopCamera()
         countdownTask?.cancel()
         WatchSessionRelay.shared.onCommandReceived = nil
@@ -1103,176 +1254,15 @@ struct TeleprompterView: View {
         guard !isExitingPlayMode else { return }
         isExitingPlayMode = true
         showDisplayAdjustments = false
-
-        Task { @MainActor in
-            if isSheetPresented {
-                isSheetPresented = false
-                // Let the player sheet finish sliding away before leaving play mode.
-                try? await Task.sleep(for: .milliseconds(400))
-            }
-            didRestoreTabBar = true
-            TabBarAnimator.setHidden(false, animated: true)
-            dismiss()
-        }
+        didRestoreTabBar = true
+        TabBarAnimator.setHidden(false, animated: true)
+        dismiss()
     }
 
     private func updateTimedDuration() {
         guard teleprompterMode == .timed else { return }
         let total = TimeInterval(timedMinutes * 60 + timedSeconds)
         viewModel.timedDuration = total > 0 ? total : 180
-    }
-    
-    private var iOSPlayerPanel: some View {
-        VStack(spacing: 0) {
-            if isPlayerExpanded {
-                iOSFullPanel
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .bottom)),
-                        removal: .opacity.combined(with: .scale(scale: 0.98, anchor: .bottom))
-                    ))
-            } else {
-                iOSCompactPanel
-                    .transition(.opacity)
-            }
-        }
-        .animation(sheetMorphAnimation, value: isPlayerExpanded)
-    }
-    
-    // Compact strip shown when sheet is minimised
-    private var iOSCompactPanel: some View {
-        HStack(spacing: 30) {
-            HStack (spacing: 24) {
-                Button { viewModel.resetToTop() } label: {
-                    Image(systemName: "backward.end.fill").font(.title3)
-                }
-                .accessibilityLabel("Reset to top")
-
-                Button { viewModel.togglePlayPause() } label: {
-                    Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.largeTitle)
-                }
-                .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
-            }
-            
-            MusicSlider(
-                value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),
-                range: 0...1,
-                requiresLongPress: sliderRequiresLongPress
-            )
-        }
-        .padding(.horizontal)
-        .tint(.primary)
-    }
-    
-    // Full music-player panel
-    private var iOSFullPanel: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 2) {
-                Text(currentScript.title)
-                    .font(.headline)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                if teleprompterMode == .timed && viewModel.timedDuration != nil {
-                    Text(timeString(viewModel.remainingTime))
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText())
-                        .animation(.default, value: viewModel.remainingTime)
-                } else {
-                    Text(String(format: "%d%%", Int(viewModel.progress * 100)))
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText())
-                        .animation(.default, value: Int(viewModel.progress * 100))
-                }
-            }
-            
-            VStack(spacing: 2) {
-                // Cue point markers strip (moved above the progress bar)
-                if !currentScript.cuePoints.isEmpty {
-                    cuePointStrip
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-                MusicSlider(
-                    value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),
-                    range: 0...1,
-                    requiresLongPress: sliderRequiresLongPress
-                )
-            }
-            
-            HStack(spacing: 24) {
-                Button { viewModel.resetToTop() } label: {
-                    Image(systemName: "restart").font(.title2)
-                }
-                .accessibilityLabel("Reset to top")
-                
-                Button { viewModel.togglePlayPause() } label: {
-                    Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.largeTitle)
-                        .contentTransition(.symbolEffect(.replace))
-                }
-                .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
-                
-                // Right side: record (camera mode), add cue, or spacer
-                if backgroundMode == .camera {
-                    Button { cameraService.toggleRecording() } label: {
-                        Image(systemName: cameraService.isRecording ? "stop.circle.fill" : "record.circle")
-                            .font(.title2)
-                            .foregroundStyle(cameraService.isRecording ? .red : .primary)
-                            .contentTransition(.symbolEffect(.replace))
-                    }
-                    .accessibilityLabel(cameraService.isRecording ? "Stop Recording" : "Start Recording")
-                    .transition(.scale.combined(with: .opacity))
-                } else {
-                    Button { addCueAtCurrentPosition() } label: {
-                        Image(systemName: "flag.fill").font(.title2)
-                    }
-                    .simultaneousGesture(
-                        LongPressGesture(minimumDuration: 0.6)
-                            .onEnded { _ in
-                                // Long-press: ask to reset all cue points
-                                resetCuePointsPrompt = true
-                            }
-                    )
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            performResetCuePoints()
-                        } label: {
-                            Label("Reset Cue Points", systemImage: "flag.slash.fill")
-                        }
-                    }
-                    .accessibilityLabel("Add Cue Point")
-                    .opacity(viewModel.progress > 0 ? 1 : 0.3)
-                    .transition(.scale.combined(with: .opacity))
-                }
-            }
-            
-            if teleprompterMode == .timed {
-                timedControls
-                    .transition(.blurReplace.combined(with: .opacity))
-            }
-            
-            // Voice meter — contextual, only in voice mode
-            if teleprompterMode == .voice && viewModel.voiceScrollEnabled && viewModel.showVoiceMeter {
-                VoiceLevelMeterView(service: viewModel.voiceScrollService, showStatus: true)
-                    .transition(.blurReplace.combined(with: .opacity))
-            }
-            
-            modeSelector
-                .padding(.bottom)
-        }
-        .tint(.primary)
-        .padding()
-        // Hug intrinsic height so the sheet detent can follow content (avoids GeometryReader filling the detent).
-        .fixedSize(horizontal: false, vertical: true)
-        .background {
-            GeometryReader { geo in
-                Color.clear.preference(key: PanelContentHeightKey.self, value: geo.size.height)
-            }
-        }
-        .animation(sheetMorphAnimation, value: teleprompterMode)
-        .animation(sheetMorphAnimation, value: backgroundMode == .camera)
-        .animation(sheetMorphAnimation, value: viewModel.showVoiceMeter)
     }
     
     private var displayAdjustmentsPopover: some View {
@@ -1302,29 +1292,15 @@ struct TeleprompterView: View {
             }
             VStack(spacing: 4) {
                 HStack(spacing: 8) {
-                    Image(systemName: "tortoise.fill").font(.caption).foregroundStyle(.secondary)
-                    MusicSlider(
-                        value: $viewModel.scrollSpeed,
-                        range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                        step: 0.1,
-                        requiresLongPress: false
-                    )
-                    Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
-                }
-                Text(String(format: String(localized: "%.1fx speed"), viewModel.scrollSpeed))
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .contentTransition(.numericText())
-                    .animation(.default, value: viewModel.scrollSpeed)
-            }
-            VStack(spacing: 4) {
-                HStack(spacing: 8) {
                     Image(systemName: "arrow.left.and.line.vertical.and.arrow.right")
                         .font(.caption).foregroundStyle(.secondary)
                     MusicSlider(
                         value: Binding(
                             get: { Double(liveHorizontalPadding) },
-                            set: { liveHorizontalPadding = CGFloat($0) }
+                            set: {
+                                liveHorizontalPadding = CGFloat($0)
+                                savedMargins = $0
+                            }
                         ),
                         range: 0...80,
                         step: 4,
@@ -1346,7 +1322,10 @@ struct TeleprompterView: View {
                     MusicSlider(
                         value: Binding(
                             get: { Double(liveFontSize) },
-                            set: { liveFontSize = CGFloat($0) }
+                            set: {
+                                liveFontSize = CGFloat($0)
+                                ReadingPreferences.fontSize = CGFloat($0)
+                            }
                         ),
                         range: Double(AppConstants.minFontSize)...Double(AppConstants.maxFontSize),
                         step: 1,
@@ -1367,26 +1346,6 @@ struct TeleprompterView: View {
     
     // MARK: - Cue Points
     
-    private var cuePointStrip: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                ForEach(currentScript.cuePoints) { cue in
-                    Button {
-                        viewModel.jumpToCue(cue)
-                    } label: {
-                        Image(systemName: "flag.fill")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    .buttonStyle(.plain)
-                    .offset(x: geo.size.width * CGFloat(cue.position) - 4)
-                    .accessibilityLabel(cue.label.isEmpty ? "Cue point" : cue.label)
-                }
-            }
-        }
-        .frame(height: 16)
-    }
-    
     private func addCueAtCurrentPosition() {
         guard viewModel.progress > 0 else { return }
         var cues = currentScript.cuePoints
@@ -1405,79 +1364,6 @@ struct TeleprompterView: View {
     
     // MARK: - Timed Controls
 
-    @ViewBuilder
-    private var timedControls: some View {
-        if viewModel.isPlaying && viewModel.timedDuration != nil {
-            timedProgressRow
-        } else {
-            timedSetupRow
-        }
-    }
-
-    private var timedSetupRow: some View {
-        HStack {
-            Image(systemName: "timer").foregroundStyle(.secondary)
-            Text("Duration").font(.caption).foregroundStyle(.secondary)
-            Spacer()
-            HStack(spacing: 0) {
-                Button { stepTimedDuration(by: -30) } label: {
-                    Image(systemName: "minus")
-                        .frame(width: 32, height: 32)
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-                Text(timedDurationString)
-                    .font(.body.monospacedDigit().bold())
-                    .frame(minWidth: 64, alignment: .center)
-                    .contentTransition(.numericText())
-                    .animation(.default, value: timedDurationString)
-                Button { stepTimedDuration(by: 30) } label: {
-                    Image(systemName: "plus")
-                        .frame(width: 32, height: 32)
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-            }
-            .buttonStyle(.plain)
-            .tint(.primary)
-        }
-    }
-
-    @ViewBuilder
-    private var timedProgressRow: some View {
-        let total = viewModel.timedDuration ?? 180
-        let fraction = total > 0 ? min(1.0, (total - viewModel.remainingTime) / total) : 0.0
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .stroke(Color.secondary.opacity(0.22), lineWidth: 2.5)
-                Circle()
-                    .trim(from: 0, to: CGFloat(fraction))
-                    .stroke(Color.primary, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 0.5), value: fraction)
-                Image(systemName: "timer")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: 30, height: 30)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Remaining")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                Text(timeString(viewModel.remainingTime))
-                    .font(.body.monospacedDigit().bold())
-                    .contentTransition(.numericText())
-                    .animation(.default, value: viewModel.remainingTime)
-            }
-
-            Spacer()
-
-            Text("/ \(timedDurationString)")
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(.tertiary)
-        }
-    }
-
     private var timedDurationString: String {
         "\(timedMinutes):\(String(format: "%02d", timedSeconds))"
     }
@@ -1487,120 +1373,120 @@ struct TeleprompterView: View {
         total = max(30, min(59 * 60 + 30, (total / 30) * 30))
         timedMinutes = total / 60
         timedSeconds = total % 60
+        savedTimedSeconds = total
     }
     
-    // MARK: - Mode selector
-    
-    private var modeSelector: some View {
-        Group {
-            if #available(iOS 26, *) {
-                GlassEffectContainer(spacing: 4) {
-                    HStack(spacing: 0) {
-                        ForEach(TeleprompterMode.allCases, id: \.self) { mode in
-                            modeSelectorItem(mode)
-                        }
-                    }
-                }
-            } else {
-                HStack(spacing: 0) {
-                    ForEach(TeleprompterMode.allCases, id: \.self) { mode in
-                        modeSelectorItem(mode)
-                    }
-                }
-                .padding(4)
-                .background(.ultraThinMaterial, in: Capsule())
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func modeSelectorItem(_ mode: TeleprompterMode) -> some View {
-        if teleprompterMode == mode {
-            if #available(iOS 26, *) {
-                Button { selectMode(mode) } label: { modeSelectorLabel(mode, selected: true) }
-                    .buttonStyle(.plain)
-                    .glassEffect(.regular.interactive())
-                    .glassEffectUnion(id: "modeSelector", namespace: modeNamespace)
-            } else {
-                Button { selectMode(mode) } label: { modeSelectorLabel(mode, selected: true) }
-                    .buttonStyle(.plain)
-                    .background {
-                        Capsule()
-                            .fill(.primary.opacity(0.15))
-                            .matchedGeometryEffect(id: "modeSelectorHighlight", in: modeNamespace)
-                    }
-            }
-        } else {
-            Button { selectMode(mode) } label: { modeSelectorLabel(mode, selected: false) }
-                .buttonStyle(.plain)
-        }
-    }
-    
-    private func modeSelectorLabel(_ mode: TeleprompterMode, selected: Bool) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: mode.icon).font(.caption2)
-            if !storeKit.isPremium && (mode == .voice || mode == .timed) {
-                Image(systemName: "lock.fill").font(.system(size: 8))
-            }
-            if selected {
-                Text(mode.rawValue)
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.85)),
-                        removal: .opacity.combined(with: .scale(scale: 0.85))
-                    ))
-            }
-        }
-        .font(.caption.bold())
-        .foregroundStyle(selected ? Color.primary : Color.secondary)
-        .padding(.horizontal, selected ? 14 : 10)
-        .padding(.vertical, 9)
-        .contentShape(Capsule())
-    }
-    
+    // MARK: - Modes
+
     private func selectMode(_ mode: TeleprompterMode) {
         guard mode != teleprompterMode else { return }
+        if (mode == .voice || mode == .timed) && !storeKit.isPremium {
+            showingPaywall = true
+            return
+        }
+        if viewModel.isPlaying { viewModel.showControlsTemporarily() }
 
         switch teleprompterMode {
         case .tap:   viewModel.isTapToAdvance = false
         case .voice: if viewModel.voiceScrollEnabled { Task { await viewModel.toggleVoiceScroll() } }
-        case .timed: viewModel.timedDuration = nil
+        case .timed:
+            viewModel.timedDuration = nil
+            // Timed mode works out its own speed; go back to the reader's.
+            applyReadingPreferences()
         case .auto:  break
         }
 
         switch mode {
         case .auto:
-            withAnimation(sheetMorphAnimation) { teleprompterMode = .auto }
+            break
         case .tap:
+            // The reader moves the script in this mode, so nothing should scroll by itself.
+            viewModel.pause()
             viewModel.isTapToAdvance = true
-            withAnimation(sheetMorphAnimation) { teleprompterMode = .tap }
         case .voice:
-            guard storeKit.isPremium else { showingPaywall = true; return }
-            withAnimation(sheetMorphAnimation) { teleprompterMode = .voice }
-            Task { await viewModel.toggleVoiceScroll() }
+            // Choosing the mode shouldn't start reading: pressing play does.
+            Task {
+                await viewModel.toggleVoiceScroll(autoPlay: false)
+                // The reader moved on while the permission check was running.
+                if teleprompterMode != .voice && viewModel.voiceScrollEnabled {
+                    await viewModel.toggleVoiceScroll()
+                }
+            }
         case .timed:
-            guard storeKit.isPremium else { showingPaywall = true; return }
             let total = TimeInterval(timedMinutes * 60 + timedSeconds)
             viewModel.timedDuration = total > 0 ? total : 180
-            withAnimation(sheetMorphAnimation) { teleprompterMode = .timed }
         }
+        teleprompterMode = mode
+        savedMode = mode.rawValue
+    }
+
+    /// The reader's last speed, text size and margins, on every script.
+    private func applyReadingPreferences() {
+        viewModel.scrollSpeed = ReadingPreferences.speed > 0 ? ReadingPreferences.speed : customization.scrollSpeed
+        liveFontSize = ReadingPreferences.fontSize > 0 ? ReadingPreferences.fontSize : customization.fontSize
+        liveHorizontalPadding = CGFloat(savedMargins)
+    }
+
+    /// Opens the way the reader left it. A lapsed subscription falls back to the free options
+    /// without forgetting the choice, so it returns if they subscribe again.
+    private func restoreModeAndBackground() {
+        timedMinutes = savedTimedSeconds / 60
+        timedSeconds = savedTimedSeconds % 60
+
+        let mode = TeleprompterMode(rawValue: savedMode) ?? .auto
+        if mode != .auto && (storeKit.isPremium || mode == .tap) {
+            let remembered = savedMode
+            selectMode(mode)
+            savedMode = remembered
+        }
+        if savedBackground == ReadingPreferences.cameraBackground && storeKit.isPremium {
+            backgroundMode = .camera
+            if !usesDemoCamera { Task { await cameraService.requestPermissionsAndStart() } }
+        }
+        #if DEBUG
+        // For App Store screenshots.
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-ypShotPlay") {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(400))
+                viewModel.play()
+            }
+        }
+        if arguments.contains("-ypShotRecord") {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                cameraService.toggleRecording()
+            }
+        }
+        if arguments.contains("-ypShotPaywall") { showingPaywall = true }
+        #endif
     }
 
     // MARK: - Background
 
     private func selectBackground(_ mode: BackgroundMode) {
+        if viewModel.isPlaying { viewModel.showControlsTemporarily() }
         guard mode != backgroundMode else { return }
-        if backgroundMode == .camera { cameraService.stopCamera() }
         if mode == .camera {
             guard storeKit.isPremium else { showingPaywall = true; return }
-            #if DEBUG
-            if !useDemoCameraBackground { Task { await cameraService.requestPermissionsAndStart() } }
-            #else
-            Task { await cameraService.requestPermissionsAndStart() }
-            #endif
+            stopCameraTask?.cancel()
+            // Still running if the reader came straight back from Color.
+            if !usesDemoCamera && !cameraService.isCameraActive {
+                Task { await cameraService.requestPermissionsAndStart() }
+            }
+        } else if backgroundMode == .camera {
+            // Keep the preview running until it has faded out.
+            stopCameraTask?.cancel()
+            stopCameraTask = Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(500))
+                guard !Task.isCancelled else { return }
+                cameraService.stopCamera()
+            }
         }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) { backgroundMode = mode }
+        savedBackground = mode == .camera ? ReadingPreferences.cameraBackground : ReadingPreferences.colorBackground
+        withAnimation(surfaceAnimation) { backgroundMode = mode }
     }
-    
+
     // MARK: - Queue
     
     @ViewBuilder
@@ -1638,7 +1524,7 @@ struct TeleprompterView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial, in: Capsule())
+        .ypGlassEffect(cornerRadius: 24)
         .transition(.move(edge: .top).combined(with: .opacity))
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showNextBanner)
     }
@@ -1661,12 +1547,12 @@ struct TeleprompterView: View {
         countdownTask?.cancel()
         withAnimation { showNextBanner = false }
         queueIndex += 1
-        liveFontSize = currentScript.customization.fontSize
         lastCrossedCueProgress = -1
         print("[Queue] advanceToNextScript — now at index \(queueIndex): \"\(currentScript.title)\"")
         // Save the stale height before resetting so onHeights can skip it.
         viewModel.pendingAutoPlayStaleHeight = viewModel.contentHeight
         viewModel.prepareForNext(customization: currentScript.customization)
+        applyReadingPreferences()
         viewModel.load(words: currentScript.scriptWords)
         viewModel.pendingAutoPlay = true
         // Fallback: if the new content has the same height as the old (or onHeights never fires
@@ -1923,6 +1809,69 @@ struct TeleprompterView: View {
 #endif
 }
 
+// MARK: - Word surface (iOS)
+
+#if os(iOS)
+/// Word-style text whose look follows the background and layout. SwiftUI interpolates the two
+/// amounts frame by frame, so its color and position glide when either changes.
+private struct AnimatedWordSurface: View, Animatable {
+    let viewModel: TeleprompterViewModel
+    let words: ScriptWords
+    let fontSize: CGFloat
+    let lineHeightMultiple: CGFloat
+    let promptColor: Color
+    let alignment: Int
+    let horizontalPadding: CGFloat
+    let topInset: CGFloat
+    let bottomInset: CGFloat
+    let isMirrored: Bool
+    let onScrub: (Bool) -> Void
+    /// 0 on a solid color, 1 with the camera behind the text.
+    var cameraAmount: Double
+    /// 0 full screen, 1 for the few lines under the camera.
+    var underCameraAmount: Double
+
+    @Environment(\.self) private var environment
+
+    var animatableData: AnimatablePair<Double, Double> {
+        get { AnimatablePair(cameraAmount, underCameraAmount) }
+        set {
+            cameraAmount = newValue.first
+            underCameraAmount = newValue.second
+        }
+    }
+
+    private var textColor: Color {
+        let from = promptColor.resolve(in: environment)
+        let amount = Float(cameraAmount)
+        return Color(Color.Resolved(
+            red: from.red + (1 - from.red) * amount,
+            green: from.green + (1 - from.green) * amount,
+            blue: from.blue + (1 - from.blue) * amount
+        ))
+    }
+
+    var body: some View {
+        WordTeleprompterView(
+            viewModel: viewModel,
+            words: words,
+            fontSize: fontSize,
+            lineHeightMultiple: lineHeightMultiple,
+            textColor: textColor,
+            alignment: alignment,
+            horizontalPadding: horizontalPadding,
+            topInset: topInset,
+            bottomInset: bottomInset,
+            anchor: CGFloat(0.04 * (1 - underCameraAmount)),
+            isMirrored: isMirrored,
+            upcomingOpacity: 0.42 + 0.13 * cameraAmount,
+            pastOpacity: 0.22 * (1 - underCameraAmount),
+            onScrub: onScrub
+        )
+    }
+}
+#endif
+
 // MARK: - UIScrollView-backed teleprompter (iOS)
 
 #if os(iOS)
@@ -1964,7 +1913,8 @@ private struct TeleprompterScrollView<Content: View>: UIViewRepresentable {
         sv.isScrollEnabled = false
         sv.showsVerticalScrollIndicator = false
         sv.backgroundColor = .clear
-        sv.contentInsetAdjustmentBehavior = .always
+        // The text sets its own distance from the top, so the safe area isn't added on top of it.
+        sv.contentInsetAdjustmentBehavior = .never
         // contentInset.bottom must be >= bottomInset + 80 so the UIScrollView can reach
         // the ViewModel's maxOffset (contentHeight - visibleHeight + 80).
         sv.contentInset.bottom = bottomInset + 80

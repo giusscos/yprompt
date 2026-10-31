@@ -222,12 +222,15 @@ struct WordTeleprompterView: View {
     var upcomingOpacity: Double = 0.42
     /// Opacity of lines already read.
     var pastOpacity: Double = 0.22
+    /// Set to let the reader drag the script to move through it; true while a drag is going on.
+    var onScrub: ((Bool) -> Void)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var layout: WordLayout?
     @State private var motion = WordScrollMotion()
     @State private var isSettling = true
     @State private var settleTask: Task<Void, Never>?
+    @State private var scrubStartY: CGFloat?
 
     var body: some View {
         GeometryReader { geo in
@@ -243,6 +246,8 @@ struct WordTeleprompterView: View {
                 }
             }
             .scaleEffect(x: isMirrored ? -1 : 1, y: 1)
+            .contentShape(Rectangle())
+            .gesture(scrubGesture, isEnabled: onScrub != nil)
             .onChange(of: layoutKey(width: geo.size.width), initial: true) { _, key in
                 guard key.width > 0 else { return }
                 layout = WordLayout(words: words, key: key)
@@ -254,6 +259,26 @@ struct WordTeleprompterView: View {
         .onDisappear { settleTask?.cancel() }
         .accessibilityElement()
         .accessibilityLabel(Text(words.text))
+    }
+
+    /// Moves through the script a line at a time; the spring makes the text follow the finger.
+    private var scrubGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                guard let layout, !layout.lines.isEmpty else { return }
+                if scrubStartY == nil {
+                    let word = min(viewModel.wordIndex, layout.placements.count - 1)
+                    scrubStartY = layout.lines[layout.placements[word].line].y
+                    onScrub?(true)
+                }
+                let target = (scrubStartY ?? 0) - value.translation.height + layout.lineStep / 2
+                let line = layout.lines[layout.lineIndex(atOrAbove: max(0, target))]
+                viewModel.scrub(toWord: line.words.lowerBound)
+            }
+            .onEnded { _ in
+                scrubStartY = nil
+                onScrub?(false)
+            }
     }
 
     private func layoutKey(width: CGFloat) -> WordLayout.Key {
@@ -299,8 +324,7 @@ struct WordTeleprompterView: View {
             let distance = lineIndex - currentLine
             let delay = (distance > 0 && !reduceMotion) ? Double(min(distance, 8)) * 0.035 : 0
             let y = restY + line.y - CGFloat(motion.value(delayedBy: delay))
-            // Nothing below the player panel, which doesn't reach the bottom edge.
-            if y > size.height - bottomInset { break }
+            if y > size.height + lineStep { break }
 
             // 1 while this line sits at the resting place, falling to 0 a line away.
             let emphasis = max(0, 1 - abs(Double(line.y) - settled) / Double(lineStep))

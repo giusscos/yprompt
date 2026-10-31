@@ -13,7 +13,6 @@ struct OnboardingView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(StoreKitService.self) private var storeKit
 
-    @State private var teleprompterOffset: CGFloat = 80
     @State private var selectedPlanID = AppConstants.yearlySubscriptionID
     @State private var purchaseError: String?
 
@@ -132,13 +131,6 @@ struct OnboardingView: View {
                     .frame(height: 140)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
-                    .task {
-                        teleprompterOffset = 180
-                        try? await Task.sleep(for: .milliseconds(600))
-                        withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
-                            teleprompterOffset = -300
-                        }
-                    }
                 VStack(spacing: 10) {
                     Text("Read with Confidence.\nEvery Time.")
                         .font(.largeTitle.bold())
@@ -172,23 +164,11 @@ struct OnboardingView: View {
     private var teleprompterPreviewCard: some View {
         ZStack {
             Color.black
-            Text("Good morning everyone, and welcome to today's keynote. I'm truly honored to be here with all of you. Over the past year, our team has been building something we believe will change the way you communicate. Whether you're a podcaster, a speaker, or a content creator — today is the day everything changes.\n\nLet me start by sharing the vision behind this product...")
-                .font(.body)
-                .foregroundStyle(.white)
-                .lineSpacing(6)
+            LyricsPreviewText(text: String(localized: "Good morning, everyone. Thank you for being here today. Let's get started."))
+                .font(.title3.weight(.semibold))
+                .lineSpacing(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 18)
-                .offset(y: teleprompterOffset)
-            LinearGradient(
-                stops: [
-                    .init(color: .black, location: 0),
-                    .init(color: .clear, location: 0.22),
-                    .init(color: .clear, location: 0.78),
-                    .init(color: .black, location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .allowsHitTesting(false)
             VStack {
                 HStack {
                     Spacer()
@@ -315,13 +295,27 @@ struct OnboardingView: View {
                         .font(.largeTitle.bold())
                         .foregroundStyle(.blue)
                 }
+                #if os(iOS)
+                ReadingModeStrip(
+                    selection: .auto,
+                    highlight: .accentColor,
+                    isLocked: { $0 == .voice || $0 == .timed },
+                    onSelect: { _ in }
+                )
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+                #else
                 modeSelectorPreview
+                #endif
                 VStack(alignment: .leading, spacing: 20) {
                     featureRow("scroll",        .blue,   "Auto",   "Smooth continuous scroll at your chosen pace.")
                     featureRow("hand.tap.fill", .orange, "Tap",    "Advance each line manually with a tap.")
                     featureRow("mic.fill",      .purple, "Voice",  "Follows your words as you speak and waits when you pause.", badge: "Pro")
-                    featureRow("video.fill",    .red,    "Camera", "Record video while your script scrolls.", badge: "Pro")
+                    #if !os(macOS)
+                    featureRow("video.fill",    .red,    "Camera", "Record with your script right under the camera.", badge: "Pro")
+                    #endif
                     featureRow("timer",         .teal,   "Timed",  "Auto-pace to hit your target duration.", badge: "Pro")
+                    featureRow("music.note.list", .green, "Lyrics Style", "Every word lights up as you read, like song lyrics.", badge: "Pro")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -337,7 +331,6 @@ struct OnboardingView: View {
             ("scroll",        "Auto",   true),
             ("hand.tap.fill", "Tap",    false),
             ("mic",           "Voice",  false),
-            ("video",         "Camera", false),
             ("timer",         "Timed",  false),
         ]
         return HStack(spacing: 2) {
@@ -422,7 +415,8 @@ struct OnboardingView: View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 28) {
                 cameraMockup
-                    .frame(height: 170)
+                    .frame(maxWidth: 460)
+                    .frame(height: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
                 VStack(spacing: 10) {
@@ -444,49 +438,48 @@ struct OnboardingView: View {
         .toolbarTitleDisplayMode(.inline)
     }
 
+    /// The Under the Camera layout: a few lines right below the lens, over a clear picture.
     private var cameraMockup: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(hue: 0.58, saturation: 0.35, brightness: 0.22),
-                    Color(hue: 0.55, saturation: 0.45, brightness: 0.16)
-                ],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
-            VStack(spacing: 0) {
-                Circle()
-                    .fill(Color.gray)
-                    .frame(width: 46, height: 46)
-                    .offset(y: 4)
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.gray)
-                    .frame(width: 72, height: 62)
+        Color.clear
+            .overlay(alignment: .top) {
+                Image("CameraDemoBackground")
+                    .resizable()
+                    .scaledToFill()
             }
-            .offset(y: -10)
-            VStack {
-                Spacer()
-                Text("Good morning everyone, and welcome...")
-                    .font(.subheadline)
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16).padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.5))
+            .overlay(alignment: .top) {
+                LinearGradient(
+                    colors: [.black.opacity(0.8), .black.opacity(0.6), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 120)
             }
-            VStack {
-                HStack {
-                    Spacer()
-                    HStack(spacing: 5) {
-                        Circle().fill(Color.red).frame(width: 6, height: 6)
-                        Text("REC").font(.caption2.bold()).foregroundStyle(.white)
-                    }
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(Color.black.opacity(0.45), in: Capsule())
-                    .padding(10)
+            .overlay(alignment: .top) {
+                VStack(spacing: 10) {
+                    Capsule()
+                        .fill(.black)
+                        .frame(width: 84, height: 24)
+                    LyricsPreviewText(text: String(localized: "Good morning, everyone. Thank you for being here today. Let's get started."))
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
                 }
-                Spacer()
+                .padding(.top, 8)
             }
-        }
+            .overlay(alignment: .bottomLeading) {
+                HStack(spacing: 5) {
+                    Circle().fill(.red).frame(width: 7, height: 7)
+                    Text(verbatim: "00:12")
+                        .font(.caption.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(.white)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(.black.opacity(0.45), in: Capsule())
+                .padding(12)
+            }
+            .clipped()
+            .accessibilityHidden(true)
     }
 #endif
 
@@ -574,5 +567,42 @@ struct OnboardingView: View {
                 Text(desc).font(.subheadline).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+/// Lights up a short text the way Lyrics Style does, then starts over.
+private struct LyricsPreviewText: View {
+    let text: String
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var start = Date()
+
+    private let secondsPerCharacter = 0.055
+    private let holdSeconds = 1.4
+    /// How many characters the soft edge of the fill spans.
+    private let edge = 6.0
+
+    var body: some View {
+        if reduceMotion {
+            Text(text).foregroundStyle(.white)
+        } else {
+            TimelineView(.periodic(from: .now, by: 1.0 / 30)) { context in
+                Text(lit(at: context.date))
+            }
+        }
+    }
+
+    private func lit(at date: Date) -> AttributedString {
+        let cycle = Double(text.count) * secondsPerCharacter + holdSeconds
+        let elapsed = date.timeIntervalSince(start).truncatingRemainder(dividingBy: cycle)
+        let filled = elapsed / secondsPerCharacter
+        var result = AttributedString()
+        for (index, character) in text.enumerated() {
+            var piece = AttributedString(String(character))
+            let amount = min(max(0, (filled - Double(index)) / edge), 1)
+            piece.swiftUI.foregroundColor = Color.white.opacity(0.35 + 0.65 * amount)
+            result.append(piece)
+        }
+        return result
     }
 }

@@ -51,6 +51,8 @@ final class CameraRecordingService: NSObject, ObservableObject {
     static let frameRateOptions = [24, 30, 60]
 
     @Published var isCameraActive = false
+    /// True once the running session has had a moment to deliver frames to the preview.
+    @Published private(set) var isPreviewRunning = false
     @Published var isRecording = false
     @Published var permissionDenied = false
     @Published var recordingSaved = false
@@ -100,6 +102,10 @@ final class CameraRecordingService: NSObject, ObservableObject {
         let savedRate = defaults.integer(forKey: DefaultsKey.frameRate)
         frameRate = Self.frameRateOptions.contains(savedRate) ? savedRate : 30
         stabilization = VideoStabilization(rawValue: defaults.string(forKey: DefaultsKey.stabilization) ?? "") ?? .standard
+        if defaults.string(forKey: ReadingPreferences.cameraPositionKey) == ReadingPreferences.backCamera,
+           Self.videoDevice(for: .back) != nil {
+            cameraPosition = .back
+        }
         super.init()
     }
 
@@ -172,8 +178,10 @@ final class CameraRecordingService: NSObject, ObservableObject {
         isCameraActive = true
         rebuildRotationCoordinator()
 
-        Task.detached(priority: .userInitiated) { [session] in
+        Task.detached(priority: .userInitiated) { [weak self, session] in
             session.startRunning()
+            try? await Task.sleep(for: .milliseconds(150))
+            await self?.previewDidStart(for: session)
         }
     }
 
@@ -188,7 +196,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
     func switchCamera() {
         let newPosition: AVCaptureDevice.Position = cameraPosition == .front ? .back : .front
         guard let session = captureSession else {
-            cameraPosition = newPosition
+            setCameraPosition(newPosition)
             return
         }
         guard !isRecording,
@@ -202,7 +210,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         if session.canAddInput(newInput) {
             session.addInput(newInput)
             videoInput = newInput
-            cameraPosition = newPosition
+            setCameraPosition(newPosition)
         } else if let videoInput {
             session.addInput(videoInput)
         }
@@ -211,7 +219,18 @@ final class CameraRecordingService: NSObject, ObservableObject {
         rebuildRotationCoordinator()
     }
 
+    private func setCameraPosition(_ position: AVCaptureDevice.Position) {
+        cameraPosition = position
+        UserDefaults.standard.set(position == .back ? ReadingPreferences.backCamera : "front",
+                                  forKey: ReadingPreferences.cameraPositionKey)
+    }
+
+    private func previewDidStart(for session: AVCaptureSession) {
+        if captureSession === session { isPreviewRunning = true }
+    }
+
     func stopCamera() {
+        isPreviewRunning = false
         if isRecording { movieOutput?.stopRecording() }
         let session = captureSession
         captureSession = nil

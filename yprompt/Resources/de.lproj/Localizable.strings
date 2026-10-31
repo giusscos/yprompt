@@ -319,3 +319,15 @@
 "Notch 🔒" = "Notch 🔒";
 "%lld words" = "%lld Wörter";
 "~%lld min" = "~%lld Min.";
+"Tap the script to advance" = "Tippe auf das Skript, um weiterzulesen";
+"Press play and start reading" = "Tippe auf Abspielen und lies los";
+"%@ left" = "Noch %@";
+"Cue %lld" = "Cue-Punkt %lld";
+"Advance" = "Weiter";
+"What's New in yPrompt" = "Neu in yPrompt";
+"Your script sits right under the camera, so you look straight into the lens." = "Dein Skript steht direkt unter der Kamera, damit du genau ins Objektiv schaust.";
+"A Cleaner Reading Screen" = "Aufgeräumter Lesebildschirm";
+"The controls step aside while you read. Tap the script to bring them back." = "Die Steuerung tritt beim Lesen zurück. Tippe auf das Skript, um sie wieder einzublenden.";
+"Remembers Your Choices" = "Merkt sich deine Auswahl";
+"Mode, speed and text size carry over to every script, so there's nothing to set up again." = "Modus, Tempo und Textgröße gelten für jedes Skript, du musst nichts neu einstellen.";
+"Good morning, everyone. Thank you for being here today. Let's get started." = "Guten Morgen zusammen. Danke, dass ihr heute hier seid. Legen wir los.";

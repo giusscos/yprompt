@@ -319,3 +319,15 @@
 "Notch 🔒" = "Notch 🔒";
 "%lld words" = "%lld parole";
 "~%lld min" = "~%lld min";
+"Tap the script to advance" = "Tocca lo script per avanzare";
+"Press play and start reading" = "Premi play e inizia a leggere";
+"%@ left" = "%@ rimanenti";
+"Cue %lld" = "Riferimento %lld";
+"Advance" = "Avanti";
+"What's New in yPrompt" = "Novità di yPrompt";
+"Your script sits right under the camera, so you look straight into the lens." = "Il copione è proprio sotto la fotocamera, così guardi dritto nell'obiettivo.";
+"A Cleaner Reading Screen" = "Schermata di lettura più pulita";
+"The controls step aside while you read. Tap the script to bring them back." = "I controlli si fanno da parte mentre leggi. Tocca il copione per farli riapparire.";
+"Remembers Your Choices" = "Ricorda le tue scelte";
+"Mode, speed and text size carry over to every script, so there's nothing to set up again." = "Modalità, velocità e dimensione del testo restano per ogni copione, così non devi reimpostare nulla.";
+"Good morning, everyone. Thank you for being here today. Let's get started." = "Buongiorno a tutti. Grazie di essere qui oggi. Cominciamo.";

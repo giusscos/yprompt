@@ -13,7 +13,9 @@ struct ProFeatureList: View {
         VStack(alignment: .leading, spacing: 14) {
             row("mic.fill",          .purple, "Voice Scroll",         "Follows your words as you speak and waits when you pause.")
             row("music.note.list",   .green,  "Lyrics Style",         "Every word lights up as you read, like song lyrics.")
+            #if !os(macOS)
             row("video.fill",        .red,    "Camera Recording",     "Record with your script right under the camera.")
+            #endif
             row("timer",             .teal,   "Timed Mode",           "Paces your script to finish right on time.")
             row("doc.fill",          .blue,   "Unlimited Scripts",    "No cap on how many you can create.")
             row("camera.fill",       .indigo, "Mac Notch Teleprompter", "Read from the notch, right next to your Mac's camera.")
