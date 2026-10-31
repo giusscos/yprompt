@@ -10,13 +10,36 @@ import SwiftData
 // Keeps FloatingTeleprompterManager.registeredScripts in sync independently
 // of whether the main window is open.
 #if os(macOS)
+/// Lets non-view code, such as the end of a read in the floating window, open the paywall.
+private struct PaywallWindowRegistration: ViewModifier {
+    @Environment(\.openWindow) private var openWindow
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            FloatingTeleprompterManager.shared.presentPaywall = {
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: AppConstants.paywallWindowID)
+            }
+        }
+    }
+}
+
 private struct MenuBarScriptsLoader: View {
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
+    @Environment(StoreKitService.self) private var storeKit
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         MenuBarView()
             .onAppear {
-                FloatingTeleprompterManager.shared.registeredScripts = scripts
+                let manager = FloatingTeleprompterManager.shared
+                manager.registeredScripts = scripts
+                // The menu bar can be used without the main window ever opening.
+                manager.storeKit = storeKit
+                manager.presentPaywall = {
+                    NSApp.activate(ignoringOtherApps: true)
+                    openWindow(id: AppConstants.paywallWindowID)
+                }
             }
             .onChange(of: scripts) { _, newScripts in
                 FloatingTeleprompterManager.shared.registeredScripts = newScripts
@@ -45,6 +68,7 @@ struct ypromptApp: App {
             ContentView()
                 .environment(storeKit)
                 #if os(macOS)
+                .modifier(PaywallWindowRegistration())
                 .onAppear {
                     FloatingTeleprompterManager.shared.storeKit = storeKit
                     RemoteControlService.shared.startAdvertising()
@@ -70,8 +94,16 @@ struct ypromptApp: App {
                 .modelContainer(sharedModelContainer)
         }
 
+        Window("yPrompt Pro", id: AppConstants.paywallWindowID) {
+            PaywallView(context: FloatingTeleprompterManager.shared.paywallContext)
+                .environment(storeKit)
+                .frame(minWidth: 460, minHeight: 680)
+        }
+        .windowResizability(.contentSize)
+
         MenuBarExtra("yPrompt", systemImage: "scroll") {
             MenuBarScriptsLoader()
+                .environment(storeKit)
                 .modelContainer(sharedModelContainer)
         }
         .menuBarExtraStyle(.window)

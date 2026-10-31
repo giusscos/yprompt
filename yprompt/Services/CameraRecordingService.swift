@@ -54,6 +54,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var permissionDenied = false
     @Published var recordingSaved = false
+    @Published private(set) var recordingStartDate: Date?
     @Published private(set) var cameraPosition: AVCaptureDevice.Position = .front
 
     // Lens & zoom
@@ -134,7 +135,11 @@ final class CameraRecordingService: NSObject, ObservableObject {
     }
 
     func startCamera() {
+        configureAudioSession()
         let session = AVCaptureSession()
+        // Voice Scroll listens to the same microphone, so the app sets up the audio session
+        // itself; left to the capture session, it would interrupt the other listener.
+        session.automaticallyConfiguresApplicationAudioSession = false
         session.beginConfiguration()
         session.sessionPreset = .high
 
@@ -172,6 +177,13 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
     }
 
+    private func configureAudioSession() {
+        let audio = AVAudioSession.sharedInstance()
+        try? audio.setCategory(.playAndRecord, mode: .videoRecording,
+                               options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
+        try? audio.setActive(true)
+    }
+
     /// Swaps between the front and back camera, keeping the running session.
     func switchCamera() {
         let newPosition: AVCaptureDevice.Position = cameraPosition == .front ? .back : .front
@@ -205,6 +217,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         captureSession = nil
         isCameraActive = false
         isRecording = false
+        recordingStartDate = nil
         isTorchOn = false
         movieOutput = nil
         videoInput = nil
@@ -212,10 +225,20 @@ final class CameraRecordingService: NSObject, ObservableObject {
         rotationCoordinator = nil
         Task.detached(priority: .userInitiated) {
             session?.stopRunning()
+            // Fails quietly while Voice Scroll is still listening, which is what we want.
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         }
     }
 
     func toggleRecording() {
+        #if DEBUG
+        // The demo camera photo has no capture session; just show the recording state.
+        if captureSession == nil, UserDefaults.standard.bool(forKey: AppConstants.debugDemoCameraKey) {
+            isRecording.toggle()
+            recordingStartDate = isRecording ? Date() : nil
+            return
+        }
+        #endif
         if isRecording {
             movieOutput?.stopRecording()
         } else {
@@ -233,6 +256,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
                 .appendingPathExtension("mov")
             output.startRecording(to: url, recordingDelegate: self)
             isRecording = true
+            recordingStartDate = Date()
         }
     }
 
@@ -490,6 +514,7 @@ extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
     ) {
         Task { @MainActor [weak self] in
             self?.isRecording = false
+            self?.recordingStartDate = nil
             if error == nil {
                 self?.saveToPhotoLibrary(url: outputFileURL)
             }

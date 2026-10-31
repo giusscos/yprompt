@@ -189,19 +189,35 @@ struct NotchTeleprompterView: View {
 
     private func tickScroll() {
         guard viewModel.isPlaying else { return }
-        let pixelsPerFrame = AppConstants.basePixelsPerSecond * viewModel.scrollSpeed / 60.0
+        if viewModel.voiceScrollEnabled {
+            if let heard = viewModel.voiceTrackedFraction, contentSize > 0 {
+                // Ease towards the words heard so far.
+                let target = viewportSize - CGFloat(heard) * (viewportSize + contentSize)
+                scrollOffset += min(0, target - scrollOffset) * 0.12
+                viewModel.notchProgress = heard
+                if heard >= 1 && scrollOffset <= target + 1 { finish() }
+                return
+            }
+            guard viewModel.voiceScrollService.isSpeaking else { return }
+        }
+        let pixelsPerFrame = viewModel.pixelsPerSecond(contentLength: contentSize, speed: viewModel.scrollSpeed) / 60.0
         scrollOffset -= pixelsPerFrame
         if contentSize > 0 && scrollOffset < -(contentSize + 20) {
-            scrollOffset = viewportSize
-            viewModel.notchProgress = 0
-            viewModel.pause()
-            viewModel.isFinished = true
+            finish()
         } else if contentSize > 0 {
             let totalSpan = viewportSize + contentSize
             if totalSpan > 0 {
                 viewModel.notchProgress = Double(max(0, min(1, (viewportSize - scrollOffset) / totalSpan)))
             }
         }
+    }
+
+    private func finish() {
+        scrollOffset = viewportSize
+        viewModel.notchProgress = 0
+        viewModel.pause()
+        viewModel.isFinished = true
+        viewModel.onFinished?()
     }
 }
 #endif

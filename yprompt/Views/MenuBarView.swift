@@ -13,11 +13,10 @@ struct MenuBarView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var settingsArray: [AppSettings]
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
+    @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled: Bool = true
     @State private var selectedScriptID: Script.ID?
     @State private var menuPlaybackMode: Int = 0   // 0=Standard 1=Voice 2=Timer
     @State private var menuTimedMinutes: Int = 3
-    @State private var showTimedUpgradeAlert = false
-    @State private var showVoiceUpgradeAlert = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -55,16 +54,6 @@ struct MenuBarView: View {
             if let newID {
                 selectedScriptID = newID
             }
-        }
-        .alert("Premium Feature", isPresented: $showTimedUpgradeAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Timer mode is available with yPrompt Premium. Open the main app to upgrade.")
-        }
-        .alert("Premium Feature", isPresented: $showVoiceUpgradeAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Voice Scroll is available with yPrompt Premium. Open the main app to upgrade.")
         }
         .alert("Microphone Access Required", isPresented: $viewModel.micPermissionDenied) {
             Button("Open Settings") {
@@ -169,9 +158,18 @@ struct MenuBarView: View {
             Text("Mode")
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
-            Picker("Mode", selection: $manager.notchMode) {
+            Picker("Mode", selection: Binding(
+                get: { manager.notchMode },
+                set: { notch in
+                    guard !notch || manager.isPremium else {
+                        manager.showPaywall()
+                        return
+                    }
+                    manager.notchMode = notch
+                }
+            )) {
                 Label("Floating", systemImage: "rectangle.on.rectangle").tag(false)
-                Label("Notch", systemImage: "camera").tag(true)
+                Label(manager.isPremium ? "Notch" : "Notch 🔒", systemImage: "camera").tag(true)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -327,8 +325,7 @@ struct MenuBarView: View {
             Picker("Playback mode", selection: Binding(
                 get: { menuPlaybackMode },
                 set: { newMode in
-                    if newMode == 1 { guard manager.isPremium else { showVoiceUpgradeAlert = true; return } }
-                    if newMode == 2 { guard manager.isPremium else { showTimedUpgradeAlert = true; return } }
+                    if newMode != 0 { guard manager.isPremium else { manager.showPaywall(); return } }
                     if newMode != 1 && viewModel.voiceScrollEnabled { Task { await viewModel.toggleVoiceScroll() } }
                     if newMode != 2 { viewModel.timedDuration = nil }
                     if newMode == 2 { updateMenuTimedDuration() }
@@ -336,11 +333,27 @@ struct MenuBarView: View {
                 }
             )) {
                 Text("Standard").tag(0)
-                Text("Voice").tag(1)
-                Text("Timer").tag(2)
+                Text(manager.isPremium ? "Voice" : "Voice 🔒").tag(1)
+                Text(manager.isPremium ? "Timer" : "Timer 🔒").tag(2)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+
+            Toggle(isOn: Binding(
+                get: { lyricsStyleEnabled && manager.isPremium || viewModel.voiceScrollEnabled },
+                set: { enabled in
+                    guard manager.isPremium else {
+                        manager.showPaywall()
+                        return
+                    }
+                    lyricsStyleEnabled = enabled
+                }
+            )) {
+                Label(manager.isPremium ? "Lyrics Style" : "Lyrics Style 🔒", systemImage: "music.note.list")
+            }
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(viewModel.voiceScrollEnabled || manager.notchMode)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

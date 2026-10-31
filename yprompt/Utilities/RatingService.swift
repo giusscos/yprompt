@@ -10,6 +10,7 @@ final class RatingService {
 
     private let sessionCountKey = "yprompt.completedSessions"
     private let lastRequestDateKey = "yprompt.lastReviewRequest"
+    private let firstReadPaywallKey = "yprompt.firstReadPaywallShown"
     private let minimumSessions = 1
     private let minimumDaysBetweenRequests = 60
 
@@ -30,6 +31,13 @@ final class RatingService {
 
     func recordSessionCompleted() {
         completedSessions += 1
+    }
+
+    /// True once per install, after the first finished read: the moment Pro makes most sense.
+    func claimFirstReadPaywall() -> Bool {
+        guard !UserDefaults.standard.bool(forKey: firstReadPaywallKey) else { return false }
+        UserDefaults.standard.set(true, forKey: firstReadPaywallKey)
+        return true
     }
 
     func markReviewRequested() {

@@ -19,8 +19,9 @@ struct SettingsView: View {
     @State private var showingPaywall = false
     @State private var showingTagManager = false
     @State private var selectedLanguage: String = {
-        (UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String)?
+        let code = (UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String)?
             .components(separatedBy: "-").first ?? "en"
+        return code == "pt" ? "pt-BR" : code
     }()
     @State private var showingLanguageRestartAlert = false
 
@@ -29,6 +30,9 @@ struct SettingsView: View {
         ("it", "Italiano"),
         ("fr", "Français"),
         ("es", "Español"),
+        ("de", "Deutsch"),
+        ("pt-BR", "Português (Brasil)"),
+        ("id", "Bahasa Indonesia"),
     ]
 
     private var appVersion: String {
@@ -154,28 +158,12 @@ struct SettingsView: View {
 
     private var syncCard: some View {
         macCard {
-            if let settings = settingsArray.first {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("iCloud Sync").font(.headline)
-                        if settings.cloudSyncEnabled {
-                            if let date = settings.lastSyncDate {
-                                Text("Last synced: \(date.shortFormatted)")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            } else {
-                                Text("Not yet synced")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    Spacer()
-                    Toggle("", isOn: Binding(
-                        get: { settings.cloudSyncEnabled },
-                        set: { settings.cloudSyncEnabled = $0; try? modelContext.save() }
-                    ))
-                    .labelsHidden()
-                }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("iCloud Sync").font(.headline)
+                Text("Your scripts sync automatically on devices signed in to the same Apple Account.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -193,13 +181,17 @@ struct SettingsView: View {
                 Picker("", selection: Binding(
                     get: { settings.displayMode },
                     set: { newMode in
+                        guard newMode != .notch || storeKit.isPremium else {
+                            showingPaywall = true
+                            return
+                        }
                         settings.displayModeRaw = newMode.rawValue
                         try? modelContext.save()
                         FloatingTeleprompterManager.shared.notchMode = newMode == .notch
                     }
                 )) {
                     Label("Floating", systemImage: "rectangle.on.rectangle").tag(DisplayMode.floatingWindow)
-                    Label("Notch", systemImage: "camera").tag(DisplayMode.notch)
+                    Label(storeKit.isPremium ? "Notch" : "Notch 🔒", systemImage: "camera").tag(DisplayMode.notch)
                 }
                 .pickerStyle(.segmented)
                 .fixedSize()
@@ -467,24 +459,12 @@ struct SettingsView: View {
     }
 
     private var syncSection: some View {
-        Section("iCloud Sync") {
-            if let settings = settingsArray.first {
-                Toggle("Sync with iCloud", isOn: Binding(
-                    get: { settings.cloudSyncEnabled },
-                    set: { settings.cloudSyncEnabled = $0; try? modelContext.save() }
-                ))
-                if settings.cloudSyncEnabled {
-                    if let date = settings.lastSyncDate {
-                        Text("Last synced: \(date.shortFormatted)")
-                            .font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        Text("Not yet synced")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            } else {
-                Toggle("Sync with iCloud", isOn: .constant(false)).disabled(true)
-            }
+        Section {
+            Label("Your scripts sync automatically on devices signed in to the same Apple Account.", systemImage: "icloud")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        } header: {
+            Text("iCloud Sync")
         }
     }
 

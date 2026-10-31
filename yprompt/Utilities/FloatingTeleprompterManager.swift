@@ -74,6 +74,15 @@ final class FloatingTeleprompterManager {
 
     var storeKit: StoreKitService?
     var isPremium: Bool { storeKit?.isPremium ?? false }
+    /// Opens the paywall window; set by the SwiftUI scenes that can open windows.
+    @ObservationIgnored var presentPaywall: (() -> Void)?
+    var paywallContext: PaywallView.Context = .upgrade
+
+    /// Asks to upgrade from places with no way to present a sheet, like the menu bar.
+    func showPaywall(context: PaywallView.Context = .upgrade) {
+        paywallContext = context
+        presentPaywall?()
+    }
 
     private var queue: [Script] = []
     private var queueIndex: Int = 0
@@ -105,9 +114,13 @@ final class FloatingTeleprompterManager {
 
     private init() {
         viewModel.onFinished = { [weak self] in
-            guard let self, self.nextInQueue != nil else { return }
-            self.showQueueBanner = true
-            self.startQueueCountdown()
+            guard let self else { return }
+            if self.nextInQueue != nil {
+                self.showQueueBanner = true
+                self.startQueueCountdown()
+            } else if !self.isPremium && RatingService.shared.claimFirstReadPaywall() {
+                self.showPaywall(context: .firstRead)
+            }
         }
         setupRemoteControlCallbacks()
     }
@@ -123,6 +136,9 @@ final class FloatingTeleprompterManager {
     func show(script: Script, storeKit: StoreKitService? = nil) {
         currentScript = script
         if let storeKit { self.storeKit = storeKit }
+        // A saved notch preference from before notch mode became Pro, or a lapsed subscription.
+        if notchMode && !isPremium { notchMode = false }
+        viewModel.load(words: script.scriptWords)
         viewModel.isNotchMode = notchMode
         viewModel.resetToTop()
         let alreadyShowingNotch = isVisible && notchMode && notchPresented
@@ -157,6 +173,7 @@ final class FloatingTeleprompterManager {
         queueIndex += 1
         guard queueIndex < queue.count else { return }
         currentScript = queue[queueIndex]
+        viewModel.load(words: queue[queueIndex].scriptWords)
         viewModel.resetForNext()
         viewModel.play()
     }
@@ -300,6 +317,10 @@ final class FloatingTeleprompterManager {
                     self.show(script: script)
                 }
             case .setNotchMode(let isNotch):
+                guard !isNotch || self.isPremium else {
+                    self.pushStateToRemotes(notchMode: self.notchMode)
+                    return
+                }
                 self.switchDisplayMode(notch: isNotch)
                 self.pushStateToRemotes(notchMode: isNotch)
             case .setVoiceScroll(let enabled):

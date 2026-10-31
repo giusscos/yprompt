@@ -22,18 +22,29 @@ enum AppConstants {
     static let privacyPolicyURL = URL(string: "https://yprompt.app/privacy")!
     static let termsOfUseURL = URL(string: "https://yprompt.app/terms")!
 
+    // MARK: - Settings keys
+    static let lyricsStyleKey = "lyricsStyleEnabled"
+    static let paywallWindowID = "paywall"
+
     // MARK: - Debug
     /// Debug builds only: show the bundled demo photo as the camera background (for App Store screenshots).
     static let debugDemoCameraKey = "debug.demoCameraBackground"
 
     // MARK: - Free Tier
     static let freeScriptLimit = 3
+    /// Colors per picker a free user can choose: the first row of presets.
+    static let freeColorPresets = 6
+    /// The sample script every new install starts with. It shows Pro's lyrics style and doesn't
+    /// count towards the free limit. Fixed so copies synced from other devices can be recognized.
+    static let welcomeScriptID = UUID(uuidString: "5C1B7E2A-9D44-4E0B-8F37-0A6D2C9E1B11")!
 
     // MARK: - Scroll
     static let minScrollSpeed: Double = 0.25
     static let maxScrollSpeed: Double = 5.0
     static let defaultScrollSpeed: Double = 1.0
     static let basePixelsPerSecond: CGFloat = 60
+    /// 1.0× speed: a natural speaking pace of 150 words a minute.
+    static let wordsPerSecond: Double = 2.5
 
     // MARK: - Font Size
     static let minFontSize: CGFloat = 8

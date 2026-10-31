@@ -37,16 +37,26 @@ struct VoiceLevelMeterView: View {
             }
             .animation(.easeInOut(duration: 0.12), value: service.isSpeaking)
 
-            Text(service.isSpeaking ? "Speaking — scrolling" : "Listening for your voice...")
+            statusText
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .animation(nil, value: service.isSpeaking)
 
             Spacer()
 
-            Text("Drag  ▲  to adjust")
-                .font(.system(size: 9))
-                .foregroundStyle(.tertiary)
+            if !service.isTrackingWords {
+                Text("Drag  ▲  to adjust")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private var statusText: Text {
+        if service.isTrackingWords {
+            service.isSpeaking ? Text("Following your words") : Text("Listening for your voice...")
+        } else {
+            service.isSpeaking ? Text("Speaking — scrolling") : Text("Listening for your voice...")
         }
     }
 
@@ -70,22 +80,25 @@ struct VoiceLevelMeterView: View {
                     .frame(width: max(6, geo.size.width * CGFloat(service.normalizedLevel)))
                     .animation(.easeOut(duration: 0.06), value: service.normalizedLevel)
 
-                // Threshold marker — draggable yellow tick
-                let markerX = geo.size.width * CGFloat(service.normalizedThreshold)
-                ZStack {
-                    Capsule()
-                        .fill(Color.yellow)
-                        .frame(width: 2, height: geo.size.height + 10)
-                    Color.clear
-                        .frame(width: 32, height: geo.size.height + 10)
-                        .contentShape(Rectangle())
+                // Threshold marker — draggable yellow tick. Only loudness-based scrolling needs tuning.
+                if !service.isTrackingWords {
+                    let markerX = geo.size.width * CGFloat(service.normalizedThreshold)
+                    ZStack {
+                        Capsule()
+                            .fill(Color.yellow)
+                            .frame(width: 2, height: geo.size.height + 10)
+                        Color.clear
+                            .frame(width: 32, height: geo.size.height + 10)
+                            .contentShape(Rectangle())
+                    }
+                    .offset(x: max(0, min(geo.size.width - 2, markerX - 1)))
                 }
-                .offset(x: max(0, min(geo.size.width - 2, markerX - 1)))
             }
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
+                        guard !service.isTrackingWords else { return }
                         let normalized = Float(value.location.x / geo.size.width)
                         service.speechThreshold = VoiceScrollService.denormalize(max(0, min(1, normalized)))
                     }

@@ -217,7 +217,7 @@ struct OnboardingView: View {
                     Text("One Place.")
                         .font(.largeTitle.bold())
                         .foregroundStyle(.blue)
-                    Text("Write from scratch, paste any text, or use a template. Organised with tags and search.")
+                    Text("Write from scratch, paste any text, or import a file. Organised with tags and search.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -319,7 +319,7 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     featureRow("scroll",        .blue,   "Auto",   "Smooth continuous scroll at your chosen pace.")
                     featureRow("hand.tap.fill", .orange, "Tap",    "Advance each line manually with a tap.")
-                    featureRow("mic.fill",      .purple, "Voice",  "Hands-free scrolling driven by your voice.", badge: "Pro")
+                    featureRow("mic.fill",      .purple, "Voice",  "Follows your words as you speak and waits when you pause.", badge: "Pro")
                     featureRow("video.fill",    .red,    "Camera", "Record video while your script scrolls.", badge: "Pro")
                     featureRow("timer",         .teal,   "Timed",  "Auto-pace to hit your target duration.", badge: "Pro")
                 }
@@ -429,7 +429,7 @@ struct OnboardingView: View {
                     Text("Record\nAs You Read")
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
-                    Text("Camera mode captures professional-quality video while your script scrolls perfectly in sync — no teleprompter visible to your audience.")
+                    Text("Your script sits right under the camera, so you look straight into the lens. Nothing but you ends up in the video.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -515,16 +515,7 @@ struct OnboardingView: View {
                     inlinePricingCards
                 }
 
-                VStack(alignment: .leading, spacing: 16) {
-                    featureRow("doc.fill",          .blue,   "Unlimited Scripts",     "No cap on how many you can create.")
-                    featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice.")
-                    featureRow("video.fill",        .red,    "Camera Recording",   "Record while the teleprompter rolls.")
-                    featureRow("paintpalette.fill", .pink,   "Custom Colors",      "Choose your own text and background colors.")
-                    featureRow("textformat.size",   .teal,   "Font Size Control",  "Adjust the reading size to your comfort.")
-                    featureRow("macwindow",         .indigo, "Floating Window",    "Pin the teleprompter above any app on Mac.")
-                    featureRow("icloud.fill",       .cyan,   "iCloud Sync",        "Access your scripts on all your devices.")
-                    featureRow("sparkles",          .orange, "All Future Features","Every update included with Lifetime access.")
-                }
+                ProFeatureList()
                 .padding(16)
                 .ypGlassEffect(cornerRadius: 16)
             }
@@ -562,7 +553,7 @@ struct OnboardingView: View {
 
     // MARK: - Shared helpers
 
-    private func featureRow(_ icon: String, _ color: Color, _ title: String, _ desc: String, badge: String? = nil) -> some View {
+    private func featureRow(_ icon: String, _ color: Color, _ title: LocalizedStringKey, _ desc: LocalizedStringKey, badge: LocalizedStringKey? = nil) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
                 .font(.title3)

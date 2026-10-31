@@ -11,6 +11,7 @@ struct ScriptsListView: View {
     @Environment(StoreKitService.self) private var storeKit
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     @Query private var settingsArray: [AppSettings]
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     // macOS uses a selection binding; iOS navigates via NavigationLink
     #if os(macOS)
@@ -49,6 +50,7 @@ struct ScriptsListView: View {
     @State private var showingQueuePlayer = false
     @State private var queueToPlay: [Script] = []
     @State private var showDeleteSelectedConfirm = false
+    @State private var scriptToOpen: Script?
     #endif
 
     private var allTags: [String] {
@@ -66,6 +68,12 @@ struct ScriptsListView: View {
             result = result.filter { $0.tags.contains(tag) }
         }
         return result
+    }
+
+    /// The sample script doesn't count towards the free limit.
+    private var canCreateScript: Bool {
+        storeKit.isPremium
+            || scripts.filter { $0.id != AppConstants.welcomeScriptID }.count < AppConstants.freeScriptLimit
     }
 
     private var emptyFilterMessage: String {
@@ -184,7 +192,14 @@ struct ScriptsListView: View {
             TeleprompterView(queue: queueToPlay)
                 .environment(storeKit)
         }
+        .navigationDestination(item: $scriptToOpen) { script in
+            EditorView(script: script)
+                .environment(storeKit)
+        }
         #endif
+        .onChange(of: hasSeenOnboarding) { _, seen in
+            if seen { openWelcomeScript() }
+        }
         .confirmationDialog(
             "Delete Script?",
             isPresented: $showDeleteConfirm,
@@ -227,7 +242,7 @@ struct ScriptsListView: View {
     private var tagFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                tagPill(title: "All", isSelected: selectedTag == nil) { selectedTag = nil }
+                tagPill(title: String(localized: "All"), isSelected: selectedTag == nil) { selectedTag = nil }
                 ForEach(allTags, id: \.self) { tag in
                     tagPill(title: tag, isSelected: selectedTag == tag) {
                         selectedTag = (selectedTag == tag) ? nil : tag
@@ -427,8 +442,27 @@ struct ScriptsListView: View {
 
     // MARK: - Actions
 
+    /// After the tour, go straight to the sample script: the player on iPhone, ready to press play.
+    private func openWelcomeScript() {
+        guard let welcome = scripts.first(where: { $0.id == AppConstants.welcomeScriptID }) else { return }
+        #if os(macOS)
+        macSelectedIDs = [welcome.id]
+        selectedScript = welcome
+        #else
+        Task { @MainActor in
+            // The tour's cover has to finish closing first.
+            try? await Task.sleep(for: .milliseconds(450))
+            queueToPlay = [welcome]
+            #if os(iOS)
+            TabBarAnimator.setHidden(true, animated: true)
+            #endif
+            showingQueuePlayer = true
+        }
+        #endif
+    }
+
     private func requestCreateScript() {
-        guard storeKit.isPremium || scripts.count < AppConstants.freeScriptLimit else {
+        guard canCreateScript else {
             showingPaywall = true
             return
         }
@@ -450,6 +484,8 @@ struct ScriptsListView: View {
         newScriptTitle = ""
         #if os(macOS)
         selectedScript = script
+        #else
+        scriptToOpen = script
         #endif
     }
 
@@ -463,6 +499,10 @@ struct ScriptsListView: View {
     }
 
     private func duplicateScript(_ script: Script) {
+        guard canCreateScript else {
+            showingPaywall = true
+            return
+        }
         let copy = Script(title: script.title + " Copy", content: script.content)
         copy.customizationData = script.customizationData
         modelContext.insert(copy)

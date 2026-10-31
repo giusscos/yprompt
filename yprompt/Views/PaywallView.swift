@@ -7,6 +7,15 @@ import SwiftUI
 import StoreKit
 
 struct PaywallView: View {
+    /// What brought the reader here.
+    enum Context {
+        case upgrade
+        /// Shown once, right after the first finished read.
+        case firstRead
+    }
+
+    var context: Context = .upgrade
+
     @Environment(\.dismiss) private var dismiss
     @Environment(StoreKitService.self) private var storeKit
 
@@ -61,9 +70,11 @@ struct PaywallView: View {
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.yellow)
             VStack(spacing: 6) {
-                Text("Unlock yPrompt Pro")
+                Text(context == .firstRead ? "Nicely Read!" : "Unlock yPrompt Pro")
                     .font(.title2.bold())
-                Text("Professional tools for every presenter.")
+                Text(context == .firstRead
+                     ? "Keep every script moving at your pace, with your voice in control."
+                     : "Professional tools for every presenter.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -75,32 +86,9 @@ struct PaywallView: View {
     // MARK: - Features
 
     private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            featureRow("mic.fill",          .purple, "Voice Scroll",          "Hands-free scrolling driven by your voice")
-            featureRow("video.fill",        .red,    "Camera Mode",           "Record while the teleprompter rolls")
-            featureRow("doc.fill",          .blue,   "Unlimited Scripts",  "No cap on how many you can create")
-            featureRow("paintpalette.fill", .pink,   "Custom Colors",       "Choose your own text and background colors")
-            featureRow("textformat.size",   .teal,   "Font Size Control",   "Adjust the reading size to your comfort")
-            featureRow("macwindow",         .indigo, "Floating Window",     "Pin the teleprompter above any app on Mac")
-            featureRow("icloud.fill",       .cyan,   "iCloud Sync",         "Access your scripts on all your devices")
-            featureRow("sparkles",          .orange, "All Future Features", "Lifetime includes every new feature")
-        }
-        .padding(16)
-        .ypGlassEffect(cornerRadius: 16)
-    }
-
-    private func featureRow(_ icon: String, _ color: Color, _ title: String, _ desc: String) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(color)
-                .frame(width: 36, height: 36)
-                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.headline)
-                Text(desc).font(.subheadline).foregroundStyle(.secondary)
-            }
-        }
+        ProFeatureList()
+            .padding(16)
+            .ypGlassEffect(cornerRadius: 16)
     }
 
     // MARK: - Products

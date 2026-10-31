@@ -6,6 +6,38 @@
 import SwiftUI
 import StoreKit
 
+/// What Pro adds, shared by the paywall and the onboarding Pro page.
+/// Everything listed here is locked for free users; anything free stays off this list.
+struct ProFeatureList: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            row("mic.fill",          .purple, "Voice Scroll",         "Follows your words as you speak and waits when you pause.")
+            row("music.note.list",   .green,  "Lyrics Style",         "Every word lights up as you read, like song lyrics.")
+            row("video.fill",        .red,    "Camera Recording",     "Record with your script right under the camera.")
+            row("timer",             .teal,   "Timed Mode",           "Paces your script to finish right on time.")
+            row("doc.fill",          .blue,   "Unlimited Scripts",    "No cap on how many you can create.")
+            row("camera.fill",       .indigo, "Mac Notch Teleprompter", "Read from the notch, right next to your Mac's camera.")
+            row("appletvremote.gen4.fill", .gray, "iPhone Remote",    "Control your Mac teleprompter from your iPhone.")
+            row("paintpalette.fill", .pink,   "Custom Colors",        "Any text and background color you like.")
+            row("sparkles",          .orange, "All Future Pro Features", "New Pro features are included in every plan.")
+        }
+    }
+
+    private func row(_ icon: String, _ color: Color, _ title: LocalizedStringKey, _ description: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(color)
+                .frame(width: 36, height: 36)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.headline)
+                Text(description).font(.subheadline).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 /// Selectable plan cards shared by the paywall and the onboarding Pro page.
 /// Yearly (with its free trial) is listed first and pre-selected; Lifetime is last.
 struct PlanPicker: View {
@@ -39,6 +71,12 @@ struct PlanPicker: View {
         return Text("Just \(perWeek) per week")
     }
 
+    /// On the accent-tinted glass of iOS / macOS 26 only white stays readable.
+    private func onCard(_ isSelected: Bool, default style: some ShapeStyle) -> AnyShapeStyle {
+        if #available(iOS 26.0, macOS 26.0, *), isSelected { return AnyShapeStyle(.white) }
+        return AnyShapeStyle(style)
+    }
+
     private func planCard(_ product: Product, subtitle: Text, badge: Text?) -> some View {
         let isSelected = selectedID == product.id
         return Button {
@@ -47,15 +85,19 @@ struct PlanPicker: View {
             HStack(spacing: 12) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .foregroundStyle(onCard(isSelected, default: isSelected ? .primary : .secondary))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(product.displayName).font(.headline)
+                    Text(product.displayName)
+                        .font(.headline)
+                        .foregroundStyle(onCard(isSelected, default: .primary))
                     subtitle
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(onCard(isSelected, default: .secondary))
                 }
                 Spacer()
-                Text(product.displayPrice).font(.title3.bold())
+                Text(product.displayPrice)
+                    .font(.title3.bold())
+                    .foregroundStyle(onCard(isSelected, default: .primary))
             }
             .padding(14)
             .frame(maxWidth: .infinity)

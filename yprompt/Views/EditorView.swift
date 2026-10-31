@@ -140,28 +140,48 @@ struct EditorView: View {
     private var editorArea: some View {
         MarkdownEditorView(
             text: $attrText,
-            formatRequest: $formatRequest
+            formatRequest: $formatRequest,
+            focusOnAppear: script.content.isEmpty
         )
+        .overlay(alignment: .topLeading) {
+            if attrText.characters.isEmpty {
+                Text("Type or paste your script here…")
+                    .font(.body)
+                    .foregroundStyle(.tertiary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 8)
+                    .allowsHitTesting(false)
+            }
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             wordCountBar
         }
     }
 
     private var wordCountBar: some View {
-        HStack {
-            Spacer()
-            Group {
-                if wordCount == 0 {
-                    Text("Empty script")
-                        .foregroundStyle(.tertiary)
-                } else {
-                    Text("\(wordCount) word\(wordCount == 1 ? "" : "s")  ·  ~\(readTimeMinutes) min")
-                        .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            if wordCount == 0 {
+                // The quickest ways to get a script in.
+                PasteButton(payloadType: String.self) { strings in
+                    attrText = AttributedString(strings.joined(separator: "\n"))
                 }
+                .labelStyle(.titleAndIcon)
+                .buttonBorderShape(.capsule)
+                Button { showingImporter = true } label: {
+                    Label("Import File", systemImage: "square.and.arrow.down")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
+            } else {
+                (wordCount == 1
+                    ? Text("1 word  ·  ~\(readTimeMinutes) min")
+                    : Text("\(wordCount) words  ·  ~\(readTimeMinutes) min"))
+                    .foregroundStyle(.secondary)
+                    .font(.caption2.monospacedDigit())
             }
-            .font(.caption2.monospacedDigit())
-            Spacer()
         }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .background(.bar)
     }

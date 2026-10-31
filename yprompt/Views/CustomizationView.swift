@@ -269,7 +269,8 @@ struct CustomizationView: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
                 spacing: 8
             ) {
-                ForEach(presets, id: \.hex) { preset in
+                ForEach(Array(presets.enumerated()), id: \.element.hex) { index, preset in
+                    let isLocked = !storeKit.isPremium && index >= AppConstants.freeColorPresets
                     Circle()
                         .fill(Color(hex: preset.hex))
                         .frame(width: 36, height: 36)
@@ -280,12 +281,53 @@ struct CustomizationView: View {
                                 Circle().strokeBorder(Color.secondary.opacity(0.25), lineWidth: 0.5)
                             }
                         }
-                        .onTapGesture { selected.wrappedValue = preset.hex }
+                        .overlay(alignment: .bottomTrailing) {
+                            if isLocked { lockBadge }
+                        }
+                        .onTapGesture {
+                            if isLocked {
+                                showingPaywall = true
+                            } else {
+                                selected.wrappedValue = preset.hex
+                            }
+                        }
                         .accessibilityLabel(preset.name)
                 }
             }
+            customColorRow(selected: selected)
         }
         .padding(.vertical, 2)
+    }
+
+    private var lockBadge: some View {
+        Image(systemName: "lock.fill")
+            .font(.system(size: 8, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: 16, height: 16)
+            .background(.black.opacity(0.65), in: Circle())
+            .accessibilityLabel("Pro")
+    }
+
+    /// Any color is Pro; free users get the first row of presets.
+    @ViewBuilder
+    private func customColorRow(selected: Binding<String>) -> some View {
+        if storeKit.isPremium {
+            ColorPicker("Custom Color", selection: Binding(
+                get: { Color(hex: selected.wrappedValue) },
+                set: { selected.wrappedValue = $0.toHex() }
+            ), supportsOpacity: false)
+            .font(.subheadline)
+        } else {
+            Button { showingPaywall = true } label: {
+                HStack {
+                    Text("Custom Color").font(.subheadline).foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     // MARK: - Apply

@@ -102,6 +102,24 @@ final class Script: Hashable {
         }
     }
 
+    /// The script split into words, keeping the editor's bold, italic, underline and strikethrough.
+    var scriptWords: ScriptWords {
+        let attributed = attributedContent
+        let runs = attributed.runs.map { run in
+            let traits = run.font?.ypEditorTraits ?? (isBold: false, isItalic: false)
+            return ScriptWords.StyleRun(
+                length: String(attributed[run.range].characters).utf16.count,
+                style: ScriptWord.Style(
+                    isBold: traits.isBold,
+                    isItalic: traits.isItalic,
+                    isUnderlined: run.underlineStyle != nil,
+                    isStruckThrough: run.strikethroughStyle != nil
+                )
+            )
+        }
+        return ScriptWords(text: String(attributed.characters), styleRuns: runs)
+    }
+
     var customization: TextCustomization {
         get {
             guard let data = customizationData,

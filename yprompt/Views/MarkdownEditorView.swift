@@ -15,6 +15,8 @@ struct MarkdownEditorView: View {
     @Binding var text: AttributedString
     /// Set by the host (e.g. the macOS toolbar) to format the current selection; cleared once applied.
     @Binding var formatRequest: TextFormat?
+    /// Puts the cursor in the editor as soon as it appears.
+    var focusOnAppear = false
 
     static var supportsFormatting: Bool {
         if #available(iOS 26.0, macOS 26.0, *) { true } else { false }
@@ -22,9 +24,9 @@ struct MarkdownEditorView: View {
 
     var body: some View {
         if #available(iOS 26.0, macOS 26.0, *) {
-            RichTextEditor(text: $text, formatRequest: $formatRequest)
+            RichTextEditor(text: $text, formatRequest: $formatRequest, focusOnAppear: focusOnAppear)
         } else {
-            PlainTextEditor(text: $text)
+            PlainTextEditor(text: $text, focusOnAppear: focusOnAppear)
         }
     }
 }
@@ -35,6 +37,7 @@ struct MarkdownEditorView: View {
 private struct RichTextEditor: View {
     @Binding var text: AttributedString
     @Binding var formatRequest: TextFormat?
+    var focusOnAppear = false
 
     @State private var selection = AttributedTextSelection()
     @Environment(\.fontResolutionContext) private var fontContext
@@ -63,6 +66,7 @@ private struct RichTextEditor: View {
         TextEditor(text: $text, selection: $selection)
             .font(.body)
             .focused($isFocused)
+            .onAppear { if focusOnAppear { isFocused = true } }
             .onChange(of: formatRequest) { _, format in
                 guard let format else { return }
                 apply(format)
@@ -138,6 +142,7 @@ private struct RichTextEditor: View {
 
 private struct PlainTextEditor: View {
     @Binding var text: AttributedString
+    var focusOnAppear = false
     @FocusState private var isFocused: Bool
 
     var body: some View {
@@ -147,6 +152,7 @@ private struct PlainTextEditor: View {
         ))
         .font(.body)
         .focused($isFocused)
+        .onAppear { if focusOnAppear { isFocused = true } }
         #if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {

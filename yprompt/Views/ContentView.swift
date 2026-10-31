@@ -36,10 +36,43 @@ struct ContentView: View {
                 }
             #endif
         }
+        .task { seedStartingScripts() }
+        .onChange(of: scripts) { _, scripts in removeSyncedWelcomeCopies(in: scripts) }
+    }
+
+    // MARK: - Welcome Script
+
+    private func seedStartingScripts() {
         #if DEBUG
-        // Sample scripts for development and App Store screenshots only; release builds start empty.
-        .task { seedDemoScriptsIfNeeded() }
+        // Sample scripts for development and App Store screenshots; `-ypFirstRun` starts like a new install.
+        guard ProcessInfo.processInfo.arguments.contains("-ypFirstRun") else {
+            seedDemoScriptsIfNeeded()
+            return
+        }
         #endif
+        seedWelcomeScriptIfNeeded()
+    }
+
+    /// New installs start with a short script that shows how reading feels, ready to play.
+    private func seedWelcomeScriptIfNeeded() {
+        let seededKey = "hasSeededWelcomeScript"
+        guard !hasSeenOnboarding, scripts.isEmpty, !UserDefaults.standard.bool(forKey: seededKey) else { return }
+        UserDefaults.standard.set(true, forKey: seededKey)
+        let script = Script(
+            title: String(localized: "Welcome to yPrompt"),
+            content: String(localized: "Welcome to yPrompt. Press play and read this out loud at your own pace. Every word lights up as you go, just like song lyrics.\n\nKeep your eyes near the camera and your voice will sound natural. When you are ready, add your own script and speak with confidence.")
+        )
+        script.id = AppConstants.welcomeScriptID
+        modelContext.insert(script)
+        try? modelContext.save()
+    }
+
+    /// Each device seeds the script before iCloud has delivered anything; keep just one.
+    private func removeSyncedWelcomeCopies(in scripts: [Script]) {
+        let copies = scripts.filter { $0.id == AppConstants.welcomeScriptID }
+        guard copies.count > 1 else { return }
+        copies.dropFirst().forEach(modelContext.delete)
+        try? modelContext.save()
     }
 
     // MARK: - Demo Seeding

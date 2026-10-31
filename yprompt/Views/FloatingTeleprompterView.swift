@@ -10,6 +10,14 @@ struct FloatingTeleprompterView: View {
     private let manager = FloatingTeleprompterManager.shared
     private var viewModel: TeleprompterViewModel { manager.viewModel }
     @Environment(\.fontResolutionContext) private var fontContext
+    @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled = true
+
+    /// Lyrics style is Pro. Voice needs it to show the word being read, and the sample script lets everyone try it.
+    private var usesWordStyle: Bool {
+        guard let words = viewModel.scriptWords, !words.isEmpty, !words.isRightToLeft else { return false }
+        if viewModel.voiceScrollEnabled { return true }
+        return lyricsStyleEnabled && (manager.isPremium || manager.currentScript?.id == AppConstants.welcomeScriptID)
+    }
 
     private var customization: TextCustomization {
         manager.currentScript?.customization ?? TextCustomization()
@@ -24,12 +32,27 @@ struct FloatingTeleprompterView: View {
             RoundedRectangle(cornerRadius: 18)
                 .fill(.black.opacity(manager.backgroundOpacity))
 
-            GeometryReader { geo in
-                scrollableText
-                    .frame(width: geo.size.width)
-                    .clipped()
-                    .onAppear { viewModel.screenHeight = geo.size.height }
-                    .onChange(of: geo.size.height) { _, h in viewModel.screenHeight = h }
+            if viewModel.isWordMode, let words = viewModel.scriptWords {
+                WordTeleprompterView(
+                    viewModel: viewModel,
+                    words: words,
+                    fontSize: manager.floatingFontSize,
+                    lineHeightMultiple: 1.2,
+                    textColor: .white,
+                    alignment: customization.textAlignmentIndex,
+                    horizontalPadding: manager.horizontalPadding,
+                    topInset: 12,
+                    anchor: 0,
+                    upcomingOpacity: 0.55
+                )
+            } else {
+                GeometryReader { geo in
+                    scrollableText
+                        .frame(width: geo.size.width)
+                        .clipped()
+                        .onAppear { viewModel.screenHeight = geo.size.height }
+                        .onChange(of: geo.size.height) { _, h in viewModel.screenHeight = h }
+                }
             }
 
             VStack(spacing: 0) {
@@ -50,6 +73,7 @@ struct FloatingTeleprompterView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .onChange(of: manager.currentScript?.id) { viewModel.resetToTop() }
+        .onChange(of: usesWordStyle, initial: true) { _, usesWords in viewModel.setWordMode(usesWords) }
     }
 
     // MARK: - Scrolling text
@@ -95,7 +119,10 @@ struct FloatingTeleprompterView: View {
             .background(
                 GeometryReader { g in
                     Color.clear
-                        .onAppear { viewModel.contentHeight = g.size.height }
+                        .onAppear {
+                            viewModel.contentHeight = g.size.height
+                            viewModel.restoreClassicPositionIfNeeded()
+                        }
                         .onChange(of: g.size.height) { _, h in viewModel.contentHeight = h }
                 }
             )
