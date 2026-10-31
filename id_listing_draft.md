@@ -1,6 +1,6 @@
 # yPrompt: Indonesian (`id`) listing draft
 
-**Status: draft only. Do not add it before the Nov 7–10 check; it counts as a listing change.**
+**Status: added to App Store Connect with 1.0.4 on 2026-10-31. The description there was updated afterwards and is the current text.**
 
 Before using it:
 - Have a native speaker review it. It's a machine-written first draft.
