@@ -6,6 +6,7 @@
 #if os(iOS)
 import AVFoundation
 import Combine
+import UIKit
 
 /// One physical lens behind a (possibly virtual) capture device, e.g. "0.5×" or "1×".
 struct CameraLens: Identifiable, Hashable {
@@ -90,6 +91,8 @@ final class CameraRecordingService: NSObject, ObservableObject {
 
     private weak var previewLayer: AVCaptureVideoPreviewLayer?
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    /// True while the camera asks iOS for the phone's physical orientation, to tell when it lies flat.
+    private var tracksDeviceOrientation = false
     private var rotationObservations: [NSKeyValueObservation] = []
 
     private enum DefaultsKey {
@@ -143,6 +146,10 @@ final class CameraRecordingService: NSObject, ObservableObject {
     }
 
     func startCamera() {
+        if !tracksDeviceOrientation {
+            UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+            tracksDeviceOrientation = true
+        }
         configureAudioSession()
         let session = AVCaptureSession()
         // Voice Scroll listens to the same microphone, so the app sets up the audio session
@@ -244,6 +251,10 @@ final class CameraRecordingService: NSObject, ObservableObject {
         videoInput = nil
         rotationObservations = []
         rotationCoordinator = nil
+        if tracksDeviceOrientation {
+            UIDevice.current.endGeneratingDeviceOrientationNotifications()
+            tracksDeviceOrientation = false
+        }
         Task.detached(priority: .userInitiated) {
             session?.stopRunning()
             // Fails quietly while Voice Scroll is still listening, which is what we want.
@@ -269,7 +280,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
             // Lock the file's orientation to how the device is held right now.
             if let coordinator = rotationCoordinator,
                let connection = output.connection(with: .video) {
-                let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+                let angle = captureAngle(from: coordinator)
                 if connection.isVideoRotationAngleSupported(angle) {
                     connection.videoRotationAngle = angle
                 }
@@ -279,6 +290,34 @@ final class CameraRecordingService: NSObject, ObservableObject {
             output.startRecording(to: take.url, recordingDelegate: self)
             isRecording = true
             recordingStartDate = Date()
+        }
+    }
+
+    /// The angle to record at. Lying flat on a table, the phone can't tell which way is up,
+    /// and the coordinator falls back to the sensor's own landscape, which made takes come out
+    /// sideways. The screen's orientation is what the reader sees, so the take follows it then.
+    private func captureAngle(from coordinator: AVCaptureDevice.RotationCoordinator) -> CGFloat {
+        guard !UIDevice.current.orientation.isValidInterfaceOrientation,
+              let interface = Self.interfaceOrientation() else {
+            return coordinator.videoRotationAngleForHorizonLevelCapture
+        }
+        return Self.captureAngle(for: interface)
+    }
+
+    private static func interfaceOrientation() -> UIInterfaceOrientation? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        return scene?.effectiveGeometry.interfaceOrientation
+    }
+
+    /// Clockwise rotation from the camera's native landscape, as for the old video orientations:
+    /// landscape right 0°, portrait 90°, landscape left 180°, upside down 270°.
+    private static func captureAngle(for orientation: UIInterfaceOrientation) -> CGFloat {
+        switch orientation {
+        case .landscapeRight: 0
+        case .landscapeLeft: 180
+        case .portraitUpsideDown: 270
+        default: 90
         }
     }
 
