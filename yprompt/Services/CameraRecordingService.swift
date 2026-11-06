@@ -6,7 +6,6 @@
 #if os(iOS)
 import AVFoundation
 import Combine
-import Photos
 
 /// One physical lens behind a (possibly virtual) capture device, e.g. "0.5×" or "1×".
 struct CameraLens: Identifiable, Hashable {
@@ -55,7 +54,8 @@ final class CameraRecordingService: NSObject, ObservableObject {
     @Published private(set) var isPreviewRunning = false
     @Published var isRecording = false
     @Published var permissionDenied = false
-    @Published var recordingSaved = false
+    /// Set when a recording finishes; the reader decides whether to save it or retake.
+    @Published var finishedTake: Take?
     @Published private(set) var recordingStartDate: Date?
     @Published private(set) var cameraPosition: AVCaptureDevice.Position = .front
 
@@ -83,6 +83,8 @@ final class CameraRecordingService: NSObject, ObservableObject {
 
     private(set) var captureSession: AVCaptureSession?
     private var movieOutput: AVCaptureMovieFileOutput?
+    /// Takes being written, until the movie output reports them finished.
+    private var pendingTakes: [UUID: Take] = [:]
     private var videoInput: AVCaptureDeviceInput?
     private var videoDevice: AVCaptureDevice? { videoInput?.device }
 
@@ -249,7 +251,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
     }
 
-    func toggleRecording() {
+    /// Starts or stops a take. `scriptID` and `startProgress` let a take be found again
+    /// for its script, and let Retake go back to where reading began.
+    func toggleRecording(scriptID: UUID? = nil, startProgress: Double = 0) {
         #if DEBUG
         // The demo camera photo has no capture session; just show the recording state.
         if captureSession == nil, UserDefaults.standard.bool(forKey: AppConstants.debugDemoCameraKey) {
@@ -270,10 +274,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
                     connection.videoRotationAngle = angle
                 }
             }
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("mov")
-            output.startRecording(to: url, recordingDelegate: self)
+            let take = TakeStore.newTake(scriptID: scriptID, startProgress: startProgress)
+            pendingTakes[take.id] = take
+            output.startRecording(to: take.url, recordingDelegate: self)
             isRecording = true
             recordingStartDate = Date()
         }
@@ -508,20 +511,6 @@ final class CameraRecordingService: NSObject, ObservableObject {
             print("[Camera] lockForConfiguration failed: \(error)")
         }
     }
-
-    private func saveToPhotoLibrary(url: URL) {
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
-            guard status == .authorized || status == .limited else { return }
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
-            }) { [weak self] success, _ in
-                Task { @MainActor [weak self] in
-                    if success { self?.recordingSaved = true }
-                    try? FileManager.default.removeItem(at: url)
-                }
-            }
-        }
-    }
 }
 
 extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
@@ -531,15 +520,25 @@ extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
+        // Some errors still leave a complete movie, e.g. when the disk fills up.
+        let finished = error == nil
+            || ((error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool ?? false)
         Task { @MainActor [weak self] in
-            self?.isRecording = false
-            self?.recordingStartDate = nil
-            if error == nil {
-                self?.saveToPhotoLibrary(url: outputFileURL)
+            guard let self else { return }
+            isRecording = false
+            recordingStartDate = nil
+            // Matched by name: the output may report the path in another form (e.g. /private/var).
+            let id = UUID(uuidString: outputFileURL.deletingPathExtension().lastPathComponent)
+            if let id, let take = pendingTakes.removeValue(forKey: id) {
+                if finished {
+                    finishedTake = take
+                } else {
+                    TakeStore.discard(take)
+                }
             }
             // Catch up with any rotation that happened while recording.
-            if let angle = self?.rotationCoordinator?.videoRotationAngleForHorizonLevelCapture {
-                self?.applyCaptureRotation(angle)
+            if let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture {
+                applyCaptureRotation(angle)
             }
         }
     }

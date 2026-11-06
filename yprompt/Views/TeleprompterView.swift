@@ -561,6 +561,7 @@ struct TeleprompterView: View {
                 viewModel.load(words: currentScript.scriptWords)
             }
             restoreModeAndBackground()
+            Task { await offerUnsavedTake() }
             viewModel.setWordMode(usesWordStyle)
             if viewModel.isWordMode && !didRestoreProgress {
                 didRestoreProgress = true
@@ -623,10 +624,23 @@ struct TeleprompterView: View {
         } message: {
             Text("Camera mode needs camera and microphone access to record video.")
         }
-        .alert("Recording Saved", isPresented: $cameraService.recordingSaved) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Your recording has been saved to the Photos library.")
+        .fullScreenCover(item: $cameraService.finishedTake) { take in
+            let script = queueScripts.first { $0.id == take.scriptID } ?? currentScript
+            TakeReviewView(
+                take: take,
+                script: script.scriptWords,
+                title: script.title,
+                onRetake: {
+                    viewModel.seek(to: take.startProgress)
+                    cameraService.finishedTake = nil
+                },
+                onFinish: { cameraService.finishedTake = nil }
+            )
+            .environment(storeKit)
+        }
+        .onChange(of: cameraService.finishedTake) { _, take in
+            // The camera keeps running underneath, so Retake can start again straight away.
+            if take != nil { viewModel.pause() }
         }
         .onChange(of: cameraService.permissionDenied) { _, denied in
             if denied {
@@ -813,7 +827,7 @@ struct TeleprompterView: View {
     /// One button for the take: recording and reading start and stop together.
     private func toggleRecording() {
         let starting = !cameraService.isRecording
-        cameraService.toggleRecording()
+        cameraService.toggleRecording(scriptID: currentScript.id, startProgress: viewModel.progress)
         guard teleprompterMode != .tap else { return }
         if starting {
             viewModel.play()
@@ -1206,6 +1220,15 @@ struct TeleprompterView: View {
             }
     }
 
+    /// A take that was never saved or thrown away, e.g. because the app closed, comes back
+    /// the next time its script is opened.
+    private func offerUnsavedTake() async {
+        guard cameraService.finishedTake == nil, !cameraService.isRecording,
+              let take = await TakeStore.unsavedTakes(for: currentScript.id).last,
+              cameraService.finishedTake == nil, !cameraService.isRecording else { return }
+        cameraService.finishedTake = take
+    }
+
     private func handlePlayModeAppear() {
         TabBarAnimator.setHidden(true, animated: true)
         WatchSessionRelay.shared.onCommandReceived = { command in
@@ -1214,6 +1237,8 @@ struct TeleprompterView: View {
     }
 
     private func handlePlayModeDisappear() {
+        // Covered by the take sheet, not left: the camera keeps running for Retake.
+        guard cameraService.finishedTake == nil else { return }
         if !didRestoreTabBar {
             didRestoreTabBar = true
             TabBarAnimator.setHidden(false, animated: true)
@@ -1441,7 +1466,9 @@ struct TeleprompterView: View {
         }
         if savedBackground == ReadingPreferences.cameraBackground && storeKit.isPremium {
             backgroundMode = .camera
-            if !usesDemoCamera { Task { await cameraService.requestPermissionsAndStart() } }
+            if !usesDemoCamera && !cameraService.isCameraActive {
+                Task { await cameraService.requestPermissionsAndStart() }
+            }
         }
         #if DEBUG
         // For App Store screenshots.
@@ -1459,6 +1486,15 @@ struct TeleprompterView: View {
             }
         }
         if arguments.contains("-ypShotPaywall") { showingPaywall = true }
+        // The simulator has no camera: `-ypDemoTake <video file>` reviews that video as a take.
+        if let flag = arguments.firstIndex(of: "-ypDemoTake"), arguments.indices.contains(flag + 1) {
+            let take = TakeStore.newTake(scriptID: currentScript.id, startProgress: viewModel.progress)
+            try? FileManager.default.copyItem(at: URL(fileURLWithPath: arguments[flag + 1]), to: take.url)
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(600))
+                cameraService.finishedTake = take
+            }
+        }
         #endif
     }
 
