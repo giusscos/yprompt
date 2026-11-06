@@ -37,7 +37,12 @@ struct RecordingsListView: View {
             }
         }
         .navigationTitle("Recordings")
-        .task { await library.load() }
+        .task {
+            await library.load()
+            #if DEBUG
+            await seedForScreenshots()
+            #endif
+        }
         .task(id: library.recordings.map(\.id)) { await loadThumbnails() }
         .fullScreenCover(item: $opened) { selection in
             let script = scriptFor(selection.recordingID)
@@ -168,6 +173,54 @@ struct RecordingsListView: View {
         guard let scriptID = library.recording(recordingID)?.scriptID else { return nil }
         return scripts.first { $0.id == scriptID }
     }
+
+    #if DEBUG
+    /// For App Store screenshots. `-ypDemoRecordings <folder>` fills an empty library from the
+    /// folder's `manifest.json`; `-ypShotOpenRecording <title>` then opens that recording.
+    private func seedForScreenshots() async {
+        let defaults = UserDefaults.standard
+        if library.recordings.isEmpty, let folder = defaults.string(forKey: "ypDemoRecordings") {
+            struct Entry: Decodable {
+                var title: String
+                var kind: Recording.Kind
+                var files: [String]
+                var daysAgo: Double
+                var saved: Bool?
+                var captionStyle: CaptionStyle?
+            }
+            let base = URL(fileURLWithPath: folder)
+            guard let data = try? Data(contentsOf: base.appendingPathComponent("manifest.json")),
+                  let entries = try? JSONDecoder().decode([Entry].self, from: data) else { return }
+            for entry in entries {
+                let scriptID = scripts.first { $0.title == entry.title }?.id
+                var recordingID: UUID?
+                for file in entry.files {
+                    let target = RecordingTarget(scriptID: scriptID, title: entry.title, recordingID: recordingID)
+                    let pending = RecordingStore.beginPiece(target, kind: entry.kind, startProgress: 0)
+                    try? FileManager.default.copyItem(at: base.appendingPathComponent(file), to: pending.url)
+                    // Word timings made with the demo audio, for simulators whose speech model won't load.
+                    try? FileManager.default.copyItem(at: base.appendingPathComponent(file + ".analysis.json"),
+                                                      to: pending.url.appendingPathExtension("analysis.json"))
+                    guard let (recording, _) = await RecordingStore.finishPiece(pending, endProgress: 1) else { continue }
+                    recordingID = recording.id
+                }
+                guard let recordingID, var recording = RecordingStore.load(recordingID) else { continue }
+                recording.createdAt = Date().addingTimeInterval(-entry.daysAgo * 86_400)
+                recording.savedAt = entry.saved == true ? Date() : nil
+                if let style = entry.captionStyle { recording.captionStyle = style }
+                RecordingStore.save(recording)
+            }
+            library.refresh()
+        }
+        if let title = defaults.string(forKey: "ypShotOpenRecording"),
+           let recording = library.recordings.first(where: { $0.title == title }) {
+            let index = defaults.integer(forKey: "ypShotSelectPiece")
+            let piece = recording.pieces.indices.contains(index) ? recording.pieces[index].id : nil
+            try? await Task.sleep(for: .milliseconds(500))
+            opened = RecordingSelection(recordingID: recording.id, pieceID: piece)
+        }
+    }
+    #endif
 
     private func loadThumbnails() async {
         for recording in library.recordings where recording.kind == .video && thumbnails[recording.id] == nil {

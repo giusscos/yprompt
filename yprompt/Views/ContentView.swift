@@ -17,6 +17,7 @@ struct ContentView: View {
     #if os(macOS)
     @State private var selectedScript: Script?
     #endif
+    @State private var selectedTab = 0
 
     var body: some View {
         Group {
@@ -276,30 +277,38 @@ struct ContentView: View {
 
     #if !os(macOS) && !os(watchOS)
     private var iOSContent: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 ScriptsListView()
             }
             .tabItem { Label("Scripts", systemImage: "doc.text") }
+            .tag(0)
 
             #if os(iOS)
             NavigationStack {
                 RecordingsListView()
             }
             .tabItem { Label("Recordings", systemImage: "film.stack") }
+            .tag(1)
             #endif
 
             NavigationStack {
                 RemoteControlView()
             }
             .tabItem { Label("Remote", systemImage: "appletvremote.gen4.fill") }
+            .tag(2)
 
             NavigationStack {
                 SettingsView()
             }
             .tabItem { Label("Settings", systemImage: "gearshape") }
+            .tag(3)
         }
         .onAppear {
+            #if DEBUG
+            // For App Store screenshots: `-ypShotTab recordings` opens on the Recordings tab.
+            if UserDefaults.standard.string(forKey: "ypShotTab") == "recordings" { selectedTab = 1 }
+            #endif
             #if os(iOS)
             WatchSessionRelay.shared.localScripts = scripts
             #endif

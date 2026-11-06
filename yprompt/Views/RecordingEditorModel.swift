@@ -141,19 +141,45 @@ final class RecordingEditorModel {
         await rebuild(keepTime: false)
         player.play()
         analyzeMissing()
+        #if DEBUG
+        if analysisTask == nil { holdForScreenshot() }
+        #endif
     }
+
+    #if DEBUG
+    /// For App Store screenshots: `-ypShotEditorTime 4.2` pauses on that moment once the
+    /// captions are ready.
+    private func holdForScreenshot() {
+        let time = UserDefaults.standard.double(forKey: "ypShotEditorTime")
+        guard time > 0 else { return }
+        Task {
+            try? await Task.sleep(for: .milliseconds(800))
+            player.pause()
+            isPlaying = false
+            seek(to: time)
+        }
+    }
+    #endif
 
     /// Listens to each source that hasn't been transcribed yet, one at a time.
     private func analyzeMissing() {
         guard analysisTask == nil else { return }
         analysisTask = Task {
-            defer { analysisTask = nil; isAnalyzing = false }
+            defer {
+                analysisTask = nil
+                isAnalyzing = false
+                #if DEBUG
+                holdForScreenshot()
+                #endif
+            }
             while let file = recording.pieces.map(\.file).first(where: { analyses[$0] == nil }) {
                 isAnalyzing = true
                 let url = recording.folder.appendingPathComponent(file)
                 let analysis = await TakeTranscriber.analyze(url: url, script: script)
                 guard !Task.isCancelled else { return }
-                RecordingStore.cache(analysis, for: url)
+                // Only a finished transcript is kept: a failure (no network, permission not yet
+                // given) is tried again the next time the editor opens.
+                if analysis.speech == .recognized { RecordingStore.cache(analysis, for: url) }
                 analyses[file] = analysis
                 trimToSpeech(file: file, analysis: analysis)
                 await rebuild(keepTime: true)

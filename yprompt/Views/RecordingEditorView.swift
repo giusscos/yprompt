@@ -180,7 +180,10 @@ private struct EditorContent: View {
                 ZStack(alignment: .topLeading) {
                     PlayerLayerView(player: model.player)
                     if let renderer = model.captionRenderer, !model.isRendering {
-                        CaptionOverlay(player: model.player, renderer: renderer, videoSize: size)
+                        CaptionOverlay(renderer: renderer, videoSize: size) {
+                            // The player's own clock while playing; the playhead while paused or scrubbing.
+                            model.isPlaying ? model.player.currentTime().seconds : model.currentTime
+                        }
                     }
                     if let mark = model.mark {
                         markOverlay(mark, in: frame.size, videoSize: size)
@@ -188,7 +191,8 @@ private struct EditorContent: View {
                 }
                 .frame(width: frame.width, height: frame.height)
                 .animation(.snappy(duration: 0.35), value: model.renderSize)
-                .overlay(alignment: .bottomTrailing) {
+                // Top right: the captions run along the bottom, the mark sits top left.
+                .overlay(alignment: .topTrailing) {
                     Button { withAnimation(.snappy) { model.rotate() } } label: {
                         Image(systemName: "rotate.right")
                             .font(.headline)
@@ -228,17 +232,27 @@ private struct EditorContent: View {
         .padding(.top, (videoSize.height - mark.origin.y - CGFloat(mark.image.height)) * scale)
     }
 
+    /// The transcript around the playhead: the line being said, lit, between dimmed neighbours.
     private var audioCard: some View {
-        VStack(spacing: 20) {
+        let lines = model.captionLines
+        let current = lines.lastIndex { $0.start <= model.currentTime } ?? 0
+        let shown = lines.isEmpty ? [] : Array(lines.indices.filter { $0 >= current - 2 && $0 <= current + 3 })
+        return VStack(spacing: 18) {
             Image(systemName: "waveform")
-                .font(.system(size: 44, weight: .semibold))
+                .font(.system(size: 34, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
                 .symbolEffect(.variableColor.iterative, isActive: model.isPlaying)
-            Text(model.currentLine?.text ?? " ")
-                .font(.title2.weight(.bold))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, minHeight: 80)
-                .animation(.easeInOut(duration: 0.15), value: model.currentLine?.text)
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(shown, id: \.self) { index in
+                    Text(lines[index].text)
+                        .font(index == current ? .title2.weight(.bold) : .title3.weight(.semibold))
+                        .foregroundStyle(.white.opacity(index == current ? 1 : (index < current ? 0.3 : 0.5)))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: current)
+            .frame(maxWidth: .infinity, minHeight: 80)
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -762,14 +776,14 @@ private struct PlayerLayerView: UIViewRepresentable {
 
 /// The captions over the playing recording, drawn by the renderer the saved video uses.
 private struct CaptionOverlay: View {
-    let player: AVPlayer
     let renderer: CaptionRenderer
     let videoSize: CGSize
+    let time: () -> Double
 
     var body: some View {
         GeometryReader { geometry in
             TimelineView(.animation(minimumInterval: 1.0 / 30)) { _ in
-                if videoSize.width > 0, let caption = renderer.image(at: player.currentTime().seconds) {
+                if videoSize.width > 0, let caption = renderer.image(at: time()) {
                     let scale = geometry.size.width / videoSize.width
                     let width = CGFloat(caption.image.width) * scale
                     let height = CGFloat(caption.image.height) * scale

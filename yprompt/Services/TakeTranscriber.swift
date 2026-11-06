@@ -84,7 +84,16 @@ nonisolated enum TakeTranscriber {
         guard await SpeechWordTracker.requestAuthorization() else {
             return TakeAnalysis(words: [], speech: .notAllowed, envelope: audio.envelope)
         }
-        guard let recognizer = SpeechWordTracker.recognizer(forScript: script.text), recognizer.isAvailable else {
+        guard let recognizer = SpeechWordTracker.recognizer(forScript: script.text) else {
+            log.notice("No recognizer for this script's language")
+            return TakeAnalysis(words: [], speech: .unavailable, envelope: audio.envelope)
+        }
+        // Right after launch the recognizer can report itself unavailable for a moment.
+        for _ in 0..<25 where !recognizer.isAvailable {
+            try? await Task.sleep(for: .milliseconds(200))
+        }
+        guard recognizer.isAvailable else {
+            log.notice("Recognizer for \(recognizer.locale.identifier, privacy: .public) isn't available")
             return TakeAnalysis(words: [], speech: .unavailable, envelope: audio.envelope)
         }
 
@@ -93,7 +102,7 @@ nonisolated enum TakeTranscriber {
         var words: [SpokenWord] = []
         var failedWindows = 0
         let windows = windows(sampleCount: samples.count, envelope: audio.envelope)
-        log.info("Transcribing \(windows.count) piece(s) in \(recognizer.locale.identifier, privacy: .public), on device: \(onDevice)")
+        log.notice("Transcribing \(windows.count) piece(s) in \(recognizer.locale.identifier, privacy: .public), on device: \(onDevice)")
 
         for window in windows {
             guard !Task.isCancelled else { break }
@@ -110,7 +119,7 @@ nonisolated enum TakeTranscriber {
             case .success(let heard): words += heard
             case .failure(let error):
                 failedWindows += 1
-                log.info("Recognition failed: \(String(describing: error), privacy: .public)")
+                log.notice("Recognition failed: \(String(describing: error), privacy: .public)")
             }
         }
         let speech: TakeAnalysis.Speech = failedWindows == windows.count ? .unavailable : .recognized

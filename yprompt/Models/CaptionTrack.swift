@@ -10,6 +10,8 @@ nonisolated struct CaptionWord: Hashable, Sendable {
     var text: String
     var start: Double
     var end: Double
+    /// Written straight on to the next word, as "forty-" and "two": no space, no line break.
+    var joinsNext = false
 }
 
 /// One caption on screen: a few words, shown from the first word until the next caption.
@@ -18,7 +20,12 @@ nonisolated struct CaptionLine: Hashable, Sendable {
     var start: Double
     var end: Double
 
-    var text: String { words.map(\.text).joined(separator: " ") }
+    var text: String {
+        words.indices.reduce(into: "") { text, index in
+            text += words[index].text
+            if index < words.count - 1 && !words[index].joinsNext { text += " " }
+        }
+    }
 }
 
 /// Turns the words heard in a take into captions spelled like the script.
@@ -83,7 +90,8 @@ enum CaptionTrack {
         while index < spoken.count {
             if let pair = aligned[index], pair.isMatch {
                 let word = script.words[pair.scriptIndex]
-                placed.append(PlacedWord(word: CaptionWord(text: word.text, start: spoken[index].start, end: spoken[index].end),
+                placed.append(PlacedWord(word: CaptionWord(text: word.text, start: spoken[index].start, end: spoken[index].end,
+                                                           joinsNext: !word.spaceAfter && word.breaksAfter == 0),
                                      endsPhrase: word.endsPhrase, isScript: true))
                 index += 1
                 continue
@@ -111,7 +119,8 @@ enum CaptionTrack {
         return words.map { word in
             let length = (end - start) * Double(max(1, word.text.count)) / total
             defer { time += length }
-            return PlacedWord(word: CaptionWord(text: word.text, start: time, end: time + length),
+            return PlacedWord(word: CaptionWord(text: word.text, start: time, end: time + length,
+                                                joinsNext: !word.spaceAfter && word.breaksAfter == 0),
                           endsPhrase: word.endsPhrase, isScript: true)
         }
     }
@@ -208,8 +217,9 @@ enum CaptionTrack {
                 let full = phraseNearlyDone
                     ? current.count >= stretchedWordsPerLine || characters > stretchedCharactersPerLine
                     : current.count >= maxWordsPerLine || characters > maxCharactersPerLine
-                if full || placed.word.start - last.end > pauseBreak || placed.isScript != currentIsScript
-                    || placed.startsPiece {
+                // A word joined to the one before ("forty-" "two") stays on the same caption.
+                if !last.joinsNext, full || placed.word.start - last.end > pauseBreak
+                    || placed.isScript != currentIsScript || placed.startsPiece {
                     close()
                 }
             }

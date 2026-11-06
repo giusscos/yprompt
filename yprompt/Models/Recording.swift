@@ -172,8 +172,10 @@ nonisolated enum RecordingStore {
     }
 
     static func cachedAnalysis(for source: URL) -> TakeAnalysis? {
-        guard let data = try? Data(contentsOf: analysisURL(for: source)) else { return nil }
-        return try? JSONDecoder().decode(TakeAnalysis.self, from: data)
+        guard let data = try? Data(contentsOf: analysisURL(for: source)),
+              let analysis = try? JSONDecoder().decode(TakeAnalysis.self, from: data),
+              analysis.speech == .recognized else { return nil }
+        return analysis
     }
 
     static func cache(_ analysis: TakeAnalysis, for source: URL) {

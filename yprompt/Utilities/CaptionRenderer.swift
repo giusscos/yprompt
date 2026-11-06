@@ -84,17 +84,20 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
         var built: [Line] = []
         for caption in captionLines where style != .off {
             // Wrap the words into rows that fit the frame.
-            var rows: [[(line: CTLine, width: CGFloat, start: Double)]] = [[]]
+            // `gap` is the space before the next word: none after a word joined to it.
+            var rows: [[(line: CTLine, width: CGFloat, start: Double, gap: CGFloat)]] = [[]]
             var rowWidth: CGFloat = 0
             for word in caption.words {
                 let measured = Self.makeLine(word.text, font: font)
-                let isRowEmpty = rows[rows.count - 1].isEmpty
-                let widened = isRowEmpty ? measured.width : rowWidth + spaceWidth + measured.width
-                if widened > maxWidth && !isRowEmpty {
-                    rows.append([(measured.line, measured.width, word.start)])
+                let gap = word.joinsNext ? 0 : spaceWidth
+                let previousGap = rows[rows.count - 1].last?.gap
+                let widened = previousGap.map { rowWidth + $0 + measured.width } ?? measured.width
+                // Never wrap between two joined words.
+                if widened > maxWidth, let previousGap, previousGap > 0 {
+                    rows.append([(measured.line, measured.width, word.start, gap)])
                     rowWidth = measured.width
                 } else {
-                    rows[rows.count - 1].append((measured.line, measured.width, word.start))
+                    rows[rows.count - 1].append((measured.line, measured.width, word.start, gap))
                     rowWidth = widened
                 }
             }
@@ -105,7 +108,7 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
             case .bottom: size.height * (isPortrait ? 0.80 : 0.90) - blockHeight
             case .middle: (size.height - blockHeight) / 2
             }
-            let rowWidths = rows.map { row in row.reduce(0) { $0 + $1.width } + spaceWidth * CGFloat(max(0, row.count - 1)) }
+            let rowWidths = rows.map { row in row.reduce(0) { $0 + $1.width } + row.dropLast().reduce(0) { $0 + $1.gap } }
             let rowLefts = rowWidths.map { ((size.width - $0) / 2).rounded() }
             let left = (rowLefts.min() ?? 0) - padding
             let right = zip(rowLefts, rowWidths).map { $0 + $1 }.max() ?? size.width
@@ -122,7 +125,7 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
                 for item in row {
                     words.append(Word(line: item.line, width: item.width, start: item.start,
                                       origin: CGPoint(x: x, y: baseline)))
-                    x += item.width + spaceWidth
+                    x += item.width + item.gap
                 }
             }
             built.append(Line(start: caption.start, end: caption.end, words: words, strip: strip.integral))
