@@ -236,7 +236,7 @@ private struct EditorContent: View {
     private var audioCard: some View {
         let lines = model.captionLines
         let current = lines.lastIndex { $0.start <= model.currentTime } ?? 0
-        let shown = lines.isEmpty ? [] : Array(lines.indices.filter { $0 >= current - 2 && $0 <= current + 3 })
+        let shown = lines.isEmpty ? [] : Array(lines.indices.filter { $0 >= current - 1 && $0 <= current + 3 })
         return VStack(spacing: 18) {
             Image(systemName: "waveform")
                 .font(.system(size: 34, weight: .semibold))
@@ -247,15 +247,21 @@ private struct EditorContent: View {
                     Text(lines[index].text)
                         .font(index == current ? .title2.weight(.bold) : .title3.weight(.semibold))
                         .foregroundStyle(.white.opacity(index == current ? 1 : (index < current ? 0.3 : 0.5)))
+                        // The current line always shows in full; the others give way when space is short.
+                        .fixedSize(horizontal: false, vertical: index == current)
+                        .lineLimit(index == current ? nil : 1)
+                        .layoutPriority(index == current ? 1 : 0)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: current)
-            .frame(maxWidth: .infinity, minHeight: 80)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // On short screens the lines below the current one are cut off rather than spilling over the controls.
+        .clipped()
         .ypGlassEffect(cornerRadius: 24)
         .contentShape(Rectangle())
         .onTapGesture { model.togglePlay() }
