@@ -36,6 +36,7 @@ enum TakeExporter {
         take: Take,
         range: ClosedRange<Double>,
         captions: Captions?,
+        quarterTurns: Int = 0,
         fileName: String,
         progress: @escaping (Double) -> Void
     ) async throws -> URL {
@@ -47,15 +48,18 @@ enum TakeExporter {
         let timeRange = CMTimeRange(start: time(range.lowerBound), end: time(range.upperBound))
         let session: AVAssetExportSession
         if let captions, captions.style != .off, !captions.lines.isEmpty {
-            session = try await captionedSession(asset: asset, captions: captions)
+            session = try await captionedSession(asset: asset, captions: captions, quarterTurns: quarterTurns)
+            session.timeRange = timeRange
+        } else if quarterTurns % 4 != 0 {
+            session = try await turnedSession(asset: asset, timeRange: timeRange, quarterTurns: quarterTurns)
         } else {
             // Only cutting: the video is copied as it is, which is quick and loses nothing.
             guard let passthrough = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetPassthrough) else {
                 throw ExportError.cannotExport
             }
+            passthrough.timeRange = timeRange
             session = passthrough
         }
-        session.timeRange = timeRange
         try await run(session, to: output, progress: progress)
         return output
     }
@@ -73,15 +77,53 @@ enum TakeExporter {
 
     // MARK: - Captions
 
-    private static func captionedSession(asset: AVURLAsset, captions: Captions) async throws -> AVAssetExportSession {
+    private static func captionedSession(
+        asset: AVURLAsset, captions: Captions, quarterTurns: Int
+    ) async throws -> AVAssetExportSession {
         guard let video = try await asset.loadTracks(withMediaType: .video).first else { throw ExportError.noVideo }
         let formats = try await video.load(.formatDescriptions)
         let isHEVC = formats.contains { CMFormatDescriptionGetMediaSubType($0) == kCMVideoCodecType_HEVC }
         let preset = isHEVC ? AVAssetExportPresetHEVCHighestQuality : AVAssetExportPresetHighestQuality
         guard let session = AVAssetExportSession(asset: asset, presetName: preset) else { throw ExportError.cannotExport }
         session.videoComposition = try await CaptionComposition.make(
-            for: asset, captions: captions, size: try await uprightSize(of: asset))
+            for: asset, captions: captions, size: try await uprightSize(of: asset), quarterTurns: quarterTurns)
         return session
+    }
+
+    /// Turned but not captioned: only the video's orientation tag changes, so the picture is
+    /// copied as it is, which is quick and loses nothing.
+    private static func turnedSession(
+        asset: AVURLAsset, timeRange: CMTimeRange, quarterTurns: Int
+    ) async throws -> AVAssetExportSession {
+        guard let sourceVideo = try await asset.loadTracks(withMediaType: .video).first else { throw ExportError.noVideo }
+        let transform = try await sourceVideo.load(.preferredTransform)
+        let composition = AVMutableComposition()
+        guard let video = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            throw ExportError.cannotExport
+        }
+        try video.insertTimeRange(timeRange, of: sourceVideo, at: .zero)
+        video.preferredTransform = transform.concatenating(
+            clockwise(quarterTurns: quarterTurns, size: try await uprightSize(of: asset)))
+        for sourceAudio in try await asset.loadTracks(withMediaType: .audio) {
+            let audio = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+            try audio?.insertTimeRange(timeRange, of: sourceAudio, at: .zero)
+        }
+        guard let session = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetPassthrough) else {
+            throw ExportError.cannotExport
+        }
+        return session
+    }
+
+    /// Turns a picture of `size` clockwise, in video coordinates (origin top left), keeping it
+    /// in positive coordinates.
+    nonisolated static func clockwise(quarterTurns: Int, size: CGSize) -> CGAffineTransform {
+        var transform = CGAffineTransform.identity
+        var size = size
+        for _ in 0..<((quarterTurns % 4 + 4) % 4) {
+            transform = transform.concatenating(CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: size.height, ty: 0))
+            size = CGSize(width: size.height, height: size.width)
+        }
+        return transform
     }
 
     /// The camera stores how the phone was held as a transform; this is the picture as it's seen.

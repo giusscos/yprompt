@@ -36,8 +36,13 @@ final class TakeReviewModel {
     let player = AVPlayer()
     private(set) var item: AVPlayerItem?
     private(set) var duration: Double = 0
-    /// The video as it's shown: upright, in pixels.
+    /// The video as recorded, made upright by its own transform, in pixels.
     private(set) var videoSize: CGSize = .zero
+    /// Quarter turns clockwise the reader added, for a take that came out sideways.
+    /// It only counts up, so the preview always turns the same way.
+    private(set) var rotation = 0 {
+        didSet { refreshCaptions() }
+    }
     private(set) var analysis: TakeAnalysis?
     private(set) var captionLines: [CaptionLine] = []
     private(set) var renderState: RenderState = .idle
@@ -78,6 +83,7 @@ final class TakeReviewModel {
     private struct RenderKey: Equatable {
         var range: ClosedRange<Double>
         var captions: TakeExporter.Captions?
+        var quarterTurns: Int
     }
 
     init(take: Take, script: ScriptWords, title: String) {
@@ -123,6 +129,19 @@ final class TakeReviewModel {
         return false
     }
 
+    /// The added rotation as 0…3 quarter turns.
+    var quarterTurns: Int { rotation % 4 }
+
+    /// The video as it will be saved: turned by the reader's rotation.
+    var displaySize: CGSize {
+        quarterTurns.isMultiple(of: 2) ? videoSize : CGSize(width: videoSize.height, height: videoSize.width)
+    }
+
+    func rotate() {
+        guard !isRendering else { return }
+        rotation += 1
+    }
+
     // MARK: Loading
 
     func load() async {
@@ -161,7 +180,7 @@ final class TakeReviewModel {
             return
         }
         captionRenderer = CaptionRenderer(lines: captions.lines, style: captions.style,
-                                          position: captions.position, size: videoSize)
+                                          position: captions.position, size: displaySize)
     }
 
     // MARK: Playback
@@ -242,12 +261,12 @@ final class TakeReviewModel {
 
     /// The same settings give the same clip, so Share then Save renders once.
     private func renderedClip() async throws -> URL {
-        let key = RenderKey(range: range, captions: activeCaptions)
+        let key = RenderKey(range: range, captions: activeCaptions, quarterTurns: quarterTurns)
         if let lastRender, lastRender.key == key, FileManager.default.fileExists(atPath: lastRender.url.path) {
             return lastRender.url
         }
         let url = try await TakeExporter.render(
-            take: take, range: key.range, captions: key.captions, fileName: fileName
+            take: take, range: key.range, captions: key.captions, quarterTurns: key.quarterTurns, fileName: fileName
         ) { [weak self] progress in
             guard let self, case .rendering(let purpose, _) = renderState else { return }
             renderState = .rendering(purpose, progress: progress)
@@ -296,17 +315,11 @@ struct TakeReviewView: View {
     var body: some View {
         VStack(spacing: 12) {
             header
-            TakePlayerView(player: model.player)
+            preview
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay {
-                    if let renderer = model.captionRenderer, !model.isRendering {
-                        CaptionOverlay(player: model.player, renderer: renderer, videoSize: model.videoSize)
-                    }
-                }
                 .overlay {
                     if model.item == nil { ProgressView() }
                 }
-                .accessibilityLabel("Take preview")
             controls
         }
         .padding(.horizontal, 16)
@@ -356,6 +369,44 @@ struct TakeReviewView: View {
             if case .failed(let message) = model.renderState { Text(message) }
         }
         .onDisappear { model.close() }
+    }
+
+    // MARK: Preview
+
+    /// The take turned by the reader's rotation, with captions laid out for the turned frame.
+    private var preview: some View {
+        GeometryReader { geometry in
+            let shown = model.displaySize
+            let frame = shown.width > 0
+                ? AVMakeRect(aspectRatio: shown, insideRect: CGRect(origin: .zero, size: geometry.size))
+                : CGRect(origin: .zero, size: geometry.size)
+            let sideways = !model.quarterTurns.isMultiple(of: 2)
+            ZStack {
+                TakePlayerView(player: model.player)
+                    .frame(width: sideways ? frame.height : frame.width, height: sideways ? frame.width : frame.height)
+                    .rotationEffect(.degrees(Double(model.rotation) * 90))
+                    .accessibilityLabel("Take preview")
+                if let renderer = model.captionRenderer, !model.isRendering {
+                    CaptionOverlay(player: model.player, renderer: renderer, videoSize: shown)
+                }
+            }
+            .frame(width: frame.width, height: frame.height)
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    withAnimation(.snappy(duration: 0.35)) { model.rotate() }
+                } label: {
+                    Image(systemName: "rotate.right")
+                        .font(.headline)
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.plain)
+                .ypGlassEffect(cornerRadius: 22)
+                .padding(10)
+                .accessibilityLabel("Rotate")
+                .disabled(model.isRendering || model.item == nil || model.renderState == .saved)
+            }
+            .position(x: frame.midX, y: frame.midY)
+        }
     }
 
     // MARK: Header
