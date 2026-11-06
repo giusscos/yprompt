@@ -642,6 +642,9 @@ struct TeleprompterView: View {
             // The camera keeps running underneath, so Retake can start again straight away.
             if take != nil { viewModel.pause() }
         }
+        .onChange(of: keepsScreenAwake, initial: true) { _, awake in
+            UIApplication.shared.isIdleTimerDisabled = awake
+        }
         .onChange(of: cameraService.permissionDenied) { _, denied in
             if denied {
                 savedBackground = ReadingPreferences.colorBackground
@@ -1236,9 +1239,16 @@ struct TeleprompterView: View {
         }
     }
 
+    /// Nobody touches the screen while reading, recording or watching a take back,
+    /// so it mustn't dim and lock then.
+    private var keepsScreenAwake: Bool {
+        viewModel.isPlaying || cameraService.isRecording || cameraService.finishedTake != nil
+    }
+
     private func handlePlayModeDisappear() {
         // Covered by the take sheet, not left: the camera keeps running for Retake.
         guard cameraService.finishedTake == nil else { return }
+        UIApplication.shared.isIdleTimerDisabled = false
         if !didRestoreTabBar {
             didRestoreTabBar = true
             TabBarAnimator.setHidden(false, animated: true)
