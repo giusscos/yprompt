@@ -405,3 +405,7 @@
 "Record just your voice and share it with its transcript." = "Grave só a sua voz e compartilhe com a transcrição.";
 "Recording Is Free" = "Gravar é grátis";
 "Camera, audio and captions are free for everyone. Pro saves your videos without the yPrompt mark." = "Câmera, áudio e legendas são grátis para todos. O Pro salva seus vídeos sem a marca do yPrompt.";
+"%d lines under the camera" = "%d linhas sob a câmera";
+"Play from the Start" = "Reproduzir do início";
+"Playhead" = "Indicador de reprodução";
+"Adding piece %lld to “%@”" = "Adicionando o trecho %lld a “%@”";

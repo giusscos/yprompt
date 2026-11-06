@@ -405,3 +405,7 @@
 "Record just your voice and share it with its transcript." = "Rekam suara Anda saja dan bagikan beserta transkripnya.";
 "Recording Is Free" = "Merekam Itu Gratis";
 "Camera, audio and captions are free for everyone. Pro saves your videos without the yPrompt mark." = "Kamera, audio, dan subtitel gratis untuk semua orang. Pro menyimpan video Anda tanpa tanda yPrompt.";
+"%d lines under the camera" = "%d baris di bawah kamera";
+"Play from the Start" = "Putar dari Awal";
+"Playhead" = "Penanda Putar";
+"Adding piece %lld to “%@”" = "Menambahkan bagian %lld ke “%@”";

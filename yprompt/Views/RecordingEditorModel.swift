@@ -49,6 +49,9 @@ final class RecordingEditorModel {
     private(set) var thumbnails: [String: CGImage] = [:]
     private(set) var renderState: RenderState = .idle
     private(set) var canUndo = false
+    /// Preview speed only; the saved recording always plays at normal speed.
+    private(set) var playbackRate: Float = 1
+    static let playbackRates: [Float] = [0.5, 1, 1.25, 1.5, 2]
     var selectedPieceID: UUID?
     var shareItems: ShareItems?
     /// Free users' videos carry the mark; Pro removes it.
@@ -67,6 +70,12 @@ final class RecordingEditorModel {
     @ObservationIgnored private var endObserver: NSObjectProtocol?
     @ObservationIgnored private var sourceDurations: [String: Double] = [:]
     @ObservationIgnored private var statusObservation: NSKeyValueObservation?
+    /// What the player is showing: pieces, cuts and rotation. Edits that leave it the same
+    /// (a split, a caption style) don't rebuild the player, so the preview never blinks.
+    @ObservationIgnored private var composedSignature: [String]?
+    @ObservationIgnored private var resumeAfterScrub = false
+    @ObservationIgnored private var isSeeking = false
+    @ObservationIgnored private var pendingSeek: Double?
 
     init(recording: Recording, script: ScriptWords, selectedPieceID: UUID?) {
         self.recording = recording
@@ -175,6 +184,11 @@ final class RecordingEditorModel {
         let wasPlaying = keepTime ? isPlaying : true
         editList = EditList(recording: recording, analyses: analyses)
         captionLines = editList.captionLines(for: recording, analyses: analyses, script: script)
+        let signature = Self.signature(of: recording, editList: editList)
+        if composed != nil, signature == composedSignature {
+            refreshOverlays()
+            return
+        }
         let recording = recording
         let editList = editList
         let task = Task { [weak self] in
@@ -187,6 +201,7 @@ final class RecordingEditorModel {
             }
             guard !Task.isCancelled, let self else { return }
             self.composed = composed
+            composedSignature = signature
             renderSize = composed.isVideo ? composed.renderSize : .zero
             refreshOverlays()
             let item = AVPlayerItem(asset: composed.composition)
@@ -198,11 +213,27 @@ final class RecordingEditorModel {
             let target = min(time, max(0, editList.length - 0.05))
             await player.seek(to: CMTime(seconds: target, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
             currentTime = target
+            player.defaultRate = playbackRate
             if wasPlaying && !isRendering && shareItems == nil { player.play() }
             await loadThumbnails()
         }
         rebuildTask = task
         await task.value
+    }
+
+    /// The stretches of source on the timeline, joined where one carries straight on from
+    /// the next, plus the rotation.
+    private static func signature(of recording: Recording, editList: EditList) -> [String] {
+        var joined: [(file: String, start: Double, end: Double)] = []
+        for segment in editList.segments {
+            if let last = joined.last, last.file == segment.file, abs(last.end - segment.sourceStart) < 0.001 {
+                joined[joined.count - 1].end = segment.sourceEnd
+            } else {
+                joined.append((segment.file, segment.sourceStart, segment.sourceEnd))
+            }
+        }
+        return ["\(recording.kind.rawValue) \(recording.quarterTurns % 4)"]
+            + joined.map { String(format: "%@ %.3f %.3f", $0.file, $0.start, $0.end) }
     }
 
     /// The iOS Simulator can't play a video composition at all. If playback fails, play the
@@ -268,6 +299,54 @@ final class RecordingEditorModel {
         isPlaying = player.timeControlStatus != .paused
     }
 
+    func playFromStart() {
+        seek(to: 0)
+        player.play()
+    }
+
+    func setPlaybackRate(_ rate: Float) {
+        playbackRate = rate
+        player.defaultRate = rate
+        if player.timeControlStatus != .paused { player.rate = rate }
+    }
+
+    // MARK: Scrubbing
+
+    func beginScrub() {
+        resumeAfterScrub = player.timeControlStatus != .paused
+        player.pause()
+    }
+
+    /// Follows the finger: one seek at a time, always heading for the latest position.
+    func scrub(to time: Double) {
+        let target = min(max(0, time), max(0, length - 0.02))
+        currentTime = target
+        guard !isSeeking else {
+            pendingSeek = target
+            return
+        }
+        isSeeking = true
+        let tolerance = CMTime(value: 1, timescale: 30)
+        player.seek(to: CMTime(seconds: target, preferredTimescale: 600),
+                    toleranceBefore: tolerance, toleranceAfter: tolerance) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                isSeeking = false
+                if let next = pendingSeek {
+                    pendingSeek = nil
+                    scrub(to: next)
+                }
+            }
+        }
+    }
+
+    func endScrub() {
+        pendingSeek = nil
+        seek(to: currentTime)
+        if resumeAfterScrub { player.play() }
+        resumeAfterScrub = false
+    }
+
     func seek(to time: Double) {
         let target = min(max(0, time), max(0, length - 0.02))
         currentTime = target
@@ -288,7 +367,6 @@ final class RecordingEditorModel {
         undoSnapshot = recording
         canUndo = true
         change(&recording)
-        composed = nil
         lastRender = nil
         RecordingLibrary.shared.save(recording)
         Task { await rebuild(keepTime: true) }
@@ -299,7 +377,6 @@ final class RecordingEditorModel {
         recording = undoSnapshot
         self.undoSnapshot = nil
         canUndo = false
-        composed = nil
         lastRender = nil
         if let selectedPieceID, !recording.pieces.contains(where: { $0.id == selectedPieceID }) {
             self.selectedPieceID = nil
@@ -465,7 +542,8 @@ final class RecordingEditorModel {
 
     private func renderedFile() async throws -> URL {
         if let lastRender, FileManager.default.fileExists(atPath: lastRender.path) { return lastRender }
-        if composed == nil { await rebuild(keepTime: true) }
+        // Makes sure the layout matches the latest edit before saving it.
+        await rebuild(keepTime: true)
         guard let composed else { throw RecordingExporter.ExportError.nothingToSave }
         let url = try await RecordingExporter.render(
             recording, editList: editList, composed: composed,

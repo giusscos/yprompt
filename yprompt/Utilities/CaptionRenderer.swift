@@ -60,6 +60,10 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
     private let ascent: CGFloat
     private let descent: CGFloat
     private let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+    /// Recently drawn captions. A caption looks the same for most of the time it's on screen,
+    /// so the preview and the export reuse the image instead of drawing it every frame.
+    private let cacheLock = NSLock()
+    private var cache: [Int: CGImage] = [:]
 
     /// - Parameter size: the video as shown (upright), in pixels.
     init(lines captionLines: [CaptionLine], style: CaptionStyle, position: CaptionPosition, size: CGSize) {
@@ -128,29 +132,39 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
 
     /// The caption at `time` (in the take's own time), and where it goes in the frame.
     func image(at time: Double) -> (image: CGImage, origin: CGPoint)? {
-        guard let line = lines.first(where: { $0.start <= time && time < $0.end }) else { return nil }
+        guard let index = lines.firstIndex(where: { $0.start <= time && time < $0.end }) else { return nil }
+        let line = lines[index]
+
+        // Fade in at the first word and out when the next caption takes over.
+        let fade = min(0.08, (line.end - line.start) / 4)
+        let lineAlpha = min(1, max(0, min((time - line.start) / fade, (line.end - time) / fade)))
+        let states = line.words.map { wordState($0, at: time) }
+
+        // Steps fine enough not to show, coarse enough that most frames reuse an image.
+        var hasher = Hasher()
+        hasher.combine(index)
+        hasher.combine(Int((lineAlpha * 20).rounded()))
+        for state in states {
+            hasher.combine(Int((state.alpha * 20).rounded()))
+            hasher.combine(Int((state.scale * 200).rounded()))
+        }
+        let key = hasher.finalize()
+        if let cached = cacheLock.withLock({ cache[key] }) {
+            return (cached, line.strip.origin)
+        }
+
         let width = Int(line.strip.width), height = Int(line.strip.height)
         guard width > 0, height > 0,
               let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                       space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
         else { return nil }
-
-        // Fade in at the first word and out when the next caption takes over.
-        let fade = min(0.08, (line.end - line.start) / 4)
-        let lineAlpha = min(1, max(0, min((time - line.start) / fade, (line.end - time) / fade)))
         context.setAlpha(CGFloat(lineAlpha))
         context.setShadow(offset: CGSize(width: 0, height: -fontSize * 0.04), blur: fontSize * 0.3,
                           color: CGColor(gray: 0, alpha: 0.6))
 
-        for word in line.words {
-            var alpha: CGFloat = 1
-            var scale: CGFloat = 1
-            if style == .lyrics {
-                // Like Lyrics Style: the line waits dimmed, and each word lights up as it's said.
-                let since = time - word.start
-                alpha = 0.5 + 0.5 * CGFloat(min(max(since / 0.12, 0), 1))
-                if since > 0 && since < 0.3 { scale = 1 + 0.08 * CGFloat(sin(.pi * since / 0.3)) }
-            }
+        for (word, state) in zip(line.words, states) {
+            let alpha = state.alpha
+            let scale = state.scale
             context.saveGState()
             if scale != 1 {
                 let center = CGPoint(x: word.origin.x + word.width / 2, y: word.origin.y + (ascent - descent) / 2)
@@ -164,7 +178,21 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
             context.restoreGState()
         }
         guard let image = context.makeImage() else { return nil }
+        cacheLock.withLock {
+            if cache.count > 96 { cache.removeAll(keepingCapacity: true) }
+            cache[key] = image
+        }
         return (image, line.strip.origin)
+    }
+
+    /// How a word looks at a moment: Lyrics dims it until it's said, then lights it up with a
+    /// small pop, like Lyrics Style while reading.
+    private func wordState(_ word: Word, at time: Double) -> (alpha: CGFloat, scale: CGFloat) {
+        guard style == .lyrics else { return (1, 1) }
+        let since = time - word.start
+        let alpha = 0.5 + 0.5 * CGFloat(min(max(since / 0.12, 0), 1))
+        let scale = since > 0 && since < 0.3 ? 1 + 0.08 * CGFloat(sin(.pi * since / 0.3)) : 1
+        return (alpha, scale)
     }
 
     // MARK: - Text

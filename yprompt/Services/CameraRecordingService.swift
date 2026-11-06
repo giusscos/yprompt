@@ -96,6 +96,12 @@ final class CameraRecordingService: NSObject, ObservableObject {
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
     /// True while the camera asks iOS for the phone's physical orientation, to tell when it lies flat.
     private var tracksDeviceOrientation = false
+    /// Starting, stopping and the audio session run here, one at a time and off the main thread.
+    /// Each can take a moment; overlapping them when switching between camera and microphone
+    /// could stall the app.
+    private let sessionQueue = DispatchQueue(label: "com.giusscos.yprompt.capture-session")
+    /// Requests to start, in order, so quick taps between modes don't interleave.
+    private var startChain: Task<Void, Never>?
     private var rotationObservations: [NSKeyValueObservation] = []
 
     private enum DefaultsKey {
@@ -126,12 +132,25 @@ final class CameraRecordingService: NSObject, ObservableObject {
     var displayZoom: CGFloat { zoomFactor / baselineZoom }
 
     /// Starts the camera, or with `audioOnly` just the microphone. A session already running
-    /// in the other mode is replaced.
+    /// in the other mode is replaced once it has fully stopped.
     func requestPermissionsAndStart(audioOnly: Bool = false) async {
+        let previous = startChain
+        let task = Task { @MainActor [weak self] in
+            await previous?.value
+            await self?.start(audioOnly: audioOnly)
+        }
+        startChain = task
+        await task.value
+    }
+
+    private func start(audioOnly: Bool) async {
         if isCameraActive {
             guard isAudioOnly != audioOnly, !isRecording else { return }
-            stopCamera()
+            // About to start again, so the audio session stays active.
+            stopCamera(deactivatingAudio: false)
         }
+        // The old session must have stopped before the new one takes the microphone.
+        await sessionQueueIdle()
         var cameraGranted = audioOnly || AVCaptureDevice.authorizationStatus(for: .video) == .authorized
         var micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
 
@@ -160,7 +179,6 @@ final class CameraRecordingService: NSObject, ObservableObject {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
             tracksDeviceOrientation = true
         }
-        configureAudioSession(audioOnly: audioOnly)
         let session = AVCaptureSession()
         // Voice Scroll listens to the same microphone, so the app sets up the audio session
         // itself; left to the capture session, it would interrupt the other listener.
@@ -199,18 +217,28 @@ final class CameraRecordingService: NSObject, ObservableObject {
         isCameraActive = true
         if !audioOnly { rebuildRotationCoordinator() }
 
-        Task.detached(priority: .userInitiated) { [weak self, session] in
+        sessionQueue.async { [weak self, session] in
+            Self.configureAudioSession(audioOnly: audioOnly)
             session.startRunning()
-            try? await Task.sleep(for: .milliseconds(150))
-            await self?.previewDidStart(for: session)
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .milliseconds(150))
+                self?.previewDidStart(for: session)
+            }
         }
     }
 
-    private func configureAudioSession(audioOnly: Bool) {
+    nonisolated private static func configureAudioSession(audioOnly: Bool) {
         let audio = AVAudioSession.sharedInstance()
         try? audio.setCategory(.playAndRecord, mode: audioOnly ? .default : .videoRecording,
                                options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
         try? audio.setActive(true)
+    }
+
+    /// Returns once everything already queued for the session has run.
+    private func sessionQueueIdle() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            sessionQueue.async { continuation.resume() }
+        }
     }
 
     /// Swaps between the front and back camera, keeping the running session.
@@ -250,7 +278,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         if captureSession === session { isPreviewRunning = true }
     }
 
-    func stopCamera() {
+    func stopCamera(deactivatingAudio: Bool = true) {
         isPreviewRunning = false
         if isRecording { movieOutput?.stopRecording() }
         let session = captureSession
@@ -267,8 +295,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
             UIDevice.current.endGeneratingDeviceOrientationNotifications()
             tracksDeviceOrientation = false
         }
-        Task.detached(priority: .userInitiated) {
+        sessionQueue.async { [session] in
             session?.stopRunning()
+            guard deactivatingAudio else { return }
             // Fails quietly while Voice Scroll is still listening, which is what we want.
             try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         }

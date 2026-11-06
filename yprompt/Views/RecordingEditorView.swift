@@ -77,19 +77,47 @@ private struct EditorContent: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(spacing: 10) {
-            header
-            preview
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            transport
-            PieceStripView(model: model)
-                .frame(height: 58)
-            pieceToolbar
-            options
-            bottomButtons
+        GeometryReader { geometry in
+            if geometry.size.width > geometry.size.height {
+                // Landscape: the recording on one side, everything to edit it on the other.
+                HStack(spacing: 16) {
+                    VStack(spacing: 10) {
+                        preview
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        transport
+                    }
+                    .frame(width: geometry.size.width * 0.52)
+                    VStack(spacing: 10) {
+                        header
+                        ScrollView {
+                            VStack(spacing: 12) {
+                                strip
+                                pieceToolbar
+                                options
+                            }
+                            .padding(.top, 4)
+                        }
+                        .scrollIndicators(.hidden)
+                        bottomButtons
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            } else {
+                VStack(spacing: 10) {
+                    header
+                    preview
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    transport
+                    strip
+                    pieceToolbar
+                    options
+                    bottomButtons
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
         .sheet(item: $model.shareItems, onDismiss: { model.resume() }) { items in
             ActivityView(items: items.urls)
         }
@@ -101,6 +129,11 @@ private struct EditorContent: View {
         } message: {
             if case .failed(let message) = model.renderState { Text(message) }
         }
+    }
+
+    private var strip: some View {
+        PieceStripView(model: model)
+            .frame(height: 76)
     }
 
     // MARK: Header
@@ -154,10 +187,12 @@ private struct EditorContent: View {
                     }
                 }
                 .frame(width: frame.width, height: frame.height)
+                .animation(.snappy(duration: 0.35), value: model.renderSize)
                 .overlay(alignment: .bottomTrailing) {
                     Button { withAnimation(.snappy) { model.rotate() } } label: {
                         Image(systemName: "rotate.right")
                             .font(.headline)
+                            .symbolEffect(.bounce, value: model.recording.quarterTurns)
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
@@ -214,24 +249,59 @@ private struct EditorContent: View {
 
     // MARK: Transport
 
+    /// Play from the start, play or pause, and the preview speed. Moving through the recording
+    /// happens on the strip of pieces below.
     private var transport: some View {
-        HStack(spacing: 12) {
-            Button { model.togglePlay() } label: {
-                Image(systemName: model.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title3)
-                    .frame(width: 36, height: 36)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(model.isPlaying ? "Pause" : "Play")
-            Slider(value: Binding(get: { model.currentTime }, set: { model.seek(to: $0) }),
-                   in: 0...max(model.length, 0.1))
-                .tint(.white)
+        HStack(spacing: 0) {
             Text(Duration.seconds(model.currentTime), format: .time(pattern: .minuteSecond))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 40, alignment: .trailing)
+                .frame(width: 48, alignment: .leading)
+            Spacer(minLength: 0)
+            HStack(spacing: 22) {
+                Button { model.playFromStart() } label: {
+                    Image(systemName: "backward.end.fill")
+                        .font(.title3)
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Play from the Start")
+
+                Button { model.togglePlay() } label: {
+                    Image(systemName: model.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title)
+                        .contentTransition(.symbolEffect(.replace))
+                        .frame(width: 56, height: 56)
+                        .background(.white.opacity(0.12), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(model.isPlaying ? "Pause" : "Play")
+
+                Menu {
+                    Picker("Speed", selection: Binding(get: { model.playbackRate }, set: { model.setPlaybackRate($0) })) {
+                        ForEach(RecordingEditorModel.playbackRates, id: \.self) { rate in
+                            Text(rateLabel(rate)).tag(rate)
+                        }
+                    }
+                } label: {
+                    Text(rateLabel(model.playbackRate))
+                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                        .contentTransition(.numericText())
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("Speed")
+            }
+            Spacer(minLength: 0)
+            Text(Duration.seconds(model.length), format: .time(pattern: .minuteSecond))
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(width: 48, alignment: .trailing)
         }
         .disabled(!model.hasItem || model.isRendering)
+    }
+
+    private func rateLabel(_ rate: Float) -> String {
+        rate == rate.rounded() ? "\(Int(rate))×" : String(format: "%g×", rate)
     }
 
     // MARK: Pieces
@@ -315,6 +385,7 @@ private struct EditorContent: View {
                             Image(systemName: model.recording.captionPosition == .bottom
                                   ? "rectangle.bottomhalf.inset.filled" : "rectangle.center.inset.filled")
                                 .font(.title3)
+                                .contentTransition(.symbolEffect(.replace))
                         }
                         .accessibilityLabel("Position")
                     }
@@ -380,17 +451,25 @@ private struct EditorContent: View {
             Label("Saved to Photos", systemImage: "checkmark.circle.fill")
                 .font(.headline)
                 .foregroundStyle(.green)
+                .symbolEffect(.bounce, value: model.renderState == .saved)
                 .frame(maxWidth: .infinity, minHeight: 50)
+                .transition(.opacity)
         case .idle, .failed:
             HStack(spacing: 12) {
                 if canRecordMore {
                     Button { onRecordMore(model.pickup(after: model.recording.pieces.count - 1)) } label: {
-                        Label("Record More", systemImage: model.isVideo ? "video.badge.plus" : "mic.badge.plus")
-                            .lineLimit(1)
-                            .frame(minHeight: 36)
-                            .padding(.horizontal, 4)
+                        // Just the icon when there's no room for the words, as beside the video in landscape.
+                        ViewThatFits(in: .horizontal) {
+                            Label("Record More", systemImage: model.isVideo ? "video.badge.plus" : "mic.badge.plus")
+                                .lineLimit(1)
+                                .fixedSize()
+                            Image(systemName: model.isVideo ? "video.badge.plus" : "mic.badge.plus")
+                        }
+                        .frame(minHeight: 36)
+                        .padding(.horizontal, 4)
                     }
                     .ypGlassButtonStyle()
+                    .accessibilityLabel("Record More")
                 }
                 if model.isVideo {
                     Button { model.save() } label: {
@@ -419,13 +498,18 @@ private struct EditorContent: View {
 
 // MARK: - Piece strip
 
-/// The recording's pieces side by side, each as wide as its share of the length. Tap to
-/// select and jump there, drag a selected piece's ends to trim, hold and drag to move it.
+/// The recording's pieces side by side, each as wide as its share of the length. Drag the
+/// playhead to move through the recording, tap a piece to select it and jump there, drag a
+/// selected piece's ends to trim it, and hold and drag a piece to move it.
 private struct PieceStripView: View {
     @Bindable var model: RecordingEditorModel
     @State private var trimDrag: (id: UUID, isStart: Bool, seconds: Double)?
+    @State private var scrubStart: Double?
 
     private let spacing: CGFloat = 4
+    private let tileHeight: CGFloat = 58
+    /// Room above the tiles for the playhead's knob.
+    private let knobRoom: CGFloat = 18
 
     var body: some View {
         GeometryReader { geometry in
@@ -435,58 +519,105 @@ private struct PieceStripView: View {
                 HStack(spacing: spacing) {
                     ForEach(Array(pieces.enumerated()), id: \.element.id) { index, piece in
                         tile(piece, index: index, width: widths[index])
+                            .transition(.scale(scale: 0.7).combined(with: .opacity))
                     }
                 }
-                playhead(widths: widths, pieces: pieces)
+                .padding(.top, knobRoom)
+                .animation(.snappy(duration: 0.3), value: pieces)
+                if trimDrag == nil {
+                    playhead(widths: widths, pieces: pieces, totalWidth: geometry.size.width)
+                }
             }
+            .coordinateSpace(.named("strip"))
         }
     }
 
+    // MARK: Layout
+
+    /// Each piece's share of the width, trimmed ends included while a handle is being dragged.
     private func tileWidths(total: CGFloat, pieces: [Piece]) -> [CGFloat] {
         let available = max(0, total - spacing * CGFloat(max(0, pieces.count - 1)))
-        let lengths = pieces.map { model.editList.span(of: $0.id)?.length ?? $0.length }
+        let lengths = pieces.map { piece -> Double in
+            let length = model.editList.span(of: piece.id)?.length ?? piece.length
+            guard let drag = trimDrag, drag.id == piece.id else { return length }
+            return max(0.3, length + (drag.isStart ? -drag.seconds : drag.seconds))
+        }
         let sum = max(lengths.reduce(0, +), 0.01)
         let raw = lengths.map { max(28, available * CGFloat($0 / sum)) }
         let scale = min(1, available / max(raw.reduce(0, +), 1))
         return raw.map { $0 * scale }
     }
 
+    /// Where a moment of the timeline sits along the strip.
+    private func position(of time: Double, widths: [CGFloat], pieces: [Piece]) -> CGFloat {
+        var x: CGFloat = 0
+        for (index, piece) in pieces.enumerated() {
+            guard let span = model.editList.span(of: piece.id) else { continue }
+            if time < span.end || index == pieces.count - 1 {
+                let fraction = span.length > 0 ? min(max((time - span.start) / span.length, 0), 1) : 0
+                return x + widths[index] * CGFloat(fraction)
+            }
+            x += widths[index] + spacing
+        }
+        return x
+    }
+
+    /// The moment of the timeline under a point along the strip.
+    private func time(at x: CGFloat, widths: [CGFloat], pieces: [Piece]) -> Double {
+        var left: CGFloat = 0
+        for (index, piece) in pieces.enumerated() {
+            guard let span = model.editList.span(of: piece.id) else { continue }
+            let right = left + widths[index]
+            if x <= right + spacing / 2 || index == pieces.count - 1 {
+                let fraction = Double(min(max((x - left) / max(widths[index], 1), 0), 1))
+                return span.start + span.length * fraction
+            }
+            left = right + spacing
+        }
+        return model.length
+    }
+
+    // MARK: Tiles
+
     private func tile(_ piece: Piece, index: Int, width: CGFloat) -> some View {
         let isSelected = model.selectedPieceID == piece.id
         return ZStack {
             tileContent(piece)
-                .frame(width: width, height: 58)
+                .frame(width: width, height: tileHeight)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(Color.yellow, lineWidth: 3)
+                .opacity(isSelected ? 1 : 0)
             if isSelected {
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.yellow, lineWidth: 3)
                 HStack {
                     handle(piece, isStart: true, width: width)
                     Spacer(minLength: 0)
                     handle(piece, isStart: false, width: width)
                 }
+                .transition(.opacity)
             }
             if let drag = trimDrag, drag.id == piece.id {
-                Text(Duration.seconds(max(0.3, piece.length - (drag.isStart ? drag.seconds : -drag.seconds))),
+                Text(Duration.seconds(max(0.3, piece.length + (drag.isStart ? -drag.seconds : drag.seconds))),
                      format: .time(pattern: .minuteSecond))
                     .font(.caption2.monospacedDigit().weight(.bold))
                     .padding(4)
                     .background(.black.opacity(0.6), in: Capsule())
             }
         }
-        .frame(width: width, height: 58)
+        .frame(width: width, height: tileHeight)
+        .animation(.easeOut(duration: 0.15), value: isSelected)
         .contentShape(Rectangle())
         .onTapGesture(coordinateSpace: .local) { location in
             model.select(piece.id, at: Double(location.x / max(width, 1)))
         }
         .draggable(piece.id.uuidString) {
             tileContent(piece)
-                .frame(width: min(width, 80), height: 58)
+                .frame(width: min(width, 80), height: tileHeight)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .dropDestination(for: String.self) { items, _ in
             guard let id = items.first.flatMap(UUID.init(uuidString:)) else { return false }
-            model.move(id, to: index)
+            withAnimation(.snappy(duration: 0.3)) { model.move(id, to: index) }
             return true
         }
         .accessibilityElement(children: .ignore)
@@ -501,6 +632,7 @@ private struct PieceStripView: View {
                 Image(decorative: image, scale: 1)
                     .resizable()
                     .scaledToFill()
+                    .transition(.opacity)
             } else {
                 Color.white.opacity(0.12)
             }
@@ -520,13 +652,13 @@ private struct PieceStripView: View {
         return Array(envelope[first..<last])
     }
 
-    /// Drag outward to bring back cut material, inward to cut more.
+    /// Drag outward to bring back cut material, inward to cut more. The piece resizes as you drag.
     private func handle(_ piece: Piece, isStart: Bool, width: CGFloat) -> some View {
         Capsule()
             .fill(Color.yellow)
             .frame(width: 8, height: 34)
             .padding(.horizontal, 2)
-            .frame(width: 22, height: 58)
+            .frame(width: 22, height: tileHeight)
             .contentShape(Rectangle())
             .highPriorityGesture(
                 DragGesture(minimumDistance: 1)
@@ -548,23 +680,45 @@ private struct PieceStripView: View {
             .accessibilityLabel(isStart ? "Trim start" : "Trim end")
     }
 
-    private func playhead(widths: [CGFloat], pieces: [Piece]) -> some View {
-        var x: CGFloat = 0
-        for (index, piece) in pieces.enumerated() {
-            guard let span = model.editList.span(of: piece.id) else { continue }
-            if model.currentTime < span.end || index == pieces.count - 1 {
-                let fraction = span.length > 0 ? min(max((model.currentTime - span.start) / span.length, 0), 1) : 0
-                x += widths[index] * CGFloat(fraction)
-                break
-            }
-            x += widths[index] + spacing
+    // MARK: Playhead
+
+    /// A line through the pieces with a knob on top: drag it to move through the recording.
+    private func playhead(widths: [CGFloat], pieces: [Piece], totalWidth: CGFloat) -> some View {
+        let x = position(of: model.currentTime, widths: widths, pieces: pieces)
+        return VStack(spacing: 0) {
+            Circle()
+                .fill(.white)
+                .frame(width: 16, height: 16)
+                .shadow(radius: 2)
+            Rectangle()
+                .fill(.white)
+                .frame(width: 2, height: tileHeight + 6)
+                .shadow(radius: 2)
         }
-        return Rectangle()
-            .fill(.white)
-            .frame(width: 2, height: 66)
-            .shadow(radius: 2)
-            .offset(x: x - 1, y: -4)
-            .allowsHitTesting(false)
+        .frame(width: 44)
+        .contentShape(Rectangle())
+        .offset(x: x - 22, y: knobRoom - 16 - 2)
+        .gesture(
+            DragGesture(minimumDistance: 0, coordinateSpace: .named("strip"))
+                .onChanged { value in
+                    if scrubStart == nil {
+                        scrubStart = model.currentTime
+                        model.beginScrub()
+                    }
+                    let target = time(at: min(max(0, value.location.x), totalWidth), widths: widths, pieces: pieces)
+                    model.scrub(to: target)
+                }
+                .onEnded { _ in
+                    scrubStart = nil
+                    model.endScrub()
+                }
+        )
+        .accessibilityElement()
+        .accessibilityLabel("Playhead")
+        .accessibilityValue(Text(Duration.seconds(model.currentTime), format: .time(pattern: .minuteSecond)))
+        .accessibilityAdjustableAction { direction in
+            model.seek(to: model.currentTime + (direction == .increment ? 1 : -1))
+        }
     }
 }
 

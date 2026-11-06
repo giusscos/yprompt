@@ -147,6 +147,8 @@ struct TeleprompterView: View {
     @AppStorage("splitCameraLayout") private var isSplitCamera = false
     @AppStorage("splitCameraPromptOnLeading") private var promptOnLeading = false
     @AppStorage("cameraUnderLens") private var prefersUnderCamera = true
+    /// Lines of script shown under the camera, up to half the screen.
+    @AppStorage("underCameraLines") private var underCameraLines: Double = 3
     @State private var safeTopInset: CGFloat = 0
     @State private var safeBottomInset: CGFloat = 0
     @State private var safeLeadingInset: CGFloat = 0
@@ -154,6 +156,9 @@ struct TeleprompterView: View {
     @State private var stopCameraTask: Task<Void, Never>?
     /// Set while recording more into an existing recording: the next take goes there.
     @State private var pickup: Pickup?
+    /// The pickup banner shrinks to a small pill after a few seconds, off the reader's way.
+    @State private var pickupBannerExpanded = true
+    @State private var pickupCollapseTask: Task<Void, Never>?
     @State private var layoutFrame: CGRect = .zero
     @State private var liveHorizontalPadding: CGFloat = 16
     @AppStorage(ReadingPreferences.modeKey) private var savedMode = TeleprompterMode.auto.rawValue
@@ -572,7 +577,10 @@ struct TeleprompterView: View {
                 viewModel.load(words: currentScript.scriptWords)
             }
             restoreModeAndBackground()
-            if let pickup { matchBackground(to: pickup) }
+            if let pickup {
+                matchBackground(to: pickup)
+                showPickupBanner()
+            }
             viewModel.setWordMode(usesWordStyle)
             if viewModel.isWordMode && !didRestoreProgress {
                 didRestoreProgress = true
@@ -650,13 +658,20 @@ struct TeleprompterView: View {
             // The camera keeps running underneath, so recording more can start straight away.
             if selection != nil { viewModel.pause() }
         }
-        .overlay(alignment: .top) {
+        .overlay(alignment: .bottom) {
+            // Above the controls, clear of the lines under the camera.
             if let pickup {
                 pickupBanner(pickup)
                     .padding(.horizontal)
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.bottom, readingBottomInset + 8)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
+        }
+        .onChange(of: pickup) { _, pickup in
+            if pickup != nil { showPickupBanner() }
+        }
+        .onChange(of: cameraService.isRecording) { _, recording in
+            if recording { collapsePickupBanner() }
         }
         .onChange(of: keepsScreenAwake, initial: true) { _, awake in
             UIApplication.shared.isIdleTimerDisabled = awake
@@ -823,10 +838,19 @@ struct TeleprompterView: View {
 
     // MARK: - Under-camera layout
 
-    /// Lines shown in the band under the camera.
+    private var underCameraLineHeight: CGFloat {
+        liveFontSize * 1.2 + (customization.lineHeight - 1.0) * liveFontSize * 0.5 + liveFontSize * 0.12
+    }
+
+    /// As many lines as fit in the top half of the screen, and never fewer than two.
+    private var maxUnderCameraLines: Double {
+        let available = (layoutSize.height + safeTopInset) * 0.5 - readingTopInset
+        return max(2, (available / max(underCameraLineHeight, 1)).rounded(.down))
+    }
+
+    /// The band of script under the camera: the reader chooses how many lines.
     private var underCameraBandHeight: CGFloat {
-        let lineHeight = liveFontSize * 1.2 + (customization.lineHeight - 1.0) * liveFontSize * 0.5 + liveFontSize * 0.12
-        return lineHeight * 3
+        underCameraLineHeight * CGFloat(min(max(2, underCameraLines), maxUnderCameraLines))
     }
 
     /// Keeps the lines under the camera readable over a bright preview.
@@ -1129,8 +1153,9 @@ struct TeleprompterView: View {
         let isRecording = cameraService.isRecording
         return Button(action: toggleRecording) {
             ZStack {
+                // Light over the camera and dark colors, dark over light ones, like the other controls.
                 Circle()
-                    .strokeBorder(.white, lineWidth: 3.5)
+                    .strokeBorder(controlsAreDark ? Color.white : Color.black.opacity(0.85), lineWidth: 3.5)
                 RoundedRectangle(cornerRadius: isRecording ? 7 : size / 2)
                     .fill(.red)
                     .frame(width: isRecording ? size * 0.4 : size - 12, height: isRecording ? size * 0.4 : size - 12)
@@ -1272,34 +1297,66 @@ struct TeleprompterView: View {
         if backgroundMode != mode { selectBackground(mode) }
     }
 
+    /// Where the next take goes. Expanded at first, then a small pill that can be tapped open.
+    @ViewBuilder
     private func pickupBanner(_ pickup: Pickup) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: pickup.kind == .audio ? "mic.badge.plus" : "video.badge.plus")
-                .foregroundStyle(Color.accentColor)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Adding to \u{201C}\(pickup.title)\u{201D}")
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                Text(pickup.insertAt == 0 ? "Before the first piece" : "After piece \(pickup.insertAt)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
-            if !cameraService.isRecording {
-                Button {
-                    withAnimation { self.pickup = nil }
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.footnote.weight(.bold))
-                        .frame(width: 28, height: 28)
+        let icon = pickup.kind == .audio ? "mic.badge.plus" : "video.badge.plus"
+        if pickupBannerExpanded {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .foregroundStyle(Color.accentColor)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Adding to \u{201C}\(pickup.title)\u{201D}")
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                    Text(pickup.insertAt == 0 ? "Before the first piece" : "After piece \(pickup.insertAt)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Stop adding to this recording")
+                Spacer(minLength: 0)
+                if !cameraService.isRecording {
+                    Button {
+                        withAnimation(controlsAnimation) { self.pickup = nil }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.footnote.weight(.bold))
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Stop adding to this recording")
+                }
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .ypGlassEffect(cornerRadius: 18)
+            .onTapGesture { collapsePickupBanner() }
+        } else {
+            Button(action: showPickupBanner) {
+                Label("Piece \(pickup.insertAt + 1)", systemImage: icon)
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+            }
+            .buttonStyle(.plain)
+            .ypGlassEffect(cornerRadius: 15)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(Text("Adding piece \(pickup.insertAt + 1) to \u{201C}\(pickup.title)\u{201D}"))
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .ypGlassEffect(cornerRadius: 18)
+    }
+
+    private func showPickupBanner() {
+        withAnimation(controlsAnimation) { pickupBannerExpanded = true }
+        pickupCollapseTask?.cancel()
+        pickupCollapseTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            collapsePickupBanner()
+        }
+    }
+
+    private func collapsePickupBanner() {
+        pickupCollapseTask?.cancel()
+        withAnimation(controlsAnimation) { pickupBannerExpanded = false }
     }
 
     private var recordsTakes: Bool { backgroundMode != .solidColor }
@@ -1382,6 +1439,31 @@ struct TeleprompterView: View {
     
     private var displayAdjustmentsPopover: some View {
         VStack(spacing: 16) {
+            if isUnderCamera {
+                VStack(spacing: 4) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "rectangle.compress.vertical")
+                            .font(.caption).foregroundStyle(.secondary)
+                        MusicSlider(
+                            value: Binding(
+                                get: { min(max(2, underCameraLines), maxUnderCameraLines) },
+                                set: { lines in withAnimation(controlsAnimation) { underCameraLines = lines } }
+                            ),
+                            range: 2...max(3, maxUnderCameraLines),
+                            step: 1,
+                            requiresLongPress: false
+                        )
+                        Image(systemName: "rectangle.expand.vertical")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Text(String(format: String(localized: "%d lines under the camera"),
+                                Int(min(max(2, underCameraLines), maxUnderCameraLines))))
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
+                        .animation(.default, value: underCameraLines)
+                }
+            }
             if !isUnderCamera, let words = viewModel.scriptWords, !words.isRightToLeft {
                 Toggle(isOn: Binding(
                     get: { usesWordStyle },
@@ -1610,6 +1692,10 @@ struct TeleprompterView: View {
     private func selectBackground(_ mode: BackgroundMode) {
         if viewModel.isPlaying { viewModel.showControlsTemporarily() }
         guard mode != backgroundMode, !cameraService.isRecording else { return }
+        // A video can't take an audio piece, nor an audio recording a video one.
+        if let pickup, (pickup.kind == .video && mode == .audio) || (pickup.kind == .audio && mode == .camera) {
+            withAnimation(controlsAnimation) { self.pickup = nil }
+        }
         stopCameraTask?.cancel()
         switch mode {
         case .camera:
