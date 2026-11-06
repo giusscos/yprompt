@@ -31,7 +31,36 @@ Prices can't be changed after creation. If the Philippines, Indonesia or Malaysi
 
 Very few people qualify yet: they need at least 1 paid month, then a lapsed subscription. Read results in Sales and Trends by offer identifier.
 
+## Retention message "Keep yPrompt Pro" (submitted Nov 6, 2026)
+
+- **Status:** submitted to App Review on Nov 6, 2026, "Waiting for Review" (Apple says up to 48 hours). Approval date: _pending_
+- **What it does:** shown when someone taps Cancel Subscription on Annual or Weekly. Paying subscribers with at least 1 paid month also get the offer below. People cancelling during the free trial see only the text.
+- **Setup:** no image. No app update needed.
+- **App Store Connect:** Subscriptions → Retention Messaging → Keep yPrompt Pro (`retention-messages/872c818e-9b93-4b33-bae4-a2a8f584ebfe`).
+- **Limits:** header 66 characters, body 144. No prices or offers allowed in the text; Apple adds the offer itself.
+
+| Locale | Header | Body |
+|---|---|---|
+| en-US | Keep every script and Voice Scroll | Pro keeps unlimited scripts, Voice Scroll that follows your words, Lyrics Style, camera recording and the Mac notch teleprompter. |
+| fr-FR, fr-CA | Gardez tous vos textes et le Défilement Vocal | Avec Pro : textes illimités, Défilement Vocal qui suit votre voix, Style paroles, enregistrement caméra et prompteur dans l'encoche du Mac. |
+| de-DE | Behalte alle Skripte und Voice Scroll | Mit Pro: unbegrenzte Skripte, Voice Scroll, das deinen Worten folgt, Lyrics-Stil, Kameraaufnahme und der Mac-Notch-Teleprompter. |
+| es-ES, es-MX | Conserva todos tus guiones y el Desplazamiento por Voz | Con Pro: guiones ilimitados, Desplazamiento por Voz que sigue tu voz, Estilo letras, grabación con cámara y teleprompter en el notch del Mac. |
+| it | Tieni tutti i copioni e lo Scorrimento Vocale | Con Pro: copioni illimitati, Scorrimento Vocale che segue la voce, Stile testi, registrazione con fotocamera e teleprompter nel notch del Mac. |
+| pt-BR | Mantenha todos os roteiros e a Rolagem por voz | Com o Pro: roteiros ilimitados, Rolagem por voz que segue sua fala, Estilo letra de música, gravação com câmera e teleprompter no notch do Mac. |
+| id | Simpan semua naskah dan Gulir Suara | Dengan Pro: naskah tanpa batas, Gulir Suara yang mengikuti ucapanmu, Gaya Lirik, rekaman kamera, dan teleprompter di notch Mac. |
+
+These translations still need a native speaker's review, like the rest of the store copy.
+
+| Field | Annual | Weekly |
+|---|---|---|
+| Reference name | Retention Annual 50% | Retention Weekly 50% |
+| Offer identifier | `retention_annual_50` | `retention_weekly_50` |
+| Type | Pay up front, 1 year | Pay as you go, 4 weeks |
+| US price | $24.99 (regular $49.99) | $2.99/week (regular $5.99) |
+| Paid subscription duration | At least 1 month | At least 1 month |
+| Wait between offers | 12 months | 6 months |
+| Countries | All 175 | All 175 |
+
 ## Not set up yet
 
 - **Billing grace period:** off. Without it, a subscriber whose payment fails loses Pro right away. Poly uses 16 days for all renewals.
-- **Retention message with an offer** (Subscriptions → Retention Messaging): none yet. Poly has one, "Keep Premium".
