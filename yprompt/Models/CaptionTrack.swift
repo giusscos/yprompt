@@ -34,7 +34,18 @@ enum CaptionTrack {
     private static let hold = 1.0
 
     static func lines(spoken: [SpokenWord], script: ScriptWords) -> [CaptionLine] {
-        group(captionWords(spoken: spoken, script: script))
+        lines(from: placedWords(spoken: spoken, script: script))
+    }
+
+    /// Caption lines from words already placed on a timeline.
+    static func lines(from words: [PlacedWord]) -> [CaptionLine] {
+        group(words)
+    }
+
+    /// The last script word said in this speech, to carry on reading after it.
+    static func lastScriptWordIndex(spoken: [SpokenWord], script: ScriptWords) -> Int? {
+        let aligned = align(spoken: spoken.map { ScriptWords.matchKey($0.text) }, script: script.words.map(\.key))
+        return aligned.compactMap { $0?.isMatch == true ? $0?.scriptIndex : nil }.max()
     }
 
     /// Subtitles for the clip cut to `range`, with times counted from its start.
@@ -52,24 +63,27 @@ enum CaptionTrack {
 
     // MARK: - Matching speech to the script
 
-    private struct Placed {
+    /// A word ready for captions: its spelling, its time, and how it breaks lines.
+    struct PlacedWord {
         var word: CaptionWord
         var endsPhrase: Bool
         /// False for words the speaker added; a caption doesn't mix the two.
         var isScript: Bool
+        /// The first word of a piece starts a new caption.
+        var startsPiece = false
     }
 
     /// Words that line up with the script get its spelling and punctuation. A short misheard
     /// stretch between two matches becomes the script's words over the same time. Ad-libs keep
     /// what recognition heard, and script words that weren't said are left out.
-    private static func captionWords(spoken: [SpokenWord], script: ScriptWords) -> [Placed] {
+    static func placedWords(spoken: [SpokenWord], script: ScriptWords) -> [PlacedWord] {
         let aligned = align(spoken: spoken.map { ScriptWords.matchKey($0.text) }, script: script.words.map(\.key))
-        var placed: [Placed] = []
+        var placed: [PlacedWord] = []
         var index = 0
         while index < spoken.count {
             if let pair = aligned[index], pair.isMatch {
                 let word = script.words[pair.scriptIndex]
-                placed.append(Placed(word: CaptionWord(text: word.text, start: spoken[index].start, end: spoken[index].end),
+                placed.append(PlacedWord(word: CaptionWord(text: word.text, start: spoken[index].start, end: spoken[index].end),
                                      endsPhrase: word.endsPhrase, isScript: true))
                 index += 1
                 continue
@@ -83,7 +97,7 @@ enum CaptionTrack {
                let first = run.first, let last = run.last {
                 placed += spread(script.words[(before + 1)..<after], from: first.start, to: last.end)
             } else {
-                placed += run.map { Placed(word: CaptionWord(text: $0.text, start: $0.start, end: $0.end),
+                placed += run.map { PlacedWord(word: CaptionWord(text: $0.text, start: $0.start, end: $0.end),
                                            endsPhrase: false, isScript: false) }
             }
         }
@@ -91,13 +105,13 @@ enum CaptionTrack {
     }
 
     /// Script words placed over a stretch of time, each taking a share as long as its text.
-    private static func spread(_ words: ArraySlice<ScriptWord>, from start: Double, to end: Double) -> [Placed] {
+    private static func spread(_ words: ArraySlice<ScriptWord>, from start: Double, to end: Double) -> [PlacedWord] {
         let total = Double(words.reduce(0) { $0 + max(1, $1.text.count) })
         var time = start
         return words.map { word in
             let length = (end - start) * Double(max(1, word.text.count)) / total
             defer { time += length }
-            return Placed(word: CaptionWord(text: word.text, start: time, end: time + length),
+            return PlacedWord(word: CaptionWord(text: word.text, start: time, end: time + length),
                           endsPhrase: word.endsPhrase, isScript: true)
         }
     }
@@ -165,7 +179,7 @@ enum CaptionTrack {
 
     // MARK: - Lines
 
-    private static func group(_ words: [Placed]) -> [CaptionLine] {
+    private static func group(_ words: [PlacedWord]) -> [CaptionLine] {
         var lines: [CaptionLine] = []
         var current: [CaptionWord] = []
 
@@ -194,7 +208,8 @@ enum CaptionTrack {
                 let full = phraseNearlyDone
                     ? current.count >= stretchedWordsPerLine || characters > stretchedCharactersPerLine
                     : current.count >= maxWordsPerLine || characters > maxCharactersPerLine
-                if full || placed.word.start - last.end > pauseBreak || placed.isScript != currentIsScript {
+                if full || placed.word.start - last.end > pauseBreak || placed.isScript != currentIsScript
+                    || placed.startsPiece {
                     close()
                 }
             }

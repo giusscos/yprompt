@@ -17,10 +17,11 @@ enum ReadingPreferences {
     static let cameraPositionKey = "reading.cameraPosition"
     static let newScriptStyleKey = "reading.newScriptStyle"
     static let takeTrimKey = "takes.trim"
-    static let takeCaptionStyleKey = "takes.captionStyle"
-    static let takeCaptionPositionKey = "takes.captionPosition"
+    nonisolated static let takeCaptionStyleKey = "takes.captionStyle"
+    nonisolated static let takeCaptionPositionKey = "takes.captionPosition"
 
     static let cameraBackground = "camera"
+    static let audioBackground = "audio"
     static let colorBackground = "color"
     static let backCamera = "back"
 

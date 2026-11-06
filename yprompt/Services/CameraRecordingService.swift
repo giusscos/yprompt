@@ -50,13 +50,16 @@ enum VideoStabilization: String, CaseIterable, Identifiable {
 final class CameraRecordingService: NSObject, ObservableObject {
     static let frameRateOptions = [24, 30, 60]
 
+    /// True while a capture session runs, with the camera or, in audio-only mode, just the microphone.
     @Published var isCameraActive = false
+    /// Records sound only: the session has no camera.
+    @Published private(set) var isAudioOnly = false
     /// True once the running session has had a moment to deliver frames to the preview.
     @Published private(set) var isPreviewRunning = false
     @Published var isRecording = false
     @Published var permissionDenied = false
-    /// Set when a recording finishes; the reader decides whether to save it or retake.
-    @Published var finishedTake: Take?
+    /// Set when a piece finishes recording, to open its recording in the editor.
+    @Published var finished: RecordingSelection?
     @Published private(set) var recordingStartDate: Date?
     @Published private(set) var cameraPosition: AVCaptureDevice.Position = .front
 
@@ -84,8 +87,8 @@ final class CameraRecordingService: NSObject, ObservableObject {
 
     private(set) var captureSession: AVCaptureSession?
     private var movieOutput: AVCaptureMovieFileOutput?
-    /// Takes being written, until the movie output reports them finished.
-    private var pendingTakes: [UUID: Take] = [:]
+    /// Reading position when each piece's recording was stopped, by file name.
+    private var endProgress: [String: Double] = [:]
     private var videoInput: AVCaptureDeviceInput?
     private var videoDevice: AVCaptureDevice? { videoInput?.device }
 
@@ -122,11 +125,17 @@ final class CameraRecordingService: NSObject, ObservableObject {
     /// Zoom as the user reads it, relative to the main lens (0.5×, 1×, 2×…).
     var displayZoom: CGFloat { zoomFactor / baselineZoom }
 
-    func requestPermissionsAndStart() async {
-        var cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
+    /// Starts the camera, or with `audioOnly` just the microphone. A session already running
+    /// in the other mode is replaced.
+    func requestPermissionsAndStart(audioOnly: Bool = false) async {
+        if isCameraActive {
+            guard isAudioOnly != audioOnly, !isRecording else { return }
+            stopCamera()
+        }
+        var cameraGranted = audioOnly || AVCaptureDevice.authorizationStatus(for: .video) == .authorized
         var micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
 
-        if AVCaptureDevice.authorizationStatus(for: .video) == .notDetermined {
+        if !audioOnly && AVCaptureDevice.authorizationStatus(for: .video) == .notDetermined {
             cameraGranted = await withCheckedContinuation { continuation in
                 AVCaptureDevice.requestAccess(for: .video) { continuation.resume(returning: $0) }
             }
@@ -142,15 +151,16 @@ final class CameraRecordingService: NSObject, ObservableObject {
             return
         }
 
-        startCamera()
+        startCamera(audioOnly: audioOnly)
     }
 
-    func startCamera() {
+    func startCamera(audioOnly: Bool = false) {
+        isAudioOnly = audioOnly
         if !tracksDeviceOrientation {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
             tracksDeviceOrientation = true
         }
-        configureAudioSession()
+        configureAudioSession(audioOnly: audioOnly)
         let session = AVCaptureSession()
         // Voice Scroll listens to the same microphone, so the app sets up the audio session
         // itself; left to the capture session, it would interrupt the other listener.
@@ -158,16 +168,18 @@ final class CameraRecordingService: NSObject, ObservableObject {
         session.beginConfiguration()
         session.sessionPreset = .high
 
-        guard
-            let camera = Self.videoDevice(for: cameraPosition),
-            let cameraInput = try? AVCaptureDeviceInput(device: camera),
-            session.canAddInput(cameraInput)
-        else {
-            session.commitConfiguration()
-            return
+        if !audioOnly {
+            guard
+                let camera = Self.videoDevice(for: cameraPosition),
+                let cameraInput = try? AVCaptureDeviceInput(device: camera),
+                session.canAddInput(cameraInput)
+            else {
+                session.commitConfiguration()
+                return
+            }
+            session.addInput(cameraInput)
+            videoInput = cameraInput
         }
-        session.addInput(cameraInput)
-        videoInput = cameraInput
 
         if let mic = AVCaptureDevice.default(for: .audio),
            let micInput = try? AVCaptureDeviceInput(device: mic),
@@ -181,11 +193,11 @@ final class CameraRecordingService: NSObject, ObservableObject {
             movieOutput = output
         }
 
-        configureCurrentDevice()
+        if !audioOnly { configureCurrentDevice() }
         session.commitConfiguration()
         captureSession = session
         isCameraActive = true
-        rebuildRotationCoordinator()
+        if !audioOnly { rebuildRotationCoordinator() }
 
         Task.detached(priority: .userInitiated) { [weak self, session] in
             session.startRunning()
@@ -194,9 +206,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
     }
 
-    private func configureAudioSession() {
+    private func configureAudioSession(audioOnly: Bool) {
         let audio = AVAudioSession.sharedInstance()
-        try? audio.setCategory(.playAndRecord, mode: .videoRecording,
+        try? audio.setCategory(.playAndRecord, mode: audioOnly ? .default : .videoRecording,
                                options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
         try? audio.setActive(true)
     }
@@ -262,9 +274,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
     }
 
-    /// Starts or stops a take. `scriptID` and `startProgress` let a take be found again
-    /// for its script, and let Retake go back to where reading began.
-    func toggleRecording(scriptID: UUID? = nil, startProgress: Double = 0) {
+    /// Starts or stops recording a piece. `progress` is the reading position at that moment,
+    /// so a later pickup can carry on from where this piece stopped.
+    func toggleRecording(into target: RecordingTarget? = nil, progress: Double = 0) {
         #if DEBUG
         // The demo camera photo has no capture session; just show the recording state.
         if captureSession == nil, UserDefaults.standard.bool(forKey: AppConstants.debugDemoCameraKey) {
@@ -274,6 +286,7 @@ final class CameraRecordingService: NSObject, ObservableObject {
         }
         #endif
         if isRecording {
+            if let file = movieOutput?.outputFileURL?.lastPathComponent { endProgress[file] = progress }
             movieOutput?.stopRecording()
         } else {
             guard let output = movieOutput, !output.isRecording else { return }
@@ -285,9 +298,9 @@ final class CameraRecordingService: NSObject, ObservableObject {
                     connection.videoRotationAngle = angle
                 }
             }
-            let take = TakeStore.newTake(scriptID: scriptID, startProgress: startProgress)
-            pendingTakes[take.id] = take
-            output.startRecording(to: take.url, recordingDelegate: self)
+            let pending = RecordingStore.beginPiece(target ?? RecordingTarget(title: String(localized: "Take")),
+                                                    kind: isAudioOnly ? .audio : .video, startProgress: progress)
+            output.startRecording(to: pending.url, recordingDelegate: self)
             isRecording = true
             recordingStartDate = Date()
         }
@@ -560,25 +573,30 @@ extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
         error: Error?
     ) {
         // Some errors still leave a complete movie, e.g. when the disk fills up.
-        let finished = error == nil
+        let completed = error == nil
             || ((error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool ?? false)
+        // Read from the file written next to the movie, so the piece is kept even if the
+        // reading screen has already closed.
+        let pending = (try? Data(contentsOf: outputFileURL.appendingPathExtension("pending.json")))
+            .flatMap { try? JSONDecoder().decode(PendingPiece.self, from: $0) }
+        let file = outputFileURL.lastPathComponent
         Task { @MainActor [weak self] in
-            guard let self else { return }
-            isRecording = false
-            recordingStartDate = nil
-            // Matched by name: the output may report the path in another form (e.g. /private/var).
-            let id = UUID(uuidString: outputFileURL.deletingPathExtension().lastPathComponent)
-            if let id, let take = pendingTakes.removeValue(forKey: id) {
-                if finished {
-                    finishedTake = take
-                } else {
-                    TakeStore.discard(take)
-                }
-            }
+            self?.isRecording = false
+            self?.recordingStartDate = nil
             // Catch up with any rotation that happened while recording.
-            if let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture {
+            if let self, let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture {
                 applyCaptureRotation(angle)
             }
+            let progress = self?.endProgress.removeValue(forKey: file) ?? pending?.startProgress ?? 0
+            guard let pending else { return }
+            guard completed else {
+                try? FileManager.default.removeItem(at: pending.url)
+                try? FileManager.default.removeItem(at: pending.infoURL)
+                return
+            }
+            guard let (recording, piece) = await RecordingStore.finishPiece(pending, endProgress: progress) else { return }
+            RecordingLibrary.shared.refresh()
+            self?.finished = RecordingSelection(recordingID: recording.id, pieceID: piece.id)
         }
     }
 }

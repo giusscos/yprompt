@@ -12,6 +12,8 @@ struct PaywallView: View {
         case upgrade
         /// Shown once, right after the first finished read.
         case firstRead
+        /// From the "Remove" chip on the mark in a recording.
+        case removeMark
     }
 
     var context: Context = .upgrade
@@ -70,17 +72,31 @@ struct PaywallView: View {
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.yellow)
             VStack(spacing: 6) {
-                Text(context == .firstRead ? "Nicely Read!" : "Unlock yPrompt Pro")
+                Text(headline)
                     .font(.title2.bold())
-                Text(context == .firstRead
-                     ? "Keep every script moving at your pace, with your voice in control."
-                     : "Professional tools for every presenter.")
+                Text(subheadline)
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
         }
         .padding(.top, 4)
+    }
+
+    private var headline: LocalizedStringKey {
+        switch context {
+        case .upgrade: "Unlock yPrompt Pro"
+        case .firstRead: "Nicely Read!"
+        case .removeMark: "Your Videos, Without the Mark"
+        }
+    }
+
+    private var subheadline: LocalizedStringKey {
+        switch context {
+        case .upgrade: "Professional tools for every presenter."
+        case .firstRead: "Keep every script moving at your pace, with your voice in control."
+        case .removeMark: "Pro saves your videos without the \"Made with yPrompt\" mark, and unlocks every Pro tool."
+        }
     }
 
     // MARK: - Features

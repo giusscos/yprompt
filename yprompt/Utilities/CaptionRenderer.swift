@@ -9,7 +9,7 @@ import CoreImage
 import CoreText
 import UIKit
 
-enum CaptionStyle: String, CaseIterable, Identifiable {
+nonisolated enum CaptionStyle: String, CaseIterable, Identifiable, Codable, Sendable {
     case off, lyrics, clean
     var id: String { rawValue }
 
@@ -22,7 +22,7 @@ enum CaptionStyle: String, CaseIterable, Identifiable {
     }
 }
 
-enum CaptionPosition: String, CaseIterable, Identifiable {
+nonisolated enum CaptionPosition: String, CaseIterable, Identifiable, Codable, Sendable {
     case bottom, middle
     var id: String { rawValue }
 
@@ -187,48 +187,4 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
     }
 }
 
-/// A video composition that turns every frame by the reader's rotation and draws the captions over it.
-enum CaptionComposition {
-    /// - Parameters:
-    ///   - size: the video made upright by its own transform, before the reader's rotation.
-    ///   - quarterTurns: clockwise turns the reader added.
-    static func make(
-        for asset: AVAsset, captions: TakeExporter.Captions, size: CGSize, quarterTurns: Int = 0
-    ) async throws -> AVVideoComposition {
-        let turns = (quarterTurns % 4 + 4) % 4
-        let shown = turns.isMultiple(of: 2) ? size : CGSize(width: size.height, height: size.width)
-        let renderer = CaptionRenderer(lines: captions.lines, style: captions.style, position: captions.position, size: shown)
-        let composition = try await AVMutableVideoComposition.videoComposition(
-            with: asset, applyingCIFiltersWithHandler: handler(renderer, quarterTurns: turns, size: shown))
-        composition.renderSize = shown
-        return composition
-    }
-
-    /// Frames are drawn on AVFoundation's own queue, so this closure must not inherit the main actor.
-    nonisolated private static func handler(
-        _ renderer: CaptionRenderer, quarterTurns: Int, size: CGSize
-    ) -> @Sendable (AVAsynchronousCIImageFilteringRequest) -> Void {
-        { request in
-            let frame = turned(request.sourceImage, quarterTurns: quarterTurns)
-            guard let caption = renderer.image(at: request.compositionTime.seconds) else {
-                request.finish(with: frame, context: nil)
-                return
-            }
-            let overlay = CIImage(cgImage: caption.image)
-                .transformed(by: CGAffineTransform(translationX: caption.origin.x, y: caption.origin.y))
-            request.finish(with: overlay.composited(over: frame).cropped(to: CGRect(origin: .zero, size: size)), context: nil)
-        }
-    }
-
-    /// The frame moved to the origin and turned clockwise. Core Image measures from the bottom
-    /// left, so each quarter turn maps (x, y) to (y, width − x).
-    nonisolated private static func turned(_ image: CIImage, quarterTurns: Int) -> CIImage {
-        var image = image.transformed(by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY))
-        for _ in 0..<quarterTurns {
-            let width = image.extent.width
-            image = image.transformed(by: CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: 0, ty: width))
-        }
-        return image
-    }
-}
 #endif

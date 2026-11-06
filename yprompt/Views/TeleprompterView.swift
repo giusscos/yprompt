@@ -114,6 +114,8 @@ struct MusicSlider: View {
 private enum BackgroundMode: Hashable {
     case solidColor
     case camera
+    /// The color background, recording sound only.
+    case audio
 }
 
 private enum CameraLayout: Hashable {
@@ -150,6 +152,8 @@ struct TeleprompterView: View {
     @State private var safeLeadingInset: CGFloat = 0
     @State private var safeTrailingInset: CGFloat = 0
     @State private var stopCameraTask: Task<Void, Never>?
+    /// Set while recording more into an existing recording: the next take goes there.
+    @State private var pickup: Pickup?
     @State private var layoutFrame: CGRect = .zero
     @State private var liveHorizontalPadding: CGFloat = 16
     @AppStorage(ReadingPreferences.modeKey) private var savedMode = TeleprompterMode.auto.rawValue
@@ -197,6 +201,13 @@ struct TeleprompterView: View {
     init(script: Script) {
         _queueScripts = State(initialValue: [script])
     }
+
+    #if os(iOS)
+    init(script: Script, pickup: Pickup?) {
+        _queueScripts = State(initialValue: [script])
+        _pickup = State(initialValue: pickup)
+    }
+    #endif
     
     init(queue: [Script]) {
         _queueScripts = State(initialValue: queue)
@@ -404,7 +415,7 @@ struct TeleprompterView: View {
         return ZStack(alignment: alignment) {
             Color.black
             Color(hex: customization.backgroundColorHex)
-                .opacity(backgroundMode == .solidColor || axis != nil ? 1 : 0)
+                .opacity(backgroundMode != .camera || axis != nil ? 1 : 0)
             cameraFeed
                 .frame(
                     // Out to the screen edge on its own side only.
@@ -514,7 +525,7 @@ struct TeleprompterView: View {
                 // Restore saved scroll position once layout is ready (only on first load, not queue advances).
                 if !didRestoreProgress && contentHeight > 0 {
                     didRestoreProgress = true
-                    let p = currentScript.lastProgress
+                    let p = pickup?.progress ?? currentScript.lastProgress
                     if p > 0 && p < 1 { viewModel.seek(to: p) }
                 }
                 viewModel.restoreClassicPositionIfNeeded()
@@ -561,11 +572,12 @@ struct TeleprompterView: View {
                 viewModel.load(words: currentScript.scriptWords)
             }
             restoreModeAndBackground()
-            Task { await offerUnsavedTake() }
+            if let pickup { matchBackground(to: pickup) }
             viewModel.setWordMode(usesWordStyle)
             if viewModel.isWordMode && !didRestoreProgress {
                 didRestoreProgress = true
-                var p = currentScript.lastProgress
+                // Recording more carries on where the piece before it stopped.
+                var p = pickup?.progress ?? currentScript.lastProgress
                 #if DEBUG
                 // For App Store screenshots: launch with `-ypShotProgress 0.2`.
                 let shot = UserDefaults.standard.double(forKey: "ypShotProgress")
@@ -624,23 +636,27 @@ struct TeleprompterView: View {
         } message: {
             Text("Camera mode needs camera and microphone access to record video.")
         }
-        .fullScreenCover(item: $cameraService.finishedTake) { take in
-            let script = queueScripts.first { $0.id == take.scriptID } ?? currentScript
-            TakeReviewView(
-                take: take,
-                script: script.scriptWords,
-                title: script.title,
-                onRetake: {
-                    viewModel.seek(to: take.startProgress)
-                    cameraService.finishedTake = nil
-                },
-                onFinish: { cameraService.finishedTake = nil }
+        .fullScreenCover(item: $cameraService.finished) { selection in
+            let script = scriptFor(selection.recordingID)
+            RecordingEditorView(
+                selection: selection,
+                script: script?.scriptWords,
+                onRecordMore: { pickup in startPickup(pickup) },
+                onClose: { cameraService.finished = nil }
             )
             .environment(storeKit)
         }
-        .onChange(of: cameraService.finishedTake) { _, take in
-            // The camera keeps running underneath, so Retake can start again straight away.
-            if take != nil { viewModel.pause() }
+        .onChange(of: cameraService.finished) { _, selection in
+            // The camera keeps running underneath, so recording more can start straight away.
+            if selection != nil { viewModel.pause() }
+        }
+        .overlay(alignment: .top) {
+            if let pickup {
+                pickupBanner(pickup)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .onChange(of: keepsScreenAwake, initial: true) { _, awake in
             UIApplication.shared.isIdleTimerDisabled = awake
@@ -706,7 +722,7 @@ struct TeleprompterView: View {
                     // closing, so this is a long delay rather than a hold until it does.
                     .onAppear { if viewModel.isPlaying { viewModel.showControlsTemporarily(for: 15) } }
             } label: {
-                Image(systemName: backgroundMode == .camera ? "camera.fill" : "paintpalette.fill")
+                Image(systemName: backgroundIcon)
             }
             .accessibilityLabel("Background")
             .background {
@@ -750,8 +766,16 @@ struct TeleprompterView: View {
         Button {
             selectBackground(.camera)
         } label: {
-            Label("Camera", systemImage: storeKit.isPremium ? "camera.fill" : "lock.fill")
+            Label("Camera", systemImage: "camera.fill")
             if backgroundMode == .camera {
+                Image(systemName: "checkmark")
+            }
+        }
+        Button {
+            selectBackground(.audio)
+        } label: {
+            Label("Audio Only", systemImage: "mic.fill")
+            if backgroundMode == .audio {
                 Image(systemName: "checkmark")
             }
         }
@@ -830,7 +854,11 @@ struct TeleprompterView: View {
     /// One button for the take: recording and reading start and stop together.
     private func toggleRecording() {
         let starting = !cameraService.isRecording
-        cameraService.toggleRecording(scriptID: currentScript.id, startProgress: viewModel.progress)
+        let target = RecordingTarget(scriptID: currentScript.id, title: currentScript.title,
+                                     recordingID: pickup?.recordingID, insertAt: pickup?.insertAt)
+        cameraService.toggleRecording(into: target, progress: viewModel.progress)
+        // A pickup is one take; the editor opens on it when it finishes.
+        if !starting { withAnimation { pickup = nil } }
         guard teleprompterMode != .tap else { return }
         if starting {
             viewModel.play()
@@ -921,7 +949,7 @@ struct TeleprompterView: View {
             .frame(height: 96)
         }
         .ignoresSafeArea(edges: [.bottom, .horizontal])
-        .opacity(backgroundMode == .solidColor && readingBottomInset > 0 ? 1 : 0)
+        .opacity(backgroundMode != .camera && readingBottomInset > 0 ? 1 : 0)
         .allowsHitTesting(false)
     }
 
@@ -1077,7 +1105,7 @@ struct TeleprompterView: View {
     /// Play, or advance in tap mode. In camera mode the big button records, as in the Camera app.
     @ViewBuilder
     private func primaryTransportButton(size: CGFloat) -> some View {
-        if backgroundMode == .camera {
+        if recordsTakes {
             recordButton(size: size)
                 .transition(.scale(scale: 0.85).combined(with: .opacity))
         } else {
@@ -1119,7 +1147,7 @@ struct TeleprompterView: View {
     /// Next to the record button: play or advance. Otherwise: cue points.
     @ViewBuilder
     private var trailingTransportButton: some View {
-        if backgroundMode == .camera {
+        if recordsTakes {
             Button(action: readingAction) {
                 transportIcon(readingActionIcon)
             }
@@ -1223,14 +1251,58 @@ struct TeleprompterView: View {
             }
     }
 
-    /// A take that was never saved or thrown away, e.g. because the app closed, comes back
-    /// the next time its script is opened.
-    private func offerUnsavedTake() async {
-        guard cameraService.finishedTake == nil, !cameraService.isRecording,
-              let take = await TakeStore.unsavedTakes(for: currentScript.id).last,
-              cameraService.finishedTake == nil, !cameraService.isRecording else { return }
-        cameraService.finishedTake = take
+    /// The script a recording belongs to: this one, or another in the queue.
+    private func scriptFor(_ recordingID: UUID) -> Script? {
+        guard let scriptID = RecordingLibrary.shared.recording(recordingID)?.scriptID else { return currentScript }
+        return queueScripts.first { $0.id == scriptID } ?? (scriptID == currentScript.id ? currentScript : nil)
     }
+
+    /// From the editor: close it and get ready to record the next piece where the last one stopped.
+    private func startPickup(_ pickup: Pickup) {
+        cameraService.finished = nil
+        withAnimation { self.pickup = pickup }
+        matchBackground(to: pickup)
+        viewModel.pause()
+        viewModel.seek(to: pickup.progress)
+    }
+
+    /// A pickup records with what the recording was made with: the camera or the microphone.
+    private func matchBackground(to pickup: Pickup) {
+        let mode: BackgroundMode = pickup.kind == .audio ? .audio : .camera
+        if backgroundMode != mode { selectBackground(mode) }
+    }
+
+    private func pickupBanner(_ pickup: Pickup) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: pickup.kind == .audio ? "mic.badge.plus" : "video.badge.plus")
+                .foregroundStyle(Color.accentColor)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Adding to \u{201C}\(pickup.title)\u{201D}")
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                Text(pickup.insertAt == 0 ? "Before the first piece" : "After piece \(pickup.insertAt)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            if !cameraService.isRecording {
+                Button {
+                    withAnimation { self.pickup = nil }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.footnote.weight(.bold))
+                        .frame(width: 28, height: 28)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Stop adding to this recording")
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .ypGlassEffect(cornerRadius: 18)
+    }
+
+    private var recordsTakes: Bool { backgroundMode != .solidColor }
 
     private func handlePlayModeAppear() {
         TabBarAnimator.setHidden(true, animated: true)
@@ -1239,15 +1311,23 @@ struct TeleprompterView: View {
         }
     }
 
+    private var backgroundIcon: String {
+        switch backgroundMode {
+        case .solidColor: "paintpalette.fill"
+        case .camera: "camera.fill"
+        case .audio: "mic.fill"
+        }
+    }
+
     /// Nobody touches the screen while reading, recording or watching a take back,
     /// so it mustn't dim and lock then.
     private var keepsScreenAwake: Bool {
-        viewModel.isPlaying || cameraService.isRecording || cameraService.finishedTake != nil
+        viewModel.isPlaying || cameraService.isRecording || cameraService.finished != nil
     }
 
     private func handlePlayModeDisappear() {
         // Covered by the take sheet, not left: the camera keeps running for Retake.
-        guard cameraService.finishedTake == nil else { return }
+        guard cameraService.finished == nil else { return }
         UIApplication.shared.isIdleTimerDisabled = false
         if !didRestoreTabBar {
             didRestoreTabBar = true
@@ -1474,10 +1554,15 @@ struct TeleprompterView: View {
             selectMode(mode)
             savedMode = remembered
         }
-        if savedBackground == ReadingPreferences.cameraBackground && storeKit.isPremium {
+        if savedBackground == ReadingPreferences.cameraBackground {
             backgroundMode = .camera
             if !usesDemoCamera && !cameraService.isCameraActive {
                 Task { await cameraService.requestPermissionsAndStart() }
+            }
+        } else if savedBackground == ReadingPreferences.audioBackground {
+            backgroundMode = .audio
+            if !cameraService.isCameraActive {
+                Task { await cameraService.requestPermissionsAndStart(audioOnly: true) }
             }
         }
         #if DEBUG
@@ -1492,17 +1577,29 @@ struct TeleprompterView: View {
         if arguments.contains("-ypShotRecord") {
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(1))
-                cameraService.toggleRecording()
+                toggleRecording()
             }
         }
         if arguments.contains("-ypShotPaywall") { showingPaywall = true }
-        // The simulator has no camera: `-ypDemoTake <video file>` reviews that video as a take.
-        if let flag = arguments.firstIndex(of: "-ypDemoTake"), arguments.indices.contains(flag + 1) {
-            let take = TakeStore.newTake(scriptID: currentScript.id, startProgress: viewModel.progress)
-            try? FileManager.default.copyItem(at: URL(fileURLWithPath: arguments[flag + 1]), to: take.url)
+        // The simulator has no camera or microphone: `-ypDemoTake <video file>` and
+        // `-ypDemoAudioTake <audio file>` add that file as a recording and open the editor.
+        // Several files separated by commas become pieces of one recording.
+        for (flag, kind) in [("-ypDemoTake", Recording.Kind.video), ("-ypDemoAudioTake", .audio)] {
+            guard let index = arguments.firstIndex(of: flag), arguments.indices.contains(index + 1) else { continue }
+            let sources = arguments[index + 1].split(separator: ",").map { URL(fileURLWithPath: String($0)) }
             Task { @MainActor in
+                var selection: RecordingSelection?
+                for source in sources {
+                    let target = RecordingTarget(scriptID: currentScript.id, title: currentScript.title,
+                                                 recordingID: selection?.recordingID)
+                    let pending = RecordingStore.beginPiece(target, kind: kind, startProgress: viewModel.progress)
+                    try? FileManager.default.copyItem(at: source, to: pending.url)
+                    guard let (recording, piece) = await RecordingStore.finishPiece(pending, endProgress: 1) else { return }
+                    selection = RecordingSelection(recordingID: recording.id, pieceID: piece.id)
+                }
                 try? await Task.sleep(for: .milliseconds(600))
-                cameraService.finishedTake = take
+                RecordingLibrary.shared.refresh()
+                cameraService.finished = selection
             }
         }
         #endif
@@ -1512,24 +1609,31 @@ struct TeleprompterView: View {
 
     private func selectBackground(_ mode: BackgroundMode) {
         if viewModel.isPlaying { viewModel.showControlsTemporarily() }
-        guard mode != backgroundMode else { return }
-        if mode == .camera {
-            guard storeKit.isPremium else { showingPaywall = true; return }
-            stopCameraTask?.cancel()
+        guard mode != backgroundMode, !cameraService.isRecording else { return }
+        stopCameraTask?.cancel()
+        switch mode {
+        case .camera:
             // Still running if the reader came straight back from Color.
-            if !usesDemoCamera && !cameraService.isCameraActive {
+            if !usesDemoCamera && (!cameraService.isCameraActive || cameraService.isAudioOnly) {
                 Task { await cameraService.requestPermissionsAndStart() }
             }
-        } else if backgroundMode == .camera {
+        case .audio:
+            if !cameraService.isCameraActive || !cameraService.isAudioOnly {
+                Task { await cameraService.requestPermissionsAndStart(audioOnly: true) }
+            }
+        case .solidColor:
             // Keep the preview running until it has faded out.
-            stopCameraTask?.cancel()
             stopCameraTask = Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(500))
                 guard !Task.isCancelled else { return }
                 cameraService.stopCamera()
             }
         }
-        savedBackground = mode == .camera ? ReadingPreferences.cameraBackground : ReadingPreferences.colorBackground
+        savedBackground = switch mode {
+        case .camera: ReadingPreferences.cameraBackground
+        case .audio: ReadingPreferences.audioBackground
+        case .solidColor: ReadingPreferences.colorBackground
+        }
         withAnimation(surfaceAnimation) { backgroundMode = mode }
     }
 

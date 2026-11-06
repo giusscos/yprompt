@@ -282,6 +282,13 @@ struct ContentView: View {
             }
             .tabItem { Label("Scripts", systemImage: "doc.text") }
 
+            #if os(iOS)
+            NavigationStack {
+                RecordingsListView()
+            }
+            .tabItem { Label("Recordings", systemImage: "film.stack") }
+            #endif
+
             NavigationStack {
                 RemoteControlView()
             }

@@ -12,15 +12,15 @@ import os
 private let log = Logger(subsystem: "com.giusscos.yprompt", category: "Takes")
 
 /// A word heard in a take, with its time in the recording.
-nonisolated struct SpokenWord: Hashable, Sendable {
+nonisolated struct SpokenWord: Hashable, Sendable, Codable {
     var text: String
     var start: Double
     var end: Double
 }
 
 /// What a take's sound says: the words with their times, and how loud it is over time.
-nonisolated struct TakeAnalysis: Sendable {
-    enum Speech: Sendable, Equatable {
+nonisolated struct TakeAnalysis: Sendable, Codable {
+    enum Speech: String, Sendable, Equatable, Codable {
         case recognized
         /// Speech recognition permission was declined or is restricted.
         case notAllowed
