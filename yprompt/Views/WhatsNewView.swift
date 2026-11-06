@@ -36,9 +36,12 @@ struct WhatsNewView: View {
                     row("music.note.list", .green, "Lyrics Style", "Every word lights up as you read, like song lyrics.", isPro: true)
                     row("checkmark.circle.fill", .orange, "Remembers Your Choices", "Mode, speed and text size carry over to every script, so there's nothing to set up again.")
                     #else
-                    row("captions.bubble.fill", .orange, "Captions", "Your words on screen, spelled like your script, with the silences trimmed.", isPro: true)
-                    row("play.rectangle.on.rectangle.fill", .red, "Review Every Take", "Watch each take back before it's saved, then keep it or record again.", isPro: true)
-                    row("music.note.list", .green, "Lyrics Style Captions", "Every word lights up as you say it, just like in the teleprompter.", isPro: true)
+                    row("film.stack.fill", .red, "Recordings", "Every take is kept in the new Recordings tab, ready to edit.")
+                    row("scissors", .orange, "Edit in Seconds", "Cut, trim and reorder pieces, and remove the pauses between sentences.")
+                    row("video.badge.plus", .blue, "Pick Up Where You Left Off", "Record more, and the script carries on from your last word.")
+                    row("captions.bubble.fill", .green, "Captions", "Your words on screen, spelled exactly like your script.")
+                    row("waveform", .purple, "Audio Recordings", "Record just your voice and share it with its transcript.")
+                    row("checkmark.seal.fill", .teal, "Recording Is Free", "Camera, audio and captions are free for everyone. Pro saves your videos without the yPrompt mark.")
                     #endif
                 }
                 .padding(.horizontal, 24)

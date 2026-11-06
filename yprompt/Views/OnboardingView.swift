@@ -312,7 +312,7 @@ struct OnboardingView: View {
                     featureRow("hand.tap.fill", .orange, "Tap",    "Advance each line manually with a tap.")
                     featureRow("mic.fill",      .purple, "Voice",  "Follows your words as you speak and waits when you pause.", badge: "Pro")
                     #if !os(macOS)
-                    featureRow("video.fill",    .red,    "Camera", "Record with your script right under the camera.", badge: "Pro")
+                    featureRow("video.fill",    .red,    "Camera", "Record with your script right under the camera, then edit and caption your takes.")
                     #endif
                     featureRow("timer",         .teal,   "Timed",  "Auto-pace to hit your target duration.", badge: "Pro")
                     featureRow("music.note.list", .green, "Lyrics Style", "Every word lights up as you read, like song lyrics.", badge: "Pro")
