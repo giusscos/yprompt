@@ -286,7 +286,8 @@ struct WordAligner {
         }
     }
 
-    private static func matches(_ a: String, _ b: String) -> Bool {
+    /// Same word, allowing a letter or two misheard in longer words.
+    static func matches(_ a: String, _ b: String) -> Bool {
         if a == b { return true }
         guard !a.isEmpty, !b.isEmpty else { return false }
         let longest = max(a.count, b.count)

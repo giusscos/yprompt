@@ -68,10 +68,7 @@ final class SpeechWordTracker {
             return false
         }
         self.recognizer = recognizer
-        // Names and unusual words are the ones recognition most often gets wrong.
-        contextualWords = Array(
-            Set(words.words.map(\.text).filter { $0.count >= 6 }).sorted { $0.count > $1.count }.prefix(100)
-        )
+        contextualWords = Self.contextualWords(for: words)
         prefersOnDevice = recognizer.supportsOnDeviceRecognition
         quickFailures = 0
         isActive = true
@@ -172,11 +169,16 @@ final class SpeechWordTracker {
         }
     }
 
+    /// Names and unusual words are the ones recognition most often gets wrong.
+    static func contextualWords(for words: ScriptWords) -> [String] {
+        Array(Set(words.words.map(\.text).filter { $0.count >= 6 }).sorted { $0.count > $1.count }.prefix(100))
+    }
+
     // MARK: - Language
 
     /// Picks a recognizer for the language the script is written in, using the user's own
     /// region when it applies. Short scripts lean towards the device language.
-    private static func recognizer(forScript text: String) -> SFSpeechRecognizer? {
+    static func recognizer(forScript text: String) -> SFSpeechRecognizer? {
         let current = Locale.current
         let currentLanguage = current.language.languageCode?.identifier
 
