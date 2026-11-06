@@ -271,7 +271,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "yPrompt needs local network access to connect your iPhone as a teleprompter remote control.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voice Scroll listens through the microphone so your script can follow you as you read.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Recordings are saved to your photo library.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Voice Scroll recognizes the words you say to keep your place in the script. Your speech is processed on your device when possible, otherwise by Apple.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "yPrompt recognizes the words you say to keep your place in the script and to caption your takes. Your speech is processed on your device when possible, otherwise by Apple.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -285,7 +285,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.giusscos.yprompt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -327,7 +327,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "yPrompt needs local network access to connect your iPhone as a teleprompter remote control.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voice Scroll listens through the microphone so your script can follow you as you read.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Recordings are saved to your photo library.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Voice Scroll recognizes the words you say to keep your place in the script. Your speech is processed on your device when possible, otherwise by Apple.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "yPrompt recognizes the words you say to keep your place in the script and to caption your takes. Your speech is processed on your device when possible, otherwise by Apple.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -341,7 +341,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.giusscos.yprompt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -504,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.giusscos.yprompt.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -540,7 +540,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.giusscos.yprompt.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;

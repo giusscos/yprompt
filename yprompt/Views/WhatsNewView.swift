@@ -8,7 +8,12 @@ import SwiftUI
 enum WhatsNew {
     static let seenKey = "whatsNew.seen"
     /// Change this only when the rows below change, so a bug-fix update doesn't show them again.
+    #if os(macOS)
+    // 1.0.5 only adds to the camera, which the Mac doesn't have.
     static let release = "1.0.4"
+    #else
+    static let release = "1.0.5"
+    #endif
 }
 
 /// Shown once to people who update. New installs get the onboarding instead.
@@ -26,13 +31,15 @@ struct WhatsNewView: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 32)
 
+                    #if os(macOS)
                     row("mic.fill", .purple, "Voice Scroll", "Follows your words as you speak and waits when you pause.", isPro: true)
                     row("music.note.list", .green, "Lyrics Style", "Every word lights up as you read, like song lyrics.", isPro: true)
-                    #if !os(macOS)
-                    row("video.fill", .red, "Under the Camera", "Your script sits right under the camera, so you look straight into the lens.", isPro: true)
-                    row("rectangle.and.hand.point.up.left.fill", .blue, "A Cleaner Reading Screen", "The controls step aside while you read. Tap the script to bring them back.")
-                    #endif
                     row("checkmark.circle.fill", .orange, "Remembers Your Choices", "Mode, speed and text size carry over to every script, so there's nothing to set up again.")
+                    #else
+                    row("captions.bubble.fill", .orange, "Captions", "Your words on screen, spelled like your script, with the silences trimmed.", isPro: true)
+                    row("play.rectangle.on.rectangle.fill", .red, "Review Every Take", "Watch each take back before it's saved, then keep it or record again.", isPro: true)
+                    row("music.note.list", .green, "Lyrics Style Captions", "Every word lights up as you say it, just like in the teleprompter.", isPro: true)
+                    #endif
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
