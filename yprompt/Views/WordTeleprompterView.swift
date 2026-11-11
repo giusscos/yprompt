@@ -6,12 +6,6 @@
 #if !os(watchOS)
 import SwiftUI
 
-#if canImport(UIKit)
-private typealias PlatformFont = UIFont
-#else
-private typealias PlatformFont = NSFont
-#endif
-
 // MARK: - Layout
 
 /// The script's words broken into lines for a given width and font.
@@ -36,6 +30,8 @@ struct WordLayout: Equatable {
         var alignment: Int
         var horizontalPadding: CGFloat
         var textHash: Int
+        var font: ReadingFont = .system
+        var spacing: LetterSpacing = .normal
     }
 
     var key: Key
@@ -44,14 +40,16 @@ struct WordLayout: Equatable {
     var lineHeight: CGFloat = 0
     var lineStep: CGFloat = 1
 
-    static let baseWeight = Font.Weight.semibold
-    static let boldWeight = Font.Weight.heavy
+    static func weight(for style: ScriptWord.Style) -> ReadingFont.Weight {
+        style.isBold ? .heavy : .semibold
+    }
 
     init(words: ScriptWords, key: Key) {
         self.key = key
         let available = max(40, key.width - key.horizontalPadding * 2)
-        var fonts: [ScriptWord.Style: PlatformFont] = [:]
+        var fonts: [ScriptWord.Style: ReadingFont.PlatformFont] = [:]
         var widths: [String: CGFloat] = [:]
+        let tracking = key.spacing.tracking(for: key.fontSize)
 
         func measure(_ word: ScriptWord) -> CGFloat {
             let cacheKey = "\(word.style.isBold ? 1 : 0)\(word.style.isItalic ? 1 : 0)\(word.text)"
@@ -59,15 +57,17 @@ struct WordLayout: Equatable {
             var trackedStyle = ScriptWord.Style()
             trackedStyle.isBold = word.style.isBold
             trackedStyle.isItalic = word.style.isItalic
-            let font = fonts[trackedStyle] ?? Self.platformFont(size: key.fontSize, style: trackedStyle)
+            let font = fonts[trackedStyle] ?? key.font.platformFont(
+                size: key.fontSize, weight: Self.weight(for: trackedStyle), italic: trackedStyle.isItalic)
             fonts[trackedStyle] = font
-            let width = ceil((word.text as NSString).size(withAttributes: [.font: font]).width)
+            let width = ceil((word.text as NSString).size(withAttributes: [.font: font, .kern: tracking]).width)
             widths[cacheKey] = width
             return width
         }
 
-        let baseFont = Self.platformFont(size: key.fontSize, style: .init())
-        let spaceWidth = (" " as NSString).size(withAttributes: [.font: baseFont]).width
+        let baseFont = key.font.platformFont(size: key.fontSize, weight: Self.weight(for: .init()))
+        let spaceWidth = (" " as NSString).size(withAttributes: [.font: baseFont, .kern: tracking]).width
+            + key.spacing.wordGap(for: key.fontSize)
         lineHeight = ceil(baseFont.ascender - baseFont.descender + baseFont.leading)
         lineStep = lineHeight + (key.lineHeightMultiple - 1.0) * key.fontSize * 0.5 + key.fontSize * 0.12
 
@@ -111,23 +111,6 @@ struct WordLayout: Equatable {
             }
         }
         closeLine(upTo: words.count)
-    }
-
-    private static func platformFont(size: CGFloat, style: ScriptWord.Style) -> PlatformFont {
-        #if canImport(UIKit)
-        let font = UIFont.systemFont(ofSize: size, weight: style.isBold ? .heavy : .semibold)
-        if style.isItalic, let italic = font.fontDescriptor.withSymbolicTraits(.traitItalic) {
-            return UIFont(descriptor: italic, size: size)
-        }
-        return font
-        #else
-        let font = NSFont.systemFont(ofSize: size, weight: style.isBold ? .heavy : .semibold)
-        if style.isItalic {
-            let italic = font.fontDescriptor.withSymbolicTraits(.italic)
-            return NSFont(descriptor: italic, size: size) ?? font
-        }
-        return font
-        #endif
     }
 
     /// Last line starting at or above `y`.
@@ -226,6 +209,8 @@ struct WordTeleprompterView: View {
     var onScrub: ((Bool) -> Void)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
     @State private var layout: WordLayout?
     @State private var motion = WordScrollMotion()
     @State private var isSettling = true
@@ -288,7 +273,9 @@ struct WordTeleprompterView: View {
             lineHeightMultiple: lineHeightMultiple,
             alignment: alignment,
             horizontalPadding: horizontalPadding,
-            textHash: words.textHash
+            textHash: words.textHash,
+            font: readingFont,
+            spacing: letterSpacing
         )
     }
 
@@ -382,8 +369,8 @@ struct WordTeleprompterView: View {
         }
 
         var text = Text(word.text)
-            .font(.system(size: fontSize, weight: word.style.isBold ? WordLayout.boldWeight : WordLayout.baseWeight))
-        if word.style.isItalic { text = text.italic() }
+            .font(readingFont.font(size: fontSize, weight: WordLayout.weight(for: word.style), italic: word.style.isItalic))
+            .tracking(letterSpacing.tracking(for: fontSize))
         if word.style.isUnderlined { text = text.underline() }
         if word.style.isStruckThrough { text = text.strikethrough() }
         var resolved = wordContext.resolve(text)

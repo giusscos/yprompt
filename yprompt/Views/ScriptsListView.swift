@@ -230,10 +230,14 @@ struct ScriptsListView: View {
         }
         #if os(iOS) || os(visionOS)
         .confirmationDialog(
-            "Delete \(selectedIDs.count) Script\(selectedIDs.count == 1 ? "" : "s")?",
+            selectedIDs.count == 1
+                ? String(localized: "Delete Script?")
+                : String(localized: "Delete \(selectedIDs.count) Scripts?"),
             isPresented: $showDeleteSelectedConfirm
         ) {
-            Button("Delete \(selectedIDs.count) Script\(selectedIDs.count == 1 ? "" : "s")", role: .destructive) {
+            Button(selectedIDs.count == 1
+                   ? String(localized: "Delete")
+                   : String(localized: "Delete \(selectedIDs.count) Scripts"), role: .destructive) {
                 deleteSelected()
             }
         } message: {
@@ -817,7 +821,7 @@ struct GlobalTagManagerView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(tag)
                                 let count = scriptCount(for: tag)
-                                Text("\(count) script\(count == 1 ? "" : "s")")
+                                Text(count == 1 ? "1 script" : "\(count) scripts")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }

@@ -409,3 +409,56 @@
 "Play from the Start" = "Von vorne abspielen";
 "Playhead" = "Abspielposition";
 "Adding piece %lld to “%@”" = "Stück %lld wird zu „%@“ hinzugefügt";
+
+/* Reading fonts, accessibility labels and fixes */
+"Slower" = "Langsamer";
+"Faster" = "Schneller";
+"Accessibility" = "Bedienungshilfen";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic macht den unteren Teil der Buchstaben schwerer und hilft so bei Legasthenie. Atkinson Hyperlegible macht ähnliche Buchstaben leicht unterscheidbar. Deine Wahl gilt für alle Skripte auf diesem Gerät.";
+"Format" = "Format";
+"Exposure" = "Belichtung";
+"Lens" = "Objektiv";
+"Hide Keyboard" = "Tastatur ausblenden";
+"Reading Font" = "Leseschrift";
+"Letter Spacing" = "Buchstabenabstand";
+"Margins" = "Ränder";
+"System" = "System";
+"Normal" = "Normal";
+"Wide" = "Weit";
+"Extra Wide" = "Extra weit";
+"Delete %lld Scripts?" = "%lld Skripte löschen?";
+"Delete %lld Scripts" = "%lld Skripte löschen";
+"1 script" = "1 Skript";
+"%lld scripts" = "%lld Skripte";
+"Open main window" = "Hauptfenster öffnen";
+"Quit yPrompt" = "yPrompt beenden";
+"Add cue point at current position" = "Cue-Punkt an der aktuellen Stelle hinzufügen";
+"One Minute Less" = "Eine Minute weniger";
+"One Minute More" = "Eine Minute mehr";
+"Smaller Text" = "Kleinerer Text";
+"Larger Text" = "Größerer Text";
+"Blur" = "Unschärfe";
+
+/* Color names, read by VoiceOver */
+"Black" = "Schwarz";
+"White" = "Weiß";
+"Red" = "Rot";
+"Blue" = "Blau";
+"Green" = "Grün";
+"Yellow" = "Gelb";
+"Purple" = "Lila";
+"Gray" = "Grau";
+"Orange" = "Orange";
+"Cyan" = "Cyan";
+"Pink" = "Pink";
+"Brown" = "Braun";
+"Dark Gray" = "Dunkelgrau";
+"Light Gray" = "Hellgrau";
+"Cream" = "Creme";
+"Light Blue" = "Hellblau";
+"Light Yellow" = "Hellgelb";
+"Light Green" = "Hellgrün";
+"Navy" = "Marineblau";
+"Charcoal" = "Anthrazit";
+"Beige" = "Beige";
+"Mint" = "Mint";

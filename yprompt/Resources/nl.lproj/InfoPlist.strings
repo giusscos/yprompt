@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Met de cameramodus film je jezelf terwijl je van de teleprompter leest.";
+"NSMicrophoneUsageDescription" = "yPrompt neemt je stem op voor je video's en audio-opnamen, en Spraakscrollen luistert mee zodat je script je volgt terwijl je leest.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt herkent de woorden die je zegt om je plek in het script bij te houden en je takes te ondertitelen. Je spraak wordt waar mogelijk op je apparaat verwerkt, anders door Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Opnamen worden bewaard in je fotobibliotheek.";
+"NSLocalNetworkUsageDescription" = "yPrompt heeft toegang tot het lokale netwerk nodig om je iPhone als afstandsbediening voor de teleprompter te verbinden.";

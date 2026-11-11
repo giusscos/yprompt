@@ -409,3 +409,56 @@
 "Play from the Start" = "Lire depuis le début";
 "Playhead" = "Tête de lecture";
 "Adding piece %lld to “%@”" = "Ajout du morceau %lld à « %@ »";
+
+/* Reading fonts, accessibility labels and fixes */
+"Slower" = "Plus lent";
+"Faster" = "Plus rapide";
+"Accessibility" = "Accessibilité";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic alourdit le bas des lettres pour aider les personnes dyslexiques. Atkinson Hyperlegible rend les lettres semblables faciles à distinguer. Votre choix s'applique à tous les scripts de cet appareil.";
+"Format" = "Format";
+"Exposure" = "Exposition";
+"Lens" = "Objectif";
+"Hide Keyboard" = "Masquer le clavier";
+"Reading Font" = "Police de lecture";
+"Letter Spacing" = "Espacement des lettres";
+"Margins" = "Marges";
+"System" = "Système";
+"Normal" = "Normal";
+"Wide" = "Large";
+"Extra Wide" = "Très large";
+"Delete %lld Scripts?" = "Supprimer %lld scripts ?";
+"Delete %lld Scripts" = "Supprimer %lld scripts";
+"1 script" = "1 script";
+"%lld scripts" = "%lld scripts";
+"Open main window" = "Ouvrir la fenêtre principale";
+"Quit yPrompt" = "Quitter yPrompt";
+"Add cue point at current position" = "Ajouter un point de repère à la position actuelle";
+"One Minute Less" = "Une minute de moins";
+"One Minute More" = "Une minute de plus";
+"Smaller Text" = "Texte plus petit";
+"Larger Text" = "Texte plus grand";
+"Blur" = "Flou";
+
+/* Color names, read by VoiceOver */
+"Black" = "Noir";
+"White" = "Blanc";
+"Red" = "Rouge";
+"Blue" = "Bleu";
+"Green" = "Vert";
+"Yellow" = "Jaune";
+"Purple" = "Violet";
+"Gray" = "Gris";
+"Orange" = "Orange";
+"Cyan" = "Cyan";
+"Pink" = "Rose";
+"Brown" = "Marron";
+"Dark Gray" = "Gris foncé";
+"Light Gray" = "Gris clair";
+"Cream" = "Crème";
+"Light Blue" = "Bleu clair";
+"Light Yellow" = "Jaune clair";
+"Light Green" = "Vert clair";
+"Navy" = "Bleu marine";
+"Charcoal" = "Anthracite";
+"Beige" = "Beige";
+"Mint" = "Menthe";

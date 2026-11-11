@@ -20,6 +20,9 @@ struct MusicSlider: View {
     let range: ClosedRange<Double>
     var step: Double? = nil
     var requiresLongPress: Bool = true
+    /// What VoiceOver calls the slider, and what it reads as its value. Swiping up or down moves it a step.
+    var accessibilityTitle: Text? = nil
+    var accessibilityValueText: Text? = nil
 
     @GestureState private var isDragging = false
     @State private var localValue: Double? = nil
@@ -107,6 +110,22 @@ struct MusicSlider: View {
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: impactOnStart)
         .sensoryFeedback(.impact(weight: .medium), trigger: impactOnConfirm)
 #endif
+        .accessibilityElement()
+        .accessibilityLabel(accessibilityTitle ?? Text(verbatim: ""))
+        .accessibilityValue(accessibilityValueText ?? Text(spokenPercent))
+        .accessibilityAdjustableAction { direction in
+            let span = range.upperBound - range.lowerBound
+            let delta = step ?? span / 20
+            var newValue = value + (direction == .increment ? delta : -delta)
+            if let step, step > 0 { newValue = (newValue / step).rounded() * step }
+            value = min(range.upperBound, max(range.lowerBound, newValue))
+        }
+    }
+
+    private var spokenPercent: String {
+        let span = range.upperBound - range.lowerBound
+        let fraction = span > 0 ? (value - range.lowerBound) / span : 0
+        return fraction.formatted(.percent.precision(.fractionLength(0)))
     }
 }
 
@@ -191,6 +210,8 @@ struct TeleprompterView: View {
 #if !os(watchOS)
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled: Bool = true
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
     @State private var paywallContext: PaywallView.Context = .upgrade
 #endif
 #if !os(watchOS) && !os(iOS)
@@ -281,6 +302,7 @@ struct TeleprompterView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark").font(.headline)
                     }
+                    .accessibilityLabel("Close")
                 }
 #endif
             }
@@ -760,10 +782,13 @@ struct TeleprompterView: View {
             }
             .accessibilityLabel("Display adjustments")
             .popover(isPresented: $showDisplayAdjustments, arrowEdge: .top) {
-                displayAdjustmentsPopover
-                    .padding()
-                    .frame(minWidth: 280)
-                    .presentationCompactAdaptation(.popover)
+                // Scrolls only when it doesn't fit, such as on a phone held sideways.
+                ViewThatFits(in: .vertical) {
+                    displayAdjustmentsPopover.padding()
+                    ScrollView { displayAdjustmentsPopover.padding() }
+                }
+                .frame(minWidth: 280)
+                .presentationCompactAdaptation(.popover)
             }
         }
     }
@@ -1050,6 +1075,7 @@ struct TeleprompterView: View {
             switch teleprompterMode {
             case .auto:
                 ReadingValueStepper(
+                    label: "Speed",
                     value: String(format: "%.1f×", viewModel.scrollSpeed),
                     onDecrease: { stepSpeed(by: -0.1) },
                     onIncrease: { stepSpeed(by: 0.1) }
@@ -1101,7 +1127,10 @@ struct TeleprompterView: View {
                 .animation(.default, value: viewModel.remainingTime)
         } else {
             ReadingValueStepper(
+                label: "Duration",
                 value: timedDurationString,
+                spokenValue: Text(Duration.seconds(timedMinutes * 60 + timedSeconds)
+                    .formatted(.units(allowed: [.minutes, .seconds], width: .wide))),
                 onDecrease: { stepTimedDuration(by: -30) },
                 onIncrease: { stepTimedDuration(by: 30) }
             )
@@ -1451,7 +1480,10 @@ struct TeleprompterView: View {
                             ),
                             range: 2...max(3, maxUnderCameraLines),
                             step: 1,
-                            requiresLongPress: false
+                            requiresLongPress: false,
+                            accessibilityTitle: Text("Under the Camera"),
+                            accessibilityValueText: Text(String(format: String(localized: "%d lines under the camera"),
+                                                                Int(min(max(2, underCameraLines), maxUnderCameraLines))))
                         )
                         Image(systemName: "rectangle.expand.vertical")
                             .font(.caption).foregroundStyle(.secondary)
@@ -1501,7 +1533,9 @@ struct TeleprompterView: View {
                         ),
                         range: 0...80,
                         step: 4,
-                        requiresLongPress: false
+                        requiresLongPress: false,
+                        accessibilityTitle: Text("Margins"),
+                        accessibilityValueText: Text(String(format: String(localized: "%.0fpx margins"), liveHorizontalPadding))
                     )
                     Image(systemName: "arrow.right.and.line.vertical.and.arrow.left")
                         .font(.caption).foregroundStyle(.secondary)
@@ -1526,7 +1560,9 @@ struct TeleprompterView: View {
                         ),
                         range: Double(AppConstants.minFontSize)...Double(AppConstants.maxFontSize),
                         step: 1,
-                        requiresLongPress: false
+                        requiresLongPress: false,
+                        accessibilityTitle: Text("Font Size"),
+                        accessibilityValueText: Text(String(format: String(localized: "%dpt font"), Int(liveFontSize)))
                     )
                     Image(systemName: "textformat.size.larger")
                         .font(.caption).foregroundStyle(.secondary)
@@ -1537,6 +1573,8 @@ struct TeleprompterView: View {
                     .contentTransition(.numericText())
                     .animation(.default, value: liveFontSize)
             }
+            Divider()
+            ReadingFontControls()
         }
         .tint(.primary)
     }
@@ -1820,7 +1858,8 @@ struct TeleprompterView: View {
         let fontSize = customization.fontSize
         #endif
         return Text(displayText)
-            .font(.system(size: fontSize))
+            .font(readingFont.font(size: fontSize))
+            .tracking(letterSpacing.tracking(for: fontSize))
             .foregroundStyle(textColor ?? Color(hex: customization.textColorHex))
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing((customization.lineHeight - 1.0) * fontSize * 0.5)
@@ -1927,6 +1966,7 @@ struct TeleprompterView: View {
                         } label: {
                             Image(systemName: "minus").font(.caption2)
                         }
+                        .accessibilityLabel("One Minute Less")
                         Text("\(macTimedMinutes)m")
                             .font(.caption.monospacedDigit().bold())
                             .frame(minWidth: 28)
@@ -1936,6 +1976,7 @@ struct TeleprompterView: View {
                         } label: {
                             Image(systemName: "plus").font(.caption2)
                         }
+                        .accessibilityLabel("One Minute More")
                     }
                     .buttonStyle(.plain)
                 }
@@ -1945,7 +1986,9 @@ struct TeleprompterView: View {
                     value: $viewModel.scrollSpeed,
                     range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
                     step: 0.1,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Speed"),
+                    accessibilityValueText: Text(String(format: "%.1f×", viewModel.scrollSpeed))
                 )
 
                 Text(String(format: "%.1fx", viewModel.scrollSpeed))
@@ -1956,7 +1999,9 @@ struct TeleprompterView: View {
             MusicSlider(
                 value: $viewModel.scrollSpeed,
                 range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                step: 0.1
+                step: 0.1,
+                accessibilityTitle: Text("Speed"),
+                accessibilityValueText: Text(String(format: "%.1f×", viewModel.scrollSpeed))
             )
 
             Text(String(format: "%.1fx", viewModel.scrollSpeed))

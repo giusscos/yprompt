@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Chế độ camera cho phép bạn tự quay mình khi đọc máy nhắc chữ.";
+"NSMicrophoneUsageDescription" = "yPrompt ghi giọng nói của bạn cho video và bản ghi âm, và Cuộn bằng giọng nói lắng nghe để kịch bản theo kịp khi bạn đọc.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt nhận dạng những từ bạn nói để giữ đúng vị trí trong kịch bản và tạo phụ đề cho các lần quay. Giọng nói được xử lý trên thiết bị khi có thể, nếu không sẽ do Apple xử lý.";
+"NSPhotoLibraryAddUsageDescription" = "Bản ghi được lưu vào thư viện ảnh của bạn.";
+"NSLocalNetworkUsageDescription" = "yPrompt cần quyền truy cập mạng cục bộ để kết nối iPhone làm điều khiển từ xa cho máy nhắc chữ.";

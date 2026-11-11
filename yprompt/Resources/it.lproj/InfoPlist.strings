@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "La modalità Fotocamera ti permette di registrarti mentre leggi il teleprompter.";
+"NSMicrophoneUsageDescription" = "yPrompt registra la tua voce per i video e le registrazioni audio, e Scorrimento Vocale ascolta per far seguire lo script mentre leggi.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt riconosce le parole che pronunci per tenere il segno nello script e sottotitolare le tue riprese. L'audio viene elaborato sul dispositivo quando possibile, altrimenti da Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Le registrazioni vengono salvate nella libreria foto.";
+"NSLocalNetworkUsageDescription" = "yPrompt ha bisogno dell'accesso alla rete locale per collegare il tuo iPhone come telecomando del teleprompter.";

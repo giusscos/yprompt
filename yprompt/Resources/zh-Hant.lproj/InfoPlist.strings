@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "相機模式可讓你在看著提詞器朗讀時錄下自己。";
+"NSMicrophoneUsageDescription" = "yPrompt 會為你的影片和音訊錄製錄下你的聲音，語音捲動會聆聽你的聲音，讓講稿跟著你的朗讀推進。";
+"NSSpeechRecognitionUsageDescription" = "yPrompt 會辨識你說的話，以便在講稿中跟上你的位置並為錄製內容加入字幕。語音會盡可能在裝置上處理，否則由 Apple 處理。";
+"NSPhotoLibraryAddUsageDescription" = "錄製內容會儲存到你的照片圖庫。";
+"NSLocalNetworkUsageDescription" = "yPrompt 需要取用區域網路，才能將你的 iPhone 連接為提詞器遙控器。";

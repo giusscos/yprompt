@@ -409,3 +409,56 @@
 "Play from the Start" = "Putar dari Awal";
 "Playhead" = "Penanda Putar";
 "Adding piece %lld to “%@”" = "Menambahkan bagian %lld ke “%@”";
+
+/* Reading fonts, accessibility labels and fixes */
+"Slower" = "Lebih lambat";
+"Faster" = "Lebih cepat";
+"Accessibility" = "Aksesibilitas";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic membuat bagian bawah huruf lebih tebal untuk membantu penderita disleksia. Atkinson Hyperlegible membuat huruf yang mirip mudah dibedakan. Pilihan Anda berlaku untuk semua naskah di perangkat ini.";
+"Format" = "Format";
+"Exposure" = "Eksposur";
+"Lens" = "Lensa";
+"Hide Keyboard" = "Sembunyikan papan ketik";
+"Reading Font" = "Font baca";
+"Letter Spacing" = "Jarak huruf";
+"Margins" = "Margin";
+"System" = "Sistem";
+"Normal" = "Normal";
+"Wide" = "Lebar";
+"Extra Wide" = "Sangat lebar";
+"Delete %lld Scripts?" = "Hapus %lld naskah?";
+"Delete %lld Scripts" = "Hapus %lld naskah";
+"1 script" = "1 naskah";
+"%lld scripts" = "%lld naskah";
+"Open main window" = "Buka jendela utama";
+"Quit yPrompt" = "Keluar dari yPrompt";
+"Add cue point at current position" = "Tambahkan titik penanda di posisi saat ini";
+"One Minute Less" = "Kurangi satu menit";
+"One Minute More" = "Tambah satu menit";
+"Smaller Text" = "Teks lebih kecil";
+"Larger Text" = "Teks lebih besar";
+"Blur" = "Buram";
+
+/* Color names, read by VoiceOver */
+"Black" = "Hitam";
+"White" = "Putih";
+"Red" = "Merah";
+"Blue" = "Biru";
+"Green" = "Hijau";
+"Yellow" = "Kuning";
+"Purple" = "Ungu";
+"Gray" = "Abu-abu";
+"Orange" = "Oranye";
+"Cyan" = "Sian";
+"Pink" = "Merah muda";
+"Brown" = "Cokelat";
+"Dark Gray" = "Abu-abu tua";
+"Light Gray" = "Abu-abu muda";
+"Cream" = "Krem";
+"Light Blue" = "Biru muda";
+"Light Yellow" = "Kuning muda";
+"Light Green" = "Hijau muda";
+"Navy" = "Biru dongker";
+"Charcoal" = "Arang";
+"Beige" = "Krem pucat";
+"Mint" = "Hijau mint";

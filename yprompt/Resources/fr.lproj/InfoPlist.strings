@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Le mode Caméra vous permet de vous filmer pendant que vous lisez le prompteur.";
+"NSMicrophoneUsageDescription" = "yPrompt enregistre votre voix pour vos vidéos et enregistrements audio, et le Défilement Vocal vous écoute pour que le script vous suive pendant la lecture.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt reconnaît les mots que vous prononcez pour garder votre place dans le script et sous-titrer vos prises. Votre voix est traitée sur l'appareil quand c'est possible, sinon par Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Les enregistrements sont sauvegardés dans votre photothèque.";
+"NSLocalNetworkUsageDescription" = "yPrompt a besoin d'accéder au réseau local pour utiliser votre iPhone comme télécommande du prompteur.";

@@ -133,6 +133,7 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .help("Open main window")
+            .accessibilityLabel("Open main window")
 
             Button {
                 NSApp.terminate(nil)
@@ -142,6 +143,7 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .help("Quit yPrompt")
+            .accessibilityLabel("Quit yPrompt")
         }
         .padding(12)
     }
@@ -332,7 +334,8 @@ struct MenuBarView: View {
             MusicSlider(
                 value: Binding(get: { viewModel.progress }, set: { viewModel.seek(to: $0) }),
                 range: 0...1,
-                requiresLongPress: sliderRequiresLongPress
+                requiresLongPress: sliderRequiresLongPress,
+                accessibilityTitle: Text("Position")
             )
         }
     }
@@ -389,11 +392,13 @@ struct MenuBarView: View {
                     value: $viewModel.scrollSpeed,
                     range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
                     step: 0.1,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Speed"),
+                    accessibilityValueText: Text(String(format: "%.1f×", viewModel.scrollSpeed))
                 )
                 Image(systemName: "hare.fill").font(.caption).foregroundStyle(.secondary)
             }
-            Text(String(format: "%.1fx speed", viewModel.scrollSpeed))
+            Text(String(format: String(localized: "%.1fx speed"), viewModel.scrollSpeed))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
@@ -444,6 +449,7 @@ struct MenuBarView: View {
                         } label: {
                             Image(systemName: "minus").frame(width: 16, height: 16)
                         }
+                        .accessibilityLabel("One Minute Less")
                         Text("\(menuTimedMinutes)m")
                             .font(.body.monospacedDigit().bold())
                             .frame(minWidth: 44)
@@ -453,6 +459,7 @@ struct MenuBarView: View {
                         } label: {
                             Image(systemName: "plus").frame(width: 16, height: 16)
                         }
+                        .accessibilityLabel("One Minute More")
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -530,6 +537,7 @@ struct MenuBarView: View {
                 } label: {
                     Image(systemName: "minus").frame(width: 16, height: 16)
                 }
+                .accessibilityLabel("Smaller Text")
 
                 Text("\(Int(currentFontSize))")
                     .font(.caption.monospacedDigit())
@@ -544,6 +552,7 @@ struct MenuBarView: View {
                 } label: {
                     Image(systemName: "plus").frame(width: 16, height: 16)
                 }
+                .accessibilityLabel("Larger Text")
             }
         }
     }
@@ -565,7 +574,9 @@ struct MenuBarView: View {
                     value: $manager.backgroundOpacity,
                     range: 0.15...1.0,
                     step: 0.05,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Background"),
+                    accessibilityValueText: Text(verbatim: "\(Int(manager.backgroundOpacity * 100))%")
                 )
                 Text("\(Int(manager.backgroundOpacity * 100))%")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
@@ -579,7 +590,8 @@ struct MenuBarView: View {
                     value: $manager.blurAmount,
                     range: 0.0...1.0,
                     step: 0.05,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Blur")
                 )
                 Text("\(Int(manager.blurAmount * 100))%")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
@@ -593,7 +605,9 @@ struct MenuBarView: View {
                     value: Binding(get: { Double(manager.horizontalPadding) }, set: { manager.horizontalPadding = CGFloat($0) }),
                     range: 0...120,
                     step: 4,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Margins"),
+                    accessibilityValueText: Text(verbatim: "\(Int(manager.horizontalPadding)) pt")
                 )
                 Text("\(Int(manager.horizontalPadding))pt")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)

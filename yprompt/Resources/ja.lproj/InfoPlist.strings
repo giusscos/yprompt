@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "カメラモードでは、プロンプターを読みながら自分を録画できます。";
+"NSMicrophoneUsageDescription" = "yPromptはビデオとオーディオ録音のためにあなたの声を録音します。音声スクロールは声を聞き取り、読むのに合わせて原稿を進めます。";
+"NSSpeechRecognitionUsageDescription" = "yPromptは話した言葉を認識して、原稿の読んでいる位置を追いかけたり、テイクに字幕を付けたりします。音声は可能な場合はデバイス上で、それ以外はAppleによって処理されます。";
+"NSPhotoLibraryAddUsageDescription" = "録画は写真ライブラリに保存されます。";
+"NSLocalNetworkUsageDescription" = "iPhoneをプロンプターのリモコンとして接続するために、yPromptはローカルネットワークへのアクセスを必要とします。";

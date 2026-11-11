@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Kamera modu, prompter’dan okurken kendinizi kaydetmenizi sağlar.";
+"NSMicrophoneUsageDescription" = "yPrompt videolarınız ve ses kayıtlarınız için sesinizi kaydeder; Sesle Kaydırma da sizi dinleyerek metnin okumanızı takip etmesini sağlar.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt, metindeki yerinizi takip etmek ve çekimlerinize altyazı eklemek için söylediğiniz sözcükleri tanır. Konuşmanız mümkünse aygıtınızda, değilse Apple tarafından işlenir.";
+"NSPhotoLibraryAddUsageDescription" = "Kayıtlar fotoğraf arşivinize kaydedilir.";
+"NSLocalNetworkUsageDescription" = "yPrompt’un iPhone’unuzu prompter kumandası olarak bağlayabilmesi için yerel ağa erişmesi gerekir.";

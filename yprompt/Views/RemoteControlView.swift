@@ -197,6 +197,7 @@ struct RemoteControlView: View {
                 .symbolEffect(.bounce, value: isPlayingLocal)
         }
         .ypGlassButtonStyle()
+        .accessibilityLabel(isPlayingLocal ? "Pause" : "Play")
     }
 
     // MARK: - Speed
@@ -219,6 +220,7 @@ struct RemoteControlView: View {
                 }
                 .ypGlassButtonStyle()
                 .disabled(localSpeed <= AppConstants.minScrollSpeed)
+                .accessibilityLabel("Slower")
 
                 Text(String(format: "%.1f", localSpeed))
                     .font(.title.bold().monospacedDigit())
@@ -238,6 +240,7 @@ struct RemoteControlView: View {
                 }
                 .ypGlassButtonStyle()
                 .disabled(localSpeed >= AppConstants.maxScrollSpeed)
+                .accessibilityLabel("Faster")
             }
         }
     }

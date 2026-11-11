@@ -14,6 +14,8 @@ struct CustomizationView: View {
 
     @State private var customization: TextCustomization
     @State private var showingPaywall = false
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
 
     init(script: Script) {
         self.script = script
@@ -109,7 +111,8 @@ struct CustomizationView: View {
             Color(hex: customization.backgroundColorHex)
                 .opacity(customization.transparency)
             Text("The quick brown fox jumps over the lazy dog.")
-                .font(.system(size: min(customization.fontSize, 24)))
+                .font(readingFont.font(size: min(customization.fontSize, 24)))
+                .tracking(letterSpacing.tracking(for: min(customization.fontSize, 24)))
                 .foregroundStyle(Color(hex: customization.textColorHex))
                 .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
                 .lineSpacing((customization.lineHeight - 1.0) * 14)
@@ -294,7 +297,8 @@ struct CustomizationView: View {
                                 selected.wrappedValue = preset.hex
                             }
                         }
-                        .accessibilityLabel(preset.name)
+                        .accessibilityLabel(Text(LocalizedStringKey(preset.name)))
+                        .accessibilityAddTraits(selected.wrappedValue == preset.hex ? [.isButton, .isSelected] : .isButton)
                 }
             }
             customColorRow(selected: selected)

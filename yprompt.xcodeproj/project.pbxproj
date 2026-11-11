@@ -190,6 +190,18 @@
 				de,
 				"pt-BR",
 				id,
+				ja,
+				ko,
+				"zh-Hans",
+				"zh-Hant",
+				nl,
+				pl,
+				tr,
+				vi,
+				th,
+				ms,
+				ar,
+				he,
 			);
 			mainGroup = 3B632FB12FA359C000066314;
 			minimizedProjectReferenceProxies = 1;
