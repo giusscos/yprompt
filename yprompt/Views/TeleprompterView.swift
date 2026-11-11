@@ -523,6 +523,33 @@ struct TeleprompterView: View {
         // Top-aligned: over a color the mask runs past the bottom of the screen.
         .mask(alignment: .top) { readingMask }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isWordMode)
+        // VoiceOver uses `scriptAccessibilityElement` instead: the text runs behind the controls
+        // and moves while it plays, so touching a button could land on the text.
+        .accessibilityHidden(true)
+    }
+
+    /// The script for VoiceOver: still, and only over the reading area above the controls.
+    /// Double-tapping it does nothing, so it can't show, hide or advance anything by accident.
+    private var scriptAccessibilityElement: some View {
+        Color.clear
+            .padding(.top, readingTopInset)
+            .padding(.bottom, readingBottomInset)
+            .accessibilityElement()
+            .accessibilityLabel(Text(currentScript.title))
+            .accessibilityValue(Text(viewModel.scriptWords?.text ?? currentScript.content))
+            .accessibilityAddTraits(.isStaticText)
+            .accessibilityRespondsToUserInteraction(false)
+            .accessibilityAction { }
+    }
+
+    /// Two-finger double-tap anywhere, as in other media apps: record or stop when the button
+    /// records, otherwise play or pause.
+    private func magicTapAction() {
+        if recordsTakes {
+            toggleRecording()
+        } else {
+            readingAction()
+        }
     }
 
     private var classicScrollView: some View {
@@ -591,7 +618,9 @@ struct TeleprompterView: View {
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.trailing } action: { safeTrailingInset = $0 }
         .contentShape(Rectangle())
         .onTapGesture(perform: handleSurfaceTap)
+        .overlay { scriptAccessibilityElement }
         .overlay(alignment: .bottom) { bottomControls }
+        .accessibilityAction(.magicTap) { magicTapAction() }
         .onAppear {
             viewModel.transparency = customization.transparency
             applyReadingPreferences()
@@ -907,7 +936,10 @@ struct TeleprompterView: View {
                                      recordingID: pickup?.recordingID, insertAt: pickup?.insertAt)
         cameraService.toggleRecording(into: target, progress: viewModel.progress)
         // A pickup is one take; the editor opens on it when it finishes.
-        if !starting { withAnimation { pickup = nil } }
+        if !starting {
+            withAnimation { pickup = nil }
+            announce("Recording stopped")
+        }
         guard teleprompterMode != .tap else { return }
         if starting {
             viewModel.play()
@@ -1147,12 +1179,31 @@ struct TeleprompterView: View {
     // MARK: - Transport
 
     private var leadingTransportButton: some View {
-        Button { viewModel.resetToTop() } label: {
+        Button {
+            viewModel.resetToTop()
+            announce("Back to the top")
+        } label: {
             transportIcon("arrow.counterclockwise")
         }
         .buttonStyle(.plain)
         .ypGlassEffect(cornerRadius: 23)
         .accessibilityLabel("Reset to top")
+    }
+
+    /// Tells VoiceOver what a button just did, since the change is otherwise silent.
+    private func announce(_ message: LocalizedStringResource) {
+        guard voiceOverEnabled else { return }
+        Task { @MainActor in
+            // After VoiceOver's own click, or the announcement gets cut off.
+            try? await Task.sleep(for: .milliseconds(150))
+            AccessibilityNotification.Announcement(String(localized: message)).post()
+        }
+    }
+
+    /// Starting playback or a take: VoiceOver stays quiet, so its voice doesn't drive voice
+    /// scrolling or end up in the recording.
+    private var startsMedia: AccessibilityTraits {
+        teleprompterMode == .tap || viewModel.isPlaying ? [] : .startsMediaSession
     }
 
     /// Play, or advance in tap mode. In camera mode the big button records, as in the Camera app.
@@ -1174,6 +1225,7 @@ struct TeleprompterView: View {
             .buttonStyle(.plain)
             .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isPlaying)
             .accessibilityLabel(readingActionLabel)
+            .accessibilityAddTraits(startsMedia)
             .transition(.scale(scale: 0.85).combined(with: .opacity))
         }
     }
@@ -1196,6 +1248,7 @@ struct TeleprompterView: View {
         .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .medium), trigger: isRecording)
         .accessibilityLabel(isRecording ? "Stop Recording" : "Start Recording")
+        .accessibilityAddTraits(isRecording ? [] : .startsMediaSession)
     }
 
     /// Next to the record button: play or advance. Otherwise: cue points.
@@ -1208,6 +1261,7 @@ struct TeleprompterView: View {
             .buttonStyle(.plain)
             .ypGlassEffect(cornerRadius: 23)
             .accessibilityLabel(readingActionLabel)
+            .accessibilityAddTraits(startsMedia)
         } else {
             cueMenu
         }
@@ -1228,6 +1282,7 @@ struct TeleprompterView: View {
             viewModel.tapAdvance()
         } else {
             viewModel.togglePlayPause()
+            if !viewModel.isPlaying { announce("Paused") }
         }
     }
 

@@ -427,3 +427,6 @@
 "yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "أصبح yPrompt متاحًا بـ 19 لغة، منها العربية واليابانية والكورية والصينية والتركية.";
 "Better with VoiceOver" = "أفضل مع VoiceOver";
 "Sliders and steppers adjust with a swipe, and every button says what it does." = "يمكن ضبط أشرطة التمرير وأزرار التعديل بالتمرير السريع، وكل زر يخبرك بما يفعله.";
+"Paused" = "تم الإيقاف المؤقت";
+"Back to the top" = "تمت العودة إلى البداية";
+"Recording stopped" = "تم إيقاف التسجيل";
