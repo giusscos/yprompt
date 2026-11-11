@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "מצב מצלמה מאפשר להקליט את עצמך בזמן הקריאה מהטלפרומפטר.";
+"NSMicrophoneUsageDescription" = "yPrompt מקליטה את הקול שלך עבור סרטונים והקלטות שמע, וגלילה קולית מקשיבה כדי שהתסריט יעקוב אחרי הקריאה.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt מזהה את המילים שנאמרות כדי לעקוב אחרי המקום בתסריט ולהוסיף כתוביות לטייקים. הדיבור מעובד במכשיר כשאפשר, ואחרת על ידי Apple.";
+"NSPhotoLibraryAddUsageDescription" = "ההקלטות נשמרות בספריית התמונות.";
+"NSLocalNetworkUsageDescription" = "yPrompt זקוקה לגישה לרשת המקומית כדי לחבר את ה‑iPhone כשלט לטלפרומפטר.";

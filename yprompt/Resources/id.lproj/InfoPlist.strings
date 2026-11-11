@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Mode Kamera memungkinkan Anda merekam diri sendiri saat membaca teleprompter.";
+"NSMicrophoneUsageDescription" = "yPrompt merekam suara Anda untuk video dan rekaman audio, dan Gulir Suara mendengarkan agar naskah mengikuti Anda saat membaca.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt mengenali kata-kata yang Anda ucapkan agar posisi Anda di naskah tetap terjaga dan rekaman Anda diberi teks. Ucapan Anda diproses di perangkat jika memungkinkan, jika tidak oleh Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Rekaman disimpan ke perpustakaan foto Anda.";
+"NSLocalNetworkUsageDescription" = "yPrompt memerlukan akses jaringan lokal untuk menghubungkan iPhone Anda sebagai remote teleprompter.";

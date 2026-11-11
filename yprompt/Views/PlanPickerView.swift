@@ -88,6 +88,7 @@ struct PlanPicker: View {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
                     .foregroundStyle(onCard(isSelected, default: isSelected ? .primary : .secondary))
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(product.displayName)
                         .font(.headline)
@@ -118,6 +119,7 @@ struct PlanPicker: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

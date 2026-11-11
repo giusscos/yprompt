@@ -8,12 +8,7 @@ import SwiftUI
 enum WhatsNew {
     static let seenKey = "whatsNew.seen"
     /// Change this only when the rows below change, so a bug-fix update doesn't show them again.
-    #if os(macOS)
-    // 1.0.5 only adds to the camera, which the Mac doesn't have.
-    static let release = "1.0.4"
-    #else
-    static let release = "1.0.5"
-    #endif
+    static let release = "1.0.6"
 }
 
 /// Shown once to people who update. New installs get the onboarding instead.
@@ -31,18 +26,9 @@ struct WhatsNewView: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 32)
 
-                    #if os(macOS)
-                    row("mic.fill", .purple, "Voice Scroll", "Follows your words as you speak and waits when you pause.", isPro: true)
-                    row("music.note.list", .green, "Lyrics Style", "Every word lights up as you read, like song lyrics.", isPro: true)
-                    row("checkmark.circle.fill", .orange, "Remembers Your Choices", "Mode, speed and text size carry over to every script, so there's nothing to set up again.")
-                    #else
-                    row("film.stack.fill", .red, "Recordings", "Every take is kept in the new Recordings tab, ready to edit.")
-                    row("scissors", .orange, "Edit in Seconds", "Cut, trim and reorder pieces, and remove the pauses between sentences.")
-                    row("video.badge.plus", .blue, "Pick Up Where You Left Off", "Record more, and the script carries on from your last word.")
-                    row("captions.bubble.fill", .green, "Captions", "Your words on screen, spelled exactly like your script.")
-                    row("waveform", .purple, "Audio Recordings", "Record just your voice and share it with its transcript.")
-                    row("checkmark.seal.fill", .teal, "Recording Is Free", "Camera, audio and captions are free for everyone. Pro saves your videos without the yPrompt mark.")
-                    #endif
+                    row("textformat", .blue, "Reading Fonts", "OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like.")
+                    row("globe", .green, "More Languages", "yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic.")
+                    row("accessibility", .purple, "Better with VoiceOver", "Sliders and steppers adjust with a swipe, and every button says what it does.")
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)

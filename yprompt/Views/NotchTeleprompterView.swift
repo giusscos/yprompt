@@ -59,6 +59,8 @@ struct NotchShape: Shape {
 struct NotchTeleprompterView: View {
     private let manager = FloatingTeleprompterManager.shared
     private var viewModel: TeleprompterViewModel { manager.viewModel }
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
     @State private var scrollOffset: CGFloat = 0
     @State private var contentSize: CGFloat = 0
     @State private var viewportSize: CGFloat = 260
@@ -140,7 +142,8 @@ struct NotchTeleprompterView: View {
     private func scrollingText(in geo: GeometryProxy) -> some View {
         if isVertical {
             Text(text)
-                .font(.system(size: manager.notchFontSize, weight: .semibold))
+                .font(readingFont.resolved(for: text).font(size: manager.notchFontSize, weight: .semibold))
+                .tracking(letterSpacing.tracking(for: manager.notchFontSize, in: text))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
@@ -151,7 +154,8 @@ struct NotchTeleprompterView: View {
                 .offset(y: scrollOffset)
         } else {
             Text(text)
-                .font(.system(size: manager.notchFontSize, weight: .semibold))
+                .font(readingFont.resolved(for: text).font(size: manager.notchFontSize, weight: .semibold))
+                .tracking(letterSpacing.tracking(for: manager.notchFontSize, in: text))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .fixedSize()

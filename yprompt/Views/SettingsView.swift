@@ -19,9 +19,16 @@ struct SettingsView: View {
     @State private var showingPaywall = false
     @State private var showingTagManager = false
     @State private var selectedLanguage: String = {
-        let code = (UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String)?
-            .components(separatedBy: "-").first ?? "en"
-        return code == "pt" ? "pt-BR" : code
+        let preferred = (UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String) ?? "en"
+        let parts = preferred.components(separatedBy: "-")
+        switch parts.first ?? "en" {
+        case "pt": return "pt-BR"
+        // Chinese is told apart by script; regions alone (zh-TW, zh-HK) also mean Traditional.
+        case "zh":
+            let traditional = parts.contains("Hant") || parts.contains("TW") || parts.contains("HK") || parts.contains("MO")
+            return traditional ? "zh-Hant" : "zh-Hans"
+        case let code: return code
+        }
     }()
     @State private var showingLanguageRestartAlert = false
 
@@ -32,7 +39,19 @@ struct SettingsView: View {
         ("es", "Español"),
         ("de", "Deutsch"),
         ("pt-BR", "Português (Brasil)"),
+        ("nl", "Nederlands"),
+        ("pl", "Polski"),
+        ("tr", "Türkçe"),
         ("id", "Bahasa Indonesia"),
+        ("ms", "Bahasa Melayu"),
+        ("vi", "Tiếng Việt"),
+        ("th", "ไทย"),
+        ("ja", "日本語"),
+        ("ko", "한국어"),
+        ("zh-Hans", "简体中文"),
+        ("zh-Hant", "繁體中文"),
+        ("ar", "العربية"),
+        ("he", "עברית"),
     ]
 
     private var appVersion: String {
@@ -87,6 +106,7 @@ struct SettingsView: View {
                         notchModeCard(settings)
                         playbackCard(settings)
                     }
+                    accessibilityCard
                     sliderHoldCard
                     manageTagsCard
                     languageCard
@@ -373,6 +393,15 @@ struct SettingsView: View {
         }
     }
 
+    private var accessibilityCard: some View {
+        macCard {
+            Text("Accessibility").font(.headline)
+            ReadingFontControls(showsTitles: true)
+            Text("OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+    }
+
     private var languageCard: some View {
         macCard {
             HStack {
@@ -411,6 +440,7 @@ struct SettingsView: View {
             purchaseSection
             syncSection
             preferencesSection
+            accessibilitySection
             scriptsSection
             aboutSection
             #if DEBUG
@@ -523,6 +553,17 @@ struct SettingsView: View {
                 UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
                 showingLanguageRestartAlert = true
             }
+        }
+    }
+
+    private var accessibilitySection: some View {
+        Section {
+            ReadingFontControls(showsTitles: true)
+                .padding(.vertical, 6)
+        } header: {
+            Text("Accessibility")
+        } footer: {
+            Text("OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device.")
         }
     }
 

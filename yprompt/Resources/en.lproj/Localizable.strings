@@ -409,3 +409,67 @@
 "Play from the Start" = "Play from the Start";
 "Playhead" = "Playhead";
 "Adding piece %lld to “%@”" = "Adding piece %lld to “%@”";
+
+/* Reading fonts, accessibility labels and fixes */
+"Slower" = "Slower";
+"Faster" = "Faster";
+"Accessibility" = "Accessibility";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device.";
+"Format" = "Format";
+"Exposure" = "Exposure";
+"Lens" = "Lens";
+"Hide Keyboard" = "Hide Keyboard";
+"Reading Font" = "Reading Font";
+"Letter Spacing" = "Letter Spacing";
+"Margins" = "Margins";
+"System" = "System";
+"Normal" = "Normal";
+"Wide" = "Wide";
+"Extra Wide" = "Extra Wide";
+"Delete %lld Scripts?" = "Delete %lld Scripts?";
+"Delete %lld Scripts" = "Delete %lld Scripts";
+"1 script" = "1 script";
+"%lld scripts" = "%lld scripts";
+"Open main window" = "Open main window";
+"Quit yPrompt" = "Quit yPrompt";
+"Add cue point at current position" = "Add cue point at current position";
+"One Minute Less" = "One Minute Less";
+"One Minute More" = "One Minute More";
+"Smaller Text" = "Smaller Text";
+"Larger Text" = "Larger Text";
+"Blur" = "Blur";
+
+/* Color names, read by VoiceOver */
+"Black" = "Black";
+"White" = "White";
+"Red" = "Red";
+"Blue" = "Blue";
+"Green" = "Green";
+"Yellow" = "Yellow";
+"Purple" = "Purple";
+"Gray" = "Gray";
+"Orange" = "Orange";
+"Cyan" = "Cyan";
+"Pink" = "Pink";
+"Brown" = "Brown";
+"Dark Gray" = "Dark Gray";
+"Light Gray" = "Light Gray";
+"Cream" = "Cream";
+"Light Blue" = "Light Blue";
+"Light Yellow" = "Light Yellow";
+"Light Green" = "Light Green";
+"Navy" = "Navy";
+"Charcoal" = "Charcoal";
+"Beige" = "Beige";
+"Mint" = "Mint";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "Reading Fonts";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like.";
+"More Languages" = "More Languages";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic.";
+"Better with VoiceOver" = "Better with VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "Sliders and steppers adjust with a swipe, and every button says what it does.";
+"Paused" = "Paused";
+"Back to the top" = "Back to the top";
+"Recording stopped" = "Recording stopped";

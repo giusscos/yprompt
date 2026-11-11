@@ -130,7 +130,10 @@ struct ReadingModeStrip: View {
 
 /// A value with minus and plus either side; hold a button to keep going.
 struct ReadingValueStepper: View {
+    let label: LocalizedStringKey
     let value: String
+    /// How VoiceOver reads the value, when the text on screen isn't clear spoken aloud.
+    var spokenValue: Text? = nil
     let onDecrease: () -> Void
     let onIncrease: () -> Void
 
@@ -147,6 +150,13 @@ struct ReadingValueStepper: View {
         .frame(height: 34)
         .ypGlassEffect(cornerRadius: 17)
         .sensoryFeedback(.selection, trigger: value)
+        // One control for VoiceOver: swipe up or down to change it.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label))
+        .accessibilityValue(spokenValue ?? Text(verbatim: value))
+        .accessibilityAdjustableAction { direction in
+            if direction == .increment { onIncrease() } else { onDecrease() }
+        }
     }
 
     private func stepButton(_ systemImage: String, action: @escaping () -> Void) -> some View {

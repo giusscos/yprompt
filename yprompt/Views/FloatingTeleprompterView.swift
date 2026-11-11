@@ -11,6 +11,8 @@ struct FloatingTeleprompterView: View {
     private var viewModel: TeleprompterViewModel { manager.viewModel }
     @Environment(\.fontResolutionContext) private var fontContext
     @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled = true
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
 
     /// Lyrics style is Pro. Voice needs it to show the word being read, and the sample script lets everyone try it.
     private var usesWordStyle: Bool {
@@ -107,8 +109,10 @@ struct FloatingTeleprompterView: View {
             raw = manager.currentScript?.attributedContent ?? AttributedString()
         }
         let displayText = normalizedText(from: raw)
+        let content = manager.currentScript?.content ?? ""
         return Text(displayText)
-            .font(.system(size: manager.floatingFontSize))
+            .font(readingFont.resolved(for: content).font(size: manager.floatingFontSize))
+            .tracking(letterSpacing.tracking(for: manager.floatingFontSize, in: content))
             .foregroundStyle(.white)
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing(4)

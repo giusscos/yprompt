@@ -20,6 +20,9 @@ struct MusicSlider: View {
     let range: ClosedRange<Double>
     var step: Double? = nil
     var requiresLongPress: Bool = true
+    /// What VoiceOver calls the slider, and what it reads as its value. Swiping up or down moves it a step.
+    var accessibilityTitle: Text? = nil
+    var accessibilityValueText: Text? = nil
 
     @GestureState private var isDragging = false
     @State private var localValue: Double? = nil
@@ -107,6 +110,22 @@ struct MusicSlider: View {
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: impactOnStart)
         .sensoryFeedback(.impact(weight: .medium), trigger: impactOnConfirm)
 #endif
+        .accessibilityElement()
+        .accessibilityLabel(accessibilityTitle ?? Text(verbatim: ""))
+        .accessibilityValue(accessibilityValueText ?? Text(spokenPercent))
+        .accessibilityAdjustableAction { direction in
+            let span = range.upperBound - range.lowerBound
+            let delta = step ?? span / 20
+            var newValue = value + (direction == .increment ? delta : -delta)
+            if let step, step > 0 { newValue = (newValue / step).rounded() * step }
+            value = min(range.upperBound, max(range.lowerBound, newValue))
+        }
+    }
+
+    private var spokenPercent: String {
+        let span = range.upperBound - range.lowerBound
+        let fraction = span > 0 ? (value - range.lowerBound) / span : 0
+        return fraction.formatted(.percent.precision(.fractionLength(0)))
     }
 }
 
@@ -191,6 +210,8 @@ struct TeleprompterView: View {
 #if !os(watchOS)
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
     @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled: Bool = true
+    @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
+    @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
     @State private var paywallContext: PaywallView.Context = .upgrade
 #endif
 #if !os(watchOS) && !os(iOS)
@@ -281,6 +302,7 @@ struct TeleprompterView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark").font(.headline)
                     }
+                    .accessibilityLabel("Close")
                 }
 #endif
             }
@@ -501,6 +523,33 @@ struct TeleprompterView: View {
         // Top-aligned: over a color the mask runs past the bottom of the screen.
         .mask(alignment: .top) { readingMask }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isWordMode)
+        // VoiceOver uses `scriptAccessibilityElement` instead: the text runs behind the controls
+        // and moves while it plays, so touching a button could land on the text.
+        .accessibilityHidden(true)
+    }
+
+    /// The script for VoiceOver: still, and only over the reading area above the controls.
+    /// Double-tapping it does nothing, so it can't show, hide or advance anything by accident.
+    private var scriptAccessibilityElement: some View {
+        Color.clear
+            .padding(.top, readingTopInset)
+            .padding(.bottom, readingBottomInset)
+            .accessibilityElement()
+            .accessibilityLabel(Text(currentScript.title))
+            .accessibilityValue(Text(viewModel.scriptWords?.text ?? currentScript.content))
+            .accessibilityAddTraits(.isStaticText)
+            .accessibilityRespondsToUserInteraction(false)
+            .accessibilityAction { }
+    }
+
+    /// Two-finger double-tap anywhere, as in other media apps: record or stop when the button
+    /// records, otherwise play or pause.
+    private func magicTapAction() {
+        if recordsTakes {
+            toggleRecording()
+        } else {
+            readingAction()
+        }
     }
 
     private var classicScrollView: some View {
@@ -569,7 +618,9 @@ struct TeleprompterView: View {
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.trailing } action: { safeTrailingInset = $0 }
         .contentShape(Rectangle())
         .onTapGesture(perform: handleSurfaceTap)
+        .overlay { scriptAccessibilityElement }
         .overlay(alignment: .bottom) { bottomControls }
+        .accessibilityAction(.magicTap) { magicTapAction() }
         .onAppear {
             viewModel.transparency = customization.transparency
             applyReadingPreferences()
@@ -760,10 +811,13 @@ struct TeleprompterView: View {
             }
             .accessibilityLabel("Display adjustments")
             .popover(isPresented: $showDisplayAdjustments, arrowEdge: .top) {
-                displayAdjustmentsPopover
-                    .padding()
-                    .frame(minWidth: 280)
-                    .presentationCompactAdaptation(.popover)
+                // Scrolls only when it doesn't fit, such as on a phone held sideways.
+                ViewThatFits(in: .vertical) {
+                    displayAdjustmentsPopover.padding()
+                    ScrollView { displayAdjustmentsPopover.padding() }
+                }
+                .frame(minWidth: 280)
+                .presentationCompactAdaptation(.popover)
             }
         }
     }
@@ -882,7 +936,10 @@ struct TeleprompterView: View {
                                      recordingID: pickup?.recordingID, insertAt: pickup?.insertAt)
         cameraService.toggleRecording(into: target, progress: viewModel.progress)
         // A pickup is one take; the editor opens on it when it finishes.
-        if !starting { withAnimation { pickup = nil } }
+        if !starting {
+            withAnimation { pickup = nil }
+            announce("Recording stopped")
+        }
         guard teleprompterMode != .tap else { return }
         if starting {
             viewModel.play()
@@ -1050,6 +1107,7 @@ struct TeleprompterView: View {
             switch teleprompterMode {
             case .auto:
                 ReadingValueStepper(
+                    label: "Speed",
                     value: String(format: "%.1f×", viewModel.scrollSpeed),
                     onDecrease: { stepSpeed(by: -0.1) },
                     onIncrease: { stepSpeed(by: 0.1) }
@@ -1101,7 +1159,10 @@ struct TeleprompterView: View {
                 .animation(.default, value: viewModel.remainingTime)
         } else {
             ReadingValueStepper(
+                label: "Duration",
                 value: timedDurationString,
+                spokenValue: Text(Duration.seconds(timedMinutes * 60 + timedSeconds)
+                    .formatted(.units(allowed: [.minutes, .seconds], width: .wide))),
                 onDecrease: { stepTimedDuration(by: -30) },
                 onIncrease: { stepTimedDuration(by: 30) }
             )
@@ -1118,12 +1179,31 @@ struct TeleprompterView: View {
     // MARK: - Transport
 
     private var leadingTransportButton: some View {
-        Button { viewModel.resetToTop() } label: {
+        Button {
+            viewModel.resetToTop()
+            announce("Back to the top")
+        } label: {
             transportIcon("arrow.counterclockwise")
         }
         .buttonStyle(.plain)
         .ypGlassEffect(cornerRadius: 23)
         .accessibilityLabel("Reset to top")
+    }
+
+    /// Tells VoiceOver what a button just did, since the change is otherwise silent.
+    private func announce(_ message: LocalizedStringResource) {
+        guard voiceOverEnabled else { return }
+        Task { @MainActor in
+            // After VoiceOver's own click, or the announcement gets cut off.
+            try? await Task.sleep(for: .milliseconds(150))
+            AccessibilityNotification.Announcement(String(localized: message)).post()
+        }
+    }
+
+    /// Starting playback or a take: VoiceOver stays quiet, so its voice doesn't drive voice
+    /// scrolling or end up in the recording.
+    private var startsMedia: AccessibilityTraits {
+        teleprompterMode == .tap || viewModel.isPlaying ? [] : .startsMediaSession
     }
 
     /// Play, or advance in tap mode. In camera mode the big button records, as in the Camera app.
@@ -1145,6 +1225,7 @@ struct TeleprompterView: View {
             .buttonStyle(.plain)
             .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isPlaying)
             .accessibilityLabel(readingActionLabel)
+            .accessibilityAddTraits(startsMedia)
             .transition(.scale(scale: 0.85).combined(with: .opacity))
         }
     }
@@ -1167,6 +1248,7 @@ struct TeleprompterView: View {
         .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .medium), trigger: isRecording)
         .accessibilityLabel(isRecording ? "Stop Recording" : "Start Recording")
+        .accessibilityAddTraits(isRecording ? [] : .startsMediaSession)
     }
 
     /// Next to the record button: play or advance. Otherwise: cue points.
@@ -1179,6 +1261,7 @@ struct TeleprompterView: View {
             .buttonStyle(.plain)
             .ypGlassEffect(cornerRadius: 23)
             .accessibilityLabel(readingActionLabel)
+            .accessibilityAddTraits(startsMedia)
         } else {
             cueMenu
         }
@@ -1199,6 +1282,7 @@ struct TeleprompterView: View {
             viewModel.tapAdvance()
         } else {
             viewModel.togglePlayPause()
+            if !viewModel.isPlaying { announce("Paused") }
         }
     }
 
@@ -1451,7 +1535,10 @@ struct TeleprompterView: View {
                             ),
                             range: 2...max(3, maxUnderCameraLines),
                             step: 1,
-                            requiresLongPress: false
+                            requiresLongPress: false,
+                            accessibilityTitle: Text("Under the Camera"),
+                            accessibilityValueText: Text(String(format: String(localized: "%d lines under the camera"),
+                                                                Int(min(max(2, underCameraLines), maxUnderCameraLines))))
                         )
                         Image(systemName: "rectangle.expand.vertical")
                             .font(.caption).foregroundStyle(.secondary)
@@ -1501,7 +1588,9 @@ struct TeleprompterView: View {
                         ),
                         range: 0...80,
                         step: 4,
-                        requiresLongPress: false
+                        requiresLongPress: false,
+                        accessibilityTitle: Text("Margins"),
+                        accessibilityValueText: Text(String(format: String(localized: "%.0fpx margins"), liveHorizontalPadding))
                     )
                     Image(systemName: "arrow.right.and.line.vertical.and.arrow.left")
                         .font(.caption).foregroundStyle(.secondary)
@@ -1526,7 +1615,9 @@ struct TeleprompterView: View {
                         ),
                         range: Double(AppConstants.minFontSize)...Double(AppConstants.maxFontSize),
                         step: 1,
-                        requiresLongPress: false
+                        requiresLongPress: false,
+                        accessibilityTitle: Text("Font Size"),
+                        accessibilityValueText: Text(String(format: String(localized: "%dpt font"), Int(liveFontSize)))
                     )
                     Image(systemName: "textformat.size.larger")
                         .font(.caption).foregroundStyle(.secondary)
@@ -1537,6 +1628,8 @@ struct TeleprompterView: View {
                     .contentTransition(.numericText())
                     .animation(.default, value: liveFontSize)
             }
+            Divider()
+            ReadingFontControls()
         }
         .tint(.primary)
     }
@@ -1820,7 +1913,8 @@ struct TeleprompterView: View {
         let fontSize = customization.fontSize
         #endif
         return Text(displayText)
-            .font(.system(size: fontSize))
+            .font(readingFont.resolved(for: currentScript.content).font(size: fontSize))
+            .tracking(letterSpacing.tracking(for: fontSize, in: currentScript.content))
             .foregroundStyle(textColor ?? Color(hex: customization.textColorHex))
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing((customization.lineHeight - 1.0) * fontSize * 0.5)
@@ -1927,6 +2021,7 @@ struct TeleprompterView: View {
                         } label: {
                             Image(systemName: "minus").font(.caption2)
                         }
+                        .accessibilityLabel("One Minute Less")
                         Text("\(macTimedMinutes)m")
                             .font(.caption.monospacedDigit().bold())
                             .frame(minWidth: 28)
@@ -1936,6 +2031,7 @@ struct TeleprompterView: View {
                         } label: {
                             Image(systemName: "plus").font(.caption2)
                         }
+                        .accessibilityLabel("One Minute More")
                     }
                     .buttonStyle(.plain)
                 }
@@ -1945,7 +2041,9 @@ struct TeleprompterView: View {
                     value: $viewModel.scrollSpeed,
                     range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
                     step: 0.1,
-                    requiresLongPress: sliderRequiresLongPress
+                    requiresLongPress: sliderRequiresLongPress,
+                    accessibilityTitle: Text("Speed"),
+                    accessibilityValueText: Text(String(format: "%.1f×", viewModel.scrollSpeed))
                 )
 
                 Text(String(format: "%.1fx", viewModel.scrollSpeed))
@@ -1956,7 +2054,9 @@ struct TeleprompterView: View {
             MusicSlider(
                 value: $viewModel.scrollSpeed,
                 range: AppConstants.minScrollSpeed...AppConstants.maxScrollSpeed,
-                step: 0.1
+                step: 0.1,
+                accessibilityTitle: Text("Speed"),
+                accessibilityValueText: Text(String(format: "%.1f×", viewModel.scrollSpeed))
             )
 
             Text(String(format: "%.1fx", viewModel.scrollSpeed))

@@ -110,10 +110,10 @@ private struct RichTextEditor: View {
     @ToolbarContentBuilder
     private var keyboardToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
-            formatButton("bold",          isActive: isBold)          { apply(.bold) }
-            formatButton("italic",        isActive: isItalic)        { apply(.italic) }
-            formatButton("underline",     isActive: isUnderline)     { apply(.underline) }
-            formatButton("strikethrough", isActive: isStrikethrough) { apply(.strikethrough) }
+            formatButton("bold",          label: "Bold",          isActive: isBold)          { apply(.bold) }
+            formatButton("italic",        label: "Italic",        isActive: isItalic)        { apply(.italic) }
+            formatButton("underline",     label: "Underline",     isActive: isUnderline)     { apply(.underline) }
+            formatButton("strikethrough", label: "Strikethrough", isActive: isStrikethrough) { apply(.strikethrough) }
             Spacer()
             Button {
                 isFocused = false
@@ -121,11 +121,13 @@ private struct RichTextEditor: View {
                 Image(systemName: "keyboard.chevron.compact.down")
                     .foregroundStyle(.secondary)
             }
+            .accessibilityLabel("Hide Keyboard")
         }
     }
 
     private func formatButton(
         _ systemImage: String,
+        label: LocalizedStringKey,
         isActive: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -134,6 +136,8 @@ private struct RichTextEditor: View {
                 .fontWeight(isActive ? .semibold : .regular)
         }
         .tint(isActive ? Color.accentColor : Color.primary)
+        .accessibilityLabel(Text(label))
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
     #endif
 }
@@ -163,6 +167,7 @@ private struct PlainTextEditor: View {
                     Image(systemName: "keyboard.chevron.compact.down")
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityLabel("Hide Keyboard")
             }
         }
         #endif

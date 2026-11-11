@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "يتيح لك وضع الكاميرا تسجيل نفسك أثناء القراءة من الملقن.";
+"NSMicrophoneUsageDescription" = "يسجّل yPrompt صوتك لفيديوهاتك وتسجيلاتك الصوتية، ويستمع التمرير بالصوت إليك ليتبعك النص أثناء القراءة.";
+"NSSpeechRecognitionUsageDescription" = "يتعرّف yPrompt على الكلمات التي تقولها ليتابع موضعك في النص ويضيف الترجمة المكتوبة إلى لقطاتك. تتم معالجة كلامك على جهازك متى أمكن، وإلا فتعالجه Apple.";
+"NSPhotoLibraryAddUsageDescription" = "يتم حفظ التسجيلات في مكتبة الصور.";
+"NSLocalNetworkUsageDescription" = "يحتاج yPrompt إلى الوصول إلى الشبكة المحلية لتوصيل iPhone كجهاز تحكم عن بُعد للملقن.";

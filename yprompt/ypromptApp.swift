@@ -53,6 +53,10 @@ struct ypromptApp: App {
     @State private var storeKit = StoreKitService()
     @Environment(\.scenePhase) private var scenePhase
 
+    init() {
+        ReadingFont.registerBundledFonts()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Script.self, AppSettings.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

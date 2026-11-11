@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "El modo Cámara te permite grabarte mientras lees el teleprompter.";
+"NSMicrophoneUsageDescription" = "yPrompt graba tu voz para tus vídeos y grabaciones de audio, y Desplazamiento por Voz te escucha para que el script te siga mientras lees.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt reconoce las palabras que dices para no perder tu lugar en el script y subtitular tus tomas. Tu voz se procesa en el dispositivo cuando es posible y, si no, la procesa Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Las grabaciones se guardan en tu fototeca.";
+"NSLocalNetworkUsageDescription" = "yPrompt necesita acceso a la red local para conectar tu iPhone como control remoto del teleprompter.";

@@ -1,0 +1,6 @@
+/* Permission prompts */
+"NSCameraUsageDescription" = "Tryb kamery pozwala nagrywać siebie podczas czytania z promptera.";
+"NSMicrophoneUsageDescription" = "yPrompt nagrywa Twój głos do filmów i nagrań audio, a przewijanie głosem słucha, aby skrypt podążał za Tobą podczas czytania.";
+"NSSpeechRecognitionUsageDescription" = "yPrompt rozpoznaje wypowiadane słowa, aby śledzić miejsce w skrypcie i dodawać napisy do ujęć. Mowa jest przetwarzana na urządzeniu, gdy to możliwe, a w przeciwnym razie przez Apple.";
+"NSPhotoLibraryAddUsageDescription" = "Nagrania są zachowywane w bibliotece zdjęć.";
+"NSLocalNetworkUsageDescription" = "yPrompt potrzebuje dostępu do sieci lokalnej, aby połączyć iPhone’a jako pilota do promptera.";

@@ -409,3 +409,67 @@
 "Play from the Start" = "Reproducir desde el inicio";
 "Playhead" = "Cabezal";
 "Adding piece %lld to “%@”" = "Añadiendo la parte %lld a «%@»";
+
+/* Reading fonts, accessibility labels and fixes */
+"Slower" = "Más lento";
+"Faster" = "Más rápido";
+"Accessibility" = "Accesibilidad";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic hace más pesada la base de las letras para ayudar con la dislexia. Atkinson Hyperlegible hace que las letras parecidas sean fáciles de distinguir. Tu elección se aplica a todos los scripts de este dispositivo.";
+"Format" = "Formato";
+"Exposure" = "Exposición";
+"Lens" = "Lente";
+"Hide Keyboard" = "Ocultar teclado";
+"Reading Font" = "Fuente de lectura";
+"Letter Spacing" = "Espaciado entre letras";
+"Margins" = "Márgenes";
+"System" = "Sistema";
+"Normal" = "Normal";
+"Wide" = "Amplio";
+"Extra Wide" = "Muy amplio";
+"Delete %lld Scripts?" = "¿Eliminar %lld scripts?";
+"Delete %lld Scripts" = "Eliminar %lld scripts";
+"1 script" = "1 script";
+"%lld scripts" = "%lld scripts";
+"Open main window" = "Abrir la ventana principal";
+"Quit yPrompt" = "Salir de yPrompt";
+"Add cue point at current position" = "Añadir un punto de señal en la posición actual";
+"One Minute Less" = "Un minuto menos";
+"One Minute More" = "Un minuto más";
+"Smaller Text" = "Texto más pequeño";
+"Larger Text" = "Texto más grande";
+"Blur" = "Desenfoque";
+
+/* Color names, read by VoiceOver */
+"Black" = "Negro";
+"White" = "Blanco";
+"Red" = "Rojo";
+"Blue" = "Azul";
+"Green" = "Verde";
+"Yellow" = "Amarillo";
+"Purple" = "Morado";
+"Gray" = "Gris";
+"Orange" = "Naranja";
+"Cyan" = "Cian";
+"Pink" = "Rosa";
+"Brown" = "Marrón";
+"Dark Gray" = "Gris oscuro";
+"Light Gray" = "Gris claro";
+"Cream" = "Crema";
+"Light Blue" = "Azul claro";
+"Light Yellow" = "Amarillo claro";
+"Light Green" = "Verde claro";
+"Navy" = "Azul marino";
+"Charcoal" = "Carbón";
+"Beige" = "Beige";
+"Mint" = "Menta";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "Fuentes de lectura";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "OpenDyslexic y Atkinson Hyperlegible, gratis para todos, con más espacio entre letras si lo prefieres.";
+"More Languages" = "Más idiomas";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "yPrompt ya está disponible en 19 idiomas, entre ellos japonés, coreano, chino, turco y árabe.";
+"Better with VoiceOver" = "Mejor con VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "Los controles deslizantes y los ajustes cambian con un deslizamiento, y cada botón dice lo que hace.";
+"Paused" = "En pausa";
+"Back to the top" = "De vuelta al principio";
+"Recording stopped" = "Grabación detenida";
