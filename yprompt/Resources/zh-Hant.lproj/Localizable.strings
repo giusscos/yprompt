@@ -419,3 +419,11 @@
 "Charcoal" = "炭灰色";
 "Beige" = "米色";
 "Mint" = "薄荷色";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "閱讀字體";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "OpenDyslexic 和 Atkinson Hyperlegible 人人免費，還可加寬字母間距（適用於拉丁字母講稿）。";
+"More Languages" = "更多語言";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "yPrompt 現已支援 19 種語言，包括中文、日文、韓文、土耳其文和阿拉伯文。";
+"Better with VoiceOver" = "更好地支援 VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "滑桿和調整按鈕可透過滑動調整，每個按鈕都會說明它的作用。";

@@ -419,3 +419,11 @@
 "Charcoal" = "Than chì";
 "Beige" = "Be";
 "Mint" = "Xanh bạc hà";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "Phông chữ đọc";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "OpenDyslexic và Atkinson Hyperlegible miễn phí cho mọi người, có thể giãn khoảng cách chữ nếu bạn muốn.";
+"More Languages" = "Thêm ngôn ngữ";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "yPrompt nay có 19 ngôn ngữ, gồm tiếng Việt, tiếng Nhật, tiếng Hàn, tiếng Trung và tiếng Ả Rập.";
+"Better with VoiceOver" = "Tốt hơn với VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "Thanh trượt và nút điều chỉnh thay đổi bằng thao tác vuốt, và mọi nút đều cho biết chức năng của nó.";

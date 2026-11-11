@@ -462,3 +462,11 @@
 "Charcoal" = "Arang";
 "Beige" = "Krem pucat";
 "Mint" = "Hijau mint";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "Font Baca";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "OpenDyslexic dan Atkinson Hyperlegible, gratis untuk semua, dengan jarak huruf yang lebih lebar jika Anda mau.";
+"More Languages" = "Lebih Banyak Bahasa";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "yPrompt kini tersedia dalam 19 bahasa, termasuk Jepang, Korea, Mandarin, Turki, dan Arab.";
+"Better with VoiceOver" = "Lebih Baik dengan VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "Penggeser dan pengatur dapat disesuaikan dengan gesekan, dan setiap tombol menyebutkan fungsinya.";

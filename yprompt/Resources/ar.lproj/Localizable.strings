@@ -419,3 +419,11 @@
 "Charcoal" = "فحمي";
 "Beige" = "بيج";
 "Mint" = "نعناعي";
+
+/* What's New in 1.0.6 */
+"Reading Fonts" = "خطوط القراءة";
+"OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like." = "خطا OpenDyslexic وAtkinson Hyperlegible مجانيان للجميع، مع إمكانية توسيع تباعد الأحرف (للنصوص المكتوبة بالحروف اللاتينية).";
+"More Languages" = "لغات أكثر";
+"yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic." = "أصبح yPrompt متاحًا بـ 19 لغة، منها العربية واليابانية والكورية والصينية والتركية.";
+"Better with VoiceOver" = "أفضل مع VoiceOver";
+"Sliders and steppers adjust with a swipe, and every button says what it does." = "يمكن ضبط أشرطة التمرير وأزرار التعديل بالتمرير السريع، وكل زر يخبرك بما يفعله.";
