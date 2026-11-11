@@ -371,7 +371,7 @@
 "Slower" = "느리게";
 "Faster" = "빠르게";
 "Accessibility" = "손쉬운 사용";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic은 글자 아랫부분을 두껍게 하여 난독증이 있는 사람이 읽기 쉽게 돕습니다. Atkinson Hyperlegible은 비슷한 글자를 쉽게 구분하게 해 줍니다. 선택한 설정은 이 기기의 모든 대본에 적용됩니다.";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic은 글자 아랫부분을 두껍게 하여 난독증이 있는 사람이 읽기 쉽게 돕습니다. Atkinson Hyperlegible은 비슷한 글자를 쉽게 구분하게 해 줍니다. 두 서체 모두 라틴 문자용이라 한국어 대본은 시스템 서체로 표시됩니다. 선택한 설정은 이 기기의 모든 대본에 적용됩니다.";
 "Format" = "포맷";
 "Exposure" = "노출";
 "Lens" = "렌즈";

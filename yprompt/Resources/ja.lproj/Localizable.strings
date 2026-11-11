@@ -371,7 +371,7 @@
 "Slower" = "遅く";
 "Faster" = "速く";
 "Accessibility" = "アクセシビリティ";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexicは文字の下部を太くして、ディスレクシアの方の読みやすさを助けます。Atkinson Hyperlegibleは似た文字を見分けやすくします。選んだフォントはこのデバイスのすべての原稿に適用されます。";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexicは文字の下部を太くして、ディスレクシアの方の読みやすさを助けます。Atkinson Hyperlegibleは似た文字を見分けやすくします。どちらもラテン文字用のフォントなので、日本語の原稿はシステムフォントで表示されます。選んだフォントはこのデバイスのすべての原稿に適用されます。";
 "Format" = "フォーマット";
 "Exposure" = "露出";
 "Lens" = "レンズ";

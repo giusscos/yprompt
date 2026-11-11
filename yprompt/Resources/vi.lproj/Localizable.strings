@@ -371,7 +371,7 @@
 "Slower" = "Chậm hơn";
 "Faster" = "Nhanh hơn";
 "Accessibility" = "Trợ năng";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic làm phần dưới của chữ cái đậm hơn để hỗ trợ người mắc chứng khó đọc. Atkinson Hyperlegible giúp dễ phân biệt các chữ cái giống nhau. Lựa chọn của bạn áp dụng cho mọi kịch bản trên thiết bị này.";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic làm phần dưới của chữ cái đậm hơn để hỗ trợ người mắc chứng khó đọc. Atkinson Hyperlegible giúp dễ phân biệt các chữ cái giống nhau, nhưng không có đủ chữ cái tiếng Việt, nên kịch bản tiếng Việt sẽ hiển thị bằng phông chữ hệ thống khi chọn phông này. Lựa chọn của bạn áp dụng cho mọi kịch bản trên thiết bị này.";
 "Format" = "Định dạng";
 "Exposure" = "Phơi sáng";
 "Lens" = "Ống kính";

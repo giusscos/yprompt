@@ -110,9 +110,10 @@ struct CustomizationView: View {
         ZStack {
             Color(hex: customization.backgroundColorHex)
                 .opacity(customization.transparency)
-            Text("The quick brown fox jumps over the lazy dog.")
-                .font(readingFont.font(size: min(customization.fontSize, 24)))
-                .tracking(letterSpacing.tracking(for: min(customization.fontSize, 24)))
+            let sample = String(localized: "The quick brown fox jumps over the lazy dog.")
+            Text(sample)
+                .font(readingFont.resolved(for: sample).font(size: min(customization.fontSize, 24)))
+                .tracking(letterSpacing.tracking(for: min(customization.fontSize, 24), in: sample))
                 .foregroundStyle(Color(hex: customization.textColorHex))
                 .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
                 .lineSpacing((customization.lineHeight - 1.0) * 14)

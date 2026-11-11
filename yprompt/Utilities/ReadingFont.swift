@@ -5,6 +5,7 @@
 
 import SwiftUI
 import CoreText
+import os
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -12,8 +13,9 @@ import AppKit
 #endif
 
 /// The typeface scripts are read in. It belongs to the reader, not the script, so it stays on the
-/// device like text size does, and it's free for everyone. Letters the bundled fonts don't have,
-/// such as Chinese or Arabic, fall back to the system font.
+/// device like text size does, and it's free for everyone. The bundled fonts only draw Latin
+/// letters (and, for OpenDyslexic, Greek and Cyrillic); other alphabets such as Chinese or Arabic
+/// stay in the system font.
 enum ReadingFont: String, CaseIterable, Identifiable, Sendable {
     case system
     /// Atkinson Hyperlegible Next, from the Braille Institute: letters that are hard to mistake for each other.
@@ -35,6 +37,44 @@ enum ReadingFont: String, CaseIterable, Identifiable, Sendable {
         case .system: Text("System")
         case .atkinson: Text(verbatim: "Atkinson Hyperlegible")
         case .openDyslexic: Text(verbatim: "OpenDyslexic")
+        }
+    }
+
+    /// The font a script is actually read in. A script with Latin, Greek or Cyrillic letters this
+    /// font lacks (Atkinson has no Vietnamese tone marks, say) would come out in two fonts letter
+    /// by letter, so it gets the system font instead.
+    func resolved(for text: String) -> ReadingFont {
+        guard self != .system, !text.isEmpty else { return self }
+        let key = "\(rawValue)|\(text.hashValue)"
+        if let known = Self.coverage.withLock({ $0[key] }) { return known ? self : .system }
+        let font = platformFont(size: 17) as CTFont
+        var covers = true
+        for scalar in text.unicodeScalars.prefix(4000) where Self.needsMatchingLetters(scalar) {
+            var units = Array(String(scalar).utf16)
+            var glyphs = [CGGlyph](repeating: 0, count: units.count)
+            if !CTFontGetGlyphsForCharacters(font, &units, &glyphs, units.count) {
+                covers = false
+                break
+            }
+        }
+        let result = covers
+        Self.coverage.withLock { cache in
+            if cache.count > 64 { cache.removeAll() }
+            cache[key] = result
+        }
+        return result ? self : .system
+    }
+
+    /// Whether a font covers a script, by font name and the script's hash.
+    private static let coverage = OSAllocatedUnfairLock(initialState: [String: Bool]())
+
+    /// Letters of the alphabets these fonts draw at least in part: accented Latin, Greek, Cyrillic.
+    /// Plain ASCII is always there; other alphabets fall back to the system font a word at a time.
+    private static func needsMatchingLetters(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.value {
+        case 0x00C0...0x024F, 0x1E00...0x1EFF: true   // Latin with accents, including Vietnamese
+        case 0x0370...0x03FF, 0x0400...0x04FF: true   // Greek, Cyrillic
+        default: false
         }
     }
 
@@ -152,12 +192,32 @@ enum LetterSpacing: Int, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// Space added after each letter, in points, for text of this size. Text in scripts whose
+    /// letters join or carry stacked marks keeps its natural spacing.
+    func tracking(for size: CGFloat, in text: some StringProtocol) -> CGFloat {
+        Self.suits(text) ? tracking(for: size) : 0
+    }
+
     /// Space added after each letter, in points, for text of this size.
     func tracking(for size: CGFloat) -> CGFloat {
         switch self {
         case .normal: 0
         case .wide: size * 0.06
         case .extraWide: size * 0.12
+        }
+    }
+
+    /// False for text in scripts that letter spacing would damage: it pulls apart Arabic's joined
+    /// letters and moves the vowel and tone marks of Thai and Indic scripts off their letters.
+    static func suits(_ text: some StringProtocol) -> Bool {
+        !text.unicodeScalars.prefix(2000).contains { scalar in
+            switch scalar.value {
+            case 0x0600...0x08FF, 0xFB50...0xFDFF, 0xFE70...0xFEFF: true   // Arabic, Syriac, Thaana, N'Ko
+            case 0x0900...0x0DFF: true                                     // Indic scripts
+            case 0x0E00...0x0EFF, 0x0F00...0x0FFF: true                    // Thai, Lao, Tibetan
+            case 0x1000...0x109F, 0x1780...0x17FF: true                    // Myanmar, Khmer
+            default: false
+            }
         }
     }
 

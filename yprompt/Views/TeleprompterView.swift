@@ -1858,8 +1858,8 @@ struct TeleprompterView: View {
         let fontSize = customization.fontSize
         #endif
         return Text(displayText)
-            .font(readingFont.font(size: fontSize))
-            .tracking(letterSpacing.tracking(for: fontSize))
+            .font(readingFont.resolved(for: currentScript.content).font(size: fontSize))
+            .tracking(letterSpacing.tracking(for: fontSize, in: currentScript.content))
             .foregroundStyle(textColor ?? Color(hex: customization.textColorHex))
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing((customization.lineHeight - 1.0) * fontSize * 0.5)

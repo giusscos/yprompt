@@ -371,7 +371,7 @@
 "Slower" = "أبطأ";
 "Faster" = "أسرع";
 "Accessibility" = "تسهيلات الاستخدام";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "يجعل خط OpenDyslexic أسفل الحروف أثقل لمساعدة المصابين بعسر القراءة. ويجعل خط Atkinson Hyperlegible الحروف المتشابهة سهلة التمييز. ينطبق اختيارك على كل النصوص على هذا الجهاز.";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "يجعل خط OpenDyslexic أسفل الحروف أثقل لمساعدة المصابين بعسر القراءة. ويجعل خط Atkinson Hyperlegible الحروف المتشابهة سهلة التمييز. الخطان مخصصان للحروف اللاتينية، لذا تظهر النصوص العربية بخط النظام وبتباعد الأحرف العادي. ينطبق اختيارك على كل النصوص على هذا الجهاز.";
 "Format" = "التنسيق";
 "Exposure" = "التعريض";
 "Lens" = "العدسة";

@@ -371,7 +371,7 @@
 "Slower" = "更慢";
 "Faster" = "更快";
 "Accessibility" = "輔助功能";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic 加重字母底部，幫助有閱讀障礙的人閱讀。Atkinson Hyperlegible 讓相似的字母更容易區分。你的選擇適用於此裝置上的所有講稿。";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic 加重字母底部，幫助有閱讀障礙的人閱讀。Atkinson Hyperlegible 讓相似的字母更容易區分。這兩種字體只適用於拉丁字母，中文講稿仍使用系統字體。你的選擇適用於此裝置上的所有講稿。";
 "Format" = "格式";
 "Exposure" = "曝光";
 "Lens" = "鏡頭";

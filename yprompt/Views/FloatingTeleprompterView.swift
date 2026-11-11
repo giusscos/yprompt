@@ -109,9 +109,10 @@ struct FloatingTeleprompterView: View {
             raw = manager.currentScript?.attributedContent ?? AttributedString()
         }
         let displayText = normalizedText(from: raw)
+        let content = manager.currentScript?.content ?? ""
         return Text(displayText)
-            .font(readingFont.font(size: manager.floatingFontSize))
-            .tracking(letterSpacing.tracking(for: manager.floatingFontSize))
+            .font(readingFont.resolved(for: content).font(size: manager.floatingFontSize))
+            .tracking(letterSpacing.tracking(for: manager.floatingFontSize, in: content))
             .foregroundStyle(.white)
             .multilineTextAlignment(customization.textAlignmentIndex.textAlignment)
             .lineSpacing(4)

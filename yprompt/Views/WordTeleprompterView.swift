@@ -16,6 +16,8 @@ struct WordLayout: Equatable {
         var line: Int
         /// Below 1 for a word too wide for the line on its own.
         var scale: CGFloat
+        /// False for words in scripts that letter spacing would damage, such as Arabic or Thai.
+        var tracked = true
     }
 
     struct Line: Equatable {
@@ -51,7 +53,7 @@ struct WordLayout: Equatable {
         var widths: [String: CGFloat] = [:]
         let tracking = key.spacing.tracking(for: key.fontSize)
 
-        func measure(_ word: ScriptWord) -> CGFloat {
+        func measure(_ word: ScriptWord, tracked: Bool) -> CGFloat {
             let cacheKey = "\(word.style.isBold ? 1 : 0)\(word.style.isItalic ? 1 : 0)\(word.text)"
             if let known = widths[cacheKey] { return known }
             var trackedStyle = ScriptWord.Style()
@@ -60,7 +62,7 @@ struct WordLayout: Equatable {
             let font = fonts[trackedStyle] ?? key.font.platformFont(
                 size: key.fontSize, weight: Self.weight(for: trackedStyle), italic: trackedStyle.isItalic)
             fonts[trackedStyle] = font
-            let width = ceil((word.text as NSString).size(withAttributes: [.font: font, .kern: tracking]).width)
+            let width = ceil((word.text as NSString).size(withAttributes: [.font: font, .kern: tracked ? tracking : 0]).width)
             widths[cacheKey] = width
             return width
         }
@@ -94,7 +96,8 @@ struct WordLayout: Equatable {
         }
 
         for (index, word) in words.words.enumerated() {
-            let width = measure(word)
+            let tracked = LetterSpacing.suits(word.text)
+            let width = measure(word, tracked: tracked)
             let scale = min(1, available / max(width, 1))
             let scaled = width * scale
             if x > 0, x + scaled > available {
@@ -102,7 +105,7 @@ struct WordLayout: Equatable {
                 y += lineStep
                 x = 0
             }
-            placements.append(Placement(x: x, width: width, line: lines.count, scale: scale))
+            placements.append(Placement(x: x, width: width, line: lines.count, scale: scale, tracked: tracked))
             x += scaled + (word.spaceAfter ? spaceWidth : 0)
             if word.breaksAfter > 0, index < words.count - 1 {
                 closeLine(upTo: index + 1)
@@ -274,7 +277,7 @@ struct WordTeleprompterView: View {
             alignment: alignment,
             horizontalPadding: horizontalPadding,
             textHash: words.textHash,
-            font: readingFont,
+            font: readingFont.resolved(for: words.text),
             spacing: letterSpacing
         )
     }
@@ -344,7 +347,7 @@ struct WordTeleprompterView: View {
         }
 
         for index in line.words {
-            drawWord(words.words[index], placement: layout.placements[index], y: y,
+            drawWord(words.words[index], placement: layout.placements[index], key: layout.key, y: y,
                      fill: min(max(position - Double(index), 0), 1),
                      emphasis: emphasis, height: layout.lineHeight, in: lineContext)
         }
@@ -353,6 +356,7 @@ struct WordTeleprompterView: View {
     private func drawWord(
         _ word: ScriptWord,
         placement: WordLayout.Placement,
+        key: WordLayout.Key,
         y: CGFloat,
         fill: Double,
         emphasis: Double,
@@ -369,8 +373,9 @@ struct WordTeleprompterView: View {
         }
 
         var text = Text(word.text)
-            .font(readingFont.font(size: fontSize, weight: WordLayout.weight(for: word.style), italic: word.style.isItalic))
-            .tracking(letterSpacing.tracking(for: fontSize))
+            // Drawn with what the layout measured, so words never overlap while a setting changes.
+            .font(key.font.font(size: fontSize, weight: WordLayout.weight(for: word.style), italic: word.style.isItalic))
+            .tracking(placement.tracked ? key.spacing.tracking(for: fontSize) : 0)
         if word.style.isUnderlined { text = text.underline() }
         if word.style.isStruckThrough { text = text.strikethrough() }
         var resolved = wordContext.resolve(text)

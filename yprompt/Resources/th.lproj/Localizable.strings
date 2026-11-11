@@ -371,7 +371,7 @@
 "Slower" = "ช้าลง";
 "Faster" = "เร็วขึ้น";
 "Accessibility" = "การช่วยการเข้าถึง";
-"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic ทำให้ส่วนล่างของตัวอักษรหนาขึ้นเพื่อช่วยผู้ที่มีภาวะดิสเล็กเซีย Atkinson Hyperlegible ช่วยให้แยกตัวอักษรที่คล้ายกันได้ง่าย ตัวเลือกของคุณใช้กับทุกสคริปต์บนอุปกรณ์นี้";
+"OpenDyslexic gives letters heavier bottoms to help with dyslexia. Atkinson Hyperlegible keeps similar letters easy to tell apart. Your choice applies to every script on this device." = "OpenDyslexic ทำให้ส่วนล่างของตัวอักษรหนาขึ้นเพื่อช่วยผู้ที่มีภาวะดิสเล็กเซีย Atkinson Hyperlegible ช่วยให้แยกตัวอักษรที่คล้ายกันได้ง่าย ทั้งสองแบบอักษรรองรับเฉพาะตัวอักษรละติน สคริปต์ภาษาไทยจึงใช้แบบอักษรของระบบและระยะห่างตัวอักษรปกติ ตัวเลือกของคุณใช้กับทุกสคริปต์บนอุปกรณ์นี้";
 "Format" = "รูปแบบ";
 "Exposure" = "การรับแสง";
 "Lens" = "เลนส์";
