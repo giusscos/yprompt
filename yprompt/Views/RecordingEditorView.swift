@@ -599,16 +599,24 @@ private struct PieceStripView: View {
         }
     }
 
-    /// The piece being moved lands after every other piece whose middle it has passed.
-    /// The middles are measured where the pieces sit before the move, so they don't shift
-    /// under the finger as the others step aside.
+    /// The piece being moved passes another once its leading edge crosses that piece's middle:
+    /// its right edge going right, its left edge going left. Its own middle wouldn't do: a
+    /// piece wider than the first or last can't get its middle past theirs, so it could never
+    /// reach either end. The middles are measured where the pieces sit before the move, so
+    /// they don't shift under the finger as the others step aside.
     private func plannedMove(widths: [CGFloat], pieces: [Piece]) -> Move? {
         guard let moving, let from = pieces.firstIndex(where: { $0.id == moving.id }) else { return nil }
         let lefts = leftEdges(widths)
         let end = (lefts.last ?? 0) + (widths.last ?? 0)
         let translation = min(max(moving.translation, -lefts[from]), end - lefts[from] - widths[from])
-        let middle = lefts[from] + widths[from] / 2 + translation
-        let to = pieces.indices.filter { $0 != from && lefts[$0] + widths[$0] / 2 < middle }.count
+        let left = lefts[from] + translation
+        let right = left + widths[from]
+        let to = pieces.indices.filter { index in
+            guard index != from else { return false }
+            let middle = lefts[index] + widths[index] / 2
+            // Counts the pieces that end up before the moved one.
+            return index < from ? left >= middle : right > middle
+        }.count
         return Move(id: moving.id, from: from, to: to, translation: translation, gap: widths[from] + spacing)
     }
 
