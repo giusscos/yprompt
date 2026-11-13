@@ -131,6 +131,9 @@ enum RecordingComposer {
             }
             cursor = cursor + length
         }
+        // A take without sound leaves the audio track empty, and exporting a composition with
+        // an empty track stops with "Operation Stopped" (-11838).
+        if let audioTrack, audioTrack.segments.isEmpty { composition.removeTrack(audioTrack) }
 
         let first = placed.first?.source
         let upright = first.map { uprightSize($0.naturalSize, $0.preferredTransform) } ?? .zero
