@@ -11,7 +11,9 @@ final class RatingService {
     private let sessionCountKey = "yprompt.completedSessions"
     private let lastRequestDateKey = "yprompt.lastReviewRequest"
     private let firstReadPaywallKey = "yprompt.firstReadPaywallShown"
+    private let savedRecordingsKey = "yprompt.savedRecordings"
     private let minimumSessions = 1
+    private let minimumSavedRecordings = 1
     private let minimumDaysBetweenRequests = 60
 
     private init() {}
@@ -21,9 +23,14 @@ final class RatingService {
         set { UserDefaults.standard.set(newValue, forKey: sessionCountKey) }
     }
 
-    // True when the user has completed enough sessions and hasn't been asked recently.
+    var savedRecordings: Int {
+        get { UserDefaults.standard.integer(forKey: savedRecordingsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: savedRecordingsKey) }
+    }
+
+    // True when the user has finished a read or saved a recording and hasn't been asked recently.
     var shouldRequestReview: Bool {
-        guard completedSessions >= minimumSessions else { return false }
+        guard completedSessions >= minimumSessions || savedRecordings >= minimumSavedRecordings else { return false }
         guard let lastDate = UserDefaults.standard.object(forKey: lastRequestDateKey) as? Date else { return true }
         let days = Calendar.current.dateComponents([.day], from: lastDate, to: .now).day ?? 0
         return days >= minimumDaysBetweenRequests
@@ -31,6 +38,10 @@ final class RatingService {
 
     func recordSessionCompleted() {
         completedSessions += 1
+    }
+
+    func recordRecordingSaved() {
+        savedRecordings += 1
     }
 
     /// True once per install, after the first finished read: the moment Pro makes most sense.

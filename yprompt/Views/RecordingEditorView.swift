@@ -5,6 +5,7 @@
 
 #if os(iOS)
 import AVFoundation
+import StoreKit
 import SwiftUI
 import UIKit
 
@@ -14,8 +15,11 @@ struct RecordingEditorView: View {
     @State private var model: RecordingEditorModel?
     @Environment(StoreKitService.self) private var storeKit
     @Environment(\.openURL) private var openURL
+    @Environment(\.requestReview) private var requestReview
     @State private var confirmingDeleteRecording = false
     @State private var showingPaywall = false
+    /// Set by each save to Photos; the rating request waits on it.
+    @State private var reviewAfterSave: UUID?
 
     let selection: RecordingSelection
     let script: ScriptWords?
@@ -50,6 +54,22 @@ struct RecordingEditorView: View {
         }
         .task(id: model == nil) { await model?.load() }
         .onChange(of: storeKit.isPremium) { _, premium in model?.showsMark = !premium }
+        .onChange(of: model?.renderState) { _, state in
+            if state == .saved { reviewAfterSave = UUID() }
+        }
+        .task(id: reviewAfterSave) {
+            // After "Saved to Photos" has shown for a moment. Leaving the editor cancels it.
+            guard reviewAfterSave != nil else { return }
+            try? await Task.sleep(for: .seconds(1.2))
+            guard !Task.isCancelled else { return }
+            reviewAfterSave = nil
+            guard let model, !showingPaywall, !confirmingDeleteRecording, model.shareItems == nil else { return }
+            guard model.renderState == .saved || model.renderState == .idle else { return }
+            if RatingService.shared.shouldRequestReview {
+                RatingService.shared.markReviewRequested()
+                requestReview()
+            }
+        }
         .sheet(isPresented: $showingPaywall) {
             PaywallView(context: .removeMark).environment(storeKit)
         }

@@ -545,6 +545,7 @@ final class RecordingEditorModel {
                     try await RecordingExporter.saveToPhotos(url)
                     recording.savedAt = Date()
                     RecordingLibrary.shared.save(recording)
+                    RatingService.shared.recordRecordingSaved()
                     renderState = .saved
                     try? await Task.sleep(for: .seconds(1.5))
                     if renderState == .saved { renderState = .idle }
