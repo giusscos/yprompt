@@ -7,6 +7,7 @@
 import AVFoundation
 import CoreImage
 import CoreText
+import UIKit
 
 /// A recording put together for AVFoundation: its pieces one after another, each video piece
 /// turned upright, rotated as chosen, and filling a frame the size of the first piece.
@@ -276,7 +277,7 @@ nonisolated final class RecordingCompositor: NSObject, AVVideoCompositing, @unch
 
 // MARK: - The mark
 
-/// "Made with yPrompt" in the top-left corner of videos saved without Pro.
+/// The app icon and "Made with yPrompt" in the top-left corner of videos saved without Pro.
 /// Social apps put their own buttons along the bottom and right edges.
 nonisolated struct Watermark: @unchecked Sendable {
     let image: CGImage
@@ -298,8 +299,13 @@ nonisolated struct Watermark: @unchecked Sendable {
         var ascent: CGFloat = 0, descent: CGFloat = 0
         let textWidth = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, nil))
         let padding = (fontSize * 0.6).rounded()
-        let width = Int((textWidth + padding * 2).rounded(.up))
         let height = Int((ascent + descent + padding * 1.2).rounded(.up))
+        // The icon sits in the pill's round left end, as far from its edge as from the top and bottom.
+        let icon = appIcon()
+        let iconSide = (CGFloat(height) * 0.7).rounded()
+        let iconInset = (CGFloat(height) - iconSide) / 2
+        let textX = icon == nil ? padding : iconInset + iconSide + (fontSize * 0.35).rounded()
+        let width = Int((textX + textWidth + padding).rounded(.up))
         guard let space = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                       space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
@@ -307,11 +313,29 @@ nonisolated struct Watermark: @unchecked Sendable {
         context.addPath(CGPath(roundedRect: pill, cornerWidth: CGFloat(height) / 2, cornerHeight: CGFloat(height) / 2, transform: nil))
         context.setFillColor(CGColor(gray: 0, alpha: 0.45))
         context.fillPath()
-        context.textPosition = CGPoint(x: padding, y: (CGFloat(height) - ascent - descent) / 2 + descent)
+        if let icon {
+            let frame = CGRect(x: iconInset, y: iconInset, width: iconSide, height: iconSide)
+            let corner = iconSide * 0.225
+            context.saveGState()
+            context.addPath(CGPath(roundedRect: frame, cornerWidth: corner, cornerHeight: corner, transform: nil))
+            context.clip()
+            context.interpolationQuality = .high
+            context.draw(icon, in: frame)
+            context.restoreGState()
+        }
+        context.textPosition = CGPoint(x: textX, y: (CGFloat(height) - ascent - descent) / 2 + descent)
         CTLineDraw(line, context)
         guard let image = context.makeImage() else { return nil }
         let margin = (shortSide * 0.04).rounded()
         return Watermark(image: image, origin: CGPoint(x: margin, y: size.height - margin - CGFloat(height)))
+    }
+
+    /// The home screen icon as built into the app: a square picture, without the rounded corners.
+    private static func appIcon() -> CGImage? {
+        let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any]
+        let primary = icons?["CFBundlePrimaryIcon"] as? [String: Any]
+        let name = (primary?["CFBundleIconFiles"] as? [String])?.last
+        return name.flatMap { UIImage(named: $0)?.cgImage }
     }
 }
 #endif
