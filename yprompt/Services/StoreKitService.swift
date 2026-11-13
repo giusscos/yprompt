@@ -154,10 +154,11 @@ class StoreKitService {
             purchased.insert(t.productID)
         }
 
-        // Covers billing retry and grace period, where the latest transaction may have expired.
+        // Covers the grace period, where the latest transaction has expired but Pro must continue.
+        // Billing retry is left out: Pro ends when the grace period does.
         if let groupID = (yearlyProduct ?? weeklyProduct)?.subscription?.subscriptionGroupID,
            let statuses = try? await Product.SubscriptionInfo.status(for: groupID) {
-            for status in statuses where [.subscribed, .inGracePeriod, .inBillingRetryPeriod].contains(status.state) {
+            for status in statuses where [.subscribed, .inGracePeriod].contains(status.state) {
                 if let t = try? checkVerified(status.transaction), t.revocationDate == nil {
                     purchased.insert(t.productID)
                 }

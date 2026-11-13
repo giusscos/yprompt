@@ -61,6 +61,12 @@ These translations still need a native speaker's review, like the rest of the st
 | Wait between offers | 12 months | 6 months |
 | Countries | All 175 | All 175 |
 
-## Not set up yet
+## Billing grace period (turned on Nov 13, 2026)
 
-- **Billing grace period:** off. Without it, a subscriber whose payment fails loses Pro right away. Poly uses 16 days for all renewals.
+- **Duration:** 16 days, the same as Poly.
+- **Eligible subscribers:** all renewals, so a free trial whose first charge fails is covered too.
+- **Environments:** production and sandbox.
+- **What it does:** when a renewal payment fails, the subscriber keeps Pro for up to 16 days while Apple retries. If the payment goes through in that time, there is no gap in paid days.
+- **In the app:** `StoreKitService.refreshEntitlements()` counts a subscription in its grace period as Pro. Versions up to 1.0.6 also count one in billing retry, which Apple can run for up to 60 days in all. From the next app update, Pro ends when the grace period does.
+- **Why:** from Oct 1 to Nov 12, five free trials failed at their first charge and four were paid.
+- **App Store Connect:** Subscriptions → Billing Grace Period.
