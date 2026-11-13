@@ -191,8 +191,8 @@ private struct EditorContent: View {
                 }
                 .frame(width: frame.width, height: frame.height)
                 .animation(.snappy(duration: 0.35), value: model.renderSize)
-                // Top right: the captions run along the bottom, the mark sits top left.
-                .overlay(alignment: .topTrailing) {
+                // Bottom right: on a tall video the mark and its Remove button span the top.
+                .overlay(alignment: .bottomTrailing) {
                     Button { withAnimation(.snappy) { model.rotate() } } label: {
                         Image(systemName: "rotate.right")
                             .font(.headline)
