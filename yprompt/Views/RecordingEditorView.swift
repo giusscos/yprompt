@@ -520,35 +520,57 @@ private struct EditorContent: View {
 
 /// The recording's pieces side by side, each as wide as its share of the length. Drag the
 /// playhead to move through the recording, tap a piece to select it and jump there, drag a
-/// selected piece's ends to trim it, and hold and drag a piece to move it.
+/// selected piece's ends to trim it, and hold and drag a piece to move it: the others make
+/// room where it would land.
 private struct PieceStripView: View {
     @Bindable var model: RecordingEditorModel
     @State private var trimDrag: (id: UUID, isStart: Bool, seconds: Double)?
     @State private var scrubStart: Double?
+    /// The piece being moved and how far it has been dragged along the strip.
+    @State private var moving: (id: UUID, translation: CGFloat)?
+    /// Resets by itself if the system cancels the drag, so a piece is never left lifted.
+    @GestureState private var isHoldingPiece = false
 
     private let spacing: CGFloat = 4
     private let tileHeight: CGFloat = 58
     /// Room above the tiles for the playhead's knob.
     private let knobRoom: CGFloat = 18
+    private let moveAnimation = Animation.snappy(duration: 0.3)
+
+    /// A piece being moved: where it was, where it would land, and how far it has gone.
+    private struct Move {
+        let id: UUID
+        let from: Int
+        let to: Int
+        let translation: CGFloat
+        /// How far the other pieces step aside: the moved piece's width and a gap.
+        let gap: CGFloat
+    }
 
     var body: some View {
         GeometryReader { geometry in
             let pieces = model.recording.pieces
             let widths = tileWidths(total: geometry.size.width, pieces: pieces)
+            let move = plannedMove(widths: widths, pieces: pieces)
             ZStack(alignment: .topLeading) {
                 HStack(spacing: spacing) {
                     ForEach(Array(pieces.enumerated()), id: \.element.id) { index, piece in
-                        tile(piece, index: index, width: widths[index])
+                        tile(piece, index: index, widths: widths, pieces: pieces, move: move)
                             .transition(.scale(scale: 0.7).combined(with: .opacity))
                     }
                 }
                 .padding(.top, knobRoom)
-                .animation(.snappy(duration: 0.3), value: pieces)
-                if trimDrag == nil {
+                .animation(moveAnimation, value: pieces)
+                if trimDrag == nil && move == nil {
                     playhead(widths: widths, pieces: pieces, totalWidth: geometry.size.width)
                 }
             }
             .coordinateSpace(.named("strip"))
+            .sensoryFeedback(.impact(weight: .medium), trigger: move?.id) { _, new in new != nil }
+            .sensoryFeedback(.selection, trigger: move?.to) { old, new in old != nil && new != nil }
+        }
+        .onChange(of: isHoldingPiece) { _, holding in
+            if !holding && moving != nil { withAnimation(moveAnimation) { moving = nil } }
         }
     }
 
@@ -566,6 +588,46 @@ private struct PieceStripView: View {
         let raw = lengths.map { max(28, available * CGFloat($0 / sum)) }
         let scale = min(1, available / max(raw.reduce(0, +), 1))
         return raw.map { $0 * scale }
+    }
+
+    /// Where each piece starts along the strip.
+    private func leftEdges(_ widths: [CGFloat]) -> [CGFloat] {
+        var x: CGFloat = 0
+        return widths.map { width in
+            defer { x += width + spacing }
+            return x
+        }
+    }
+
+    /// The piece being moved lands after every other piece whose middle it has passed.
+    /// The middles are measured where the pieces sit before the move, so they don't shift
+    /// under the finger as the others step aside.
+    private func plannedMove(widths: [CGFloat], pieces: [Piece]) -> Move? {
+        guard let moving, let from = pieces.firstIndex(where: { $0.id == moving.id }) else { return nil }
+        let lefts = leftEdges(widths)
+        let end = (lefts.last ?? 0) + (widths.last ?? 0)
+        let translation = min(max(moving.translation, -lefts[from]), end - lefts[from] - widths[from])
+        let middle = lefts[from] + widths[from] / 2 + translation
+        let to = pieces.indices.filter { $0 != from && lefts[$0] + widths[$0] / 2 < middle }.count
+        return Move(id: moving.id, from: from, to: to, translation: translation, gap: widths[from] + spacing)
+    }
+
+    /// The moved piece follows the finger; those between where it was and where it would
+    /// land step aside to make room.
+    private func moveOffset(at index: Int, in move: Move?) -> CGFloat {
+        guard let move else { return 0 }
+        if index == move.from { return move.translation }
+        if move.from < index && index <= move.to { return -move.gap }
+        if move.to <= index && index < move.from { return move.gap }
+        return 0
+    }
+
+    private func finishMove(_ id: UUID, widths: [CGFloat], pieces: [Piece]) {
+        let move = plannedMove(widths: widths, pieces: pieces)
+        withAnimation(moveAnimation) {
+            if let move, move.to != move.from { model.move(id, to: move.to) }
+            moving = nil
+        }
     }
 
     /// Where a moment of the timeline sits along the strip.
@@ -599,12 +661,21 @@ private struct PieceStripView: View {
 
     // MARK: Tiles
 
-    private func tile(_ piece: Piece, index: Int, width: CGFloat) -> some View {
+    private func tile(_ piece: Piece, index: Int, widths: [CGFloat], pieces: [Piece], move: Move?) -> some View {
+        let width = widths[index]
         let isSelected = model.selectedPieceID == piece.id
+        let isMoving = move?.id == piece.id
+        let offset = moveOffset(at: index, in: move)
+        let select = { (location: CGPoint) in model.select(piece.id, at: Double(location.x / max(width, 1))) }
         return ZStack {
             tileContent(piece)
                 .frame(width: width, height: tileHeight)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                .contentShape(Rectangle())
+                // On the picture, under the trim handles, so holding a handle still trims. The tap
+                // sits with the hold: a tap further out would wait on it and never fire.
+                .onTapGesture(coordinateSpace: .local, perform: select)
+                .gesture(moveGesture(piece, widths: widths, pieces: pieces), including: pieces.count > 1 ? .all : .subviews)
             RoundedRectangle(cornerRadius: 8)
                 .strokeBorder(Color.yellow, lineWidth: 3)
                 .opacity(isSelected ? 1 : 0)
@@ -626,23 +697,44 @@ private struct PieceStripView: View {
         }
         .frame(width: width, height: tileHeight)
         .animation(.easeOut(duration: 0.15), value: isSelected)
+        .scaleEffect(isMoving ? 1.08 : 1)
+        .shadow(color: .black.opacity(isMoving ? 0.5 : 0), radius: 8, y: 4)
+        .animation(.snappy(duration: 0.2), value: isMoving)
+        .offset(x: offset)
+        // The moved piece tracks the finger exactly; the others glide. On release the moved
+        // piece glides too, from under the finger into its new place.
+        .animation(isMoving ? nil : moveAnimation, value: offset)
+        .zIndex(isMoving ? 1 : 0)
         .contentShape(Rectangle())
-        .onTapGesture(coordinateSpace: .local) { location in
-            model.select(piece.id, at: Double(location.x / max(width, 1)))
-        }
-        .draggable(piece.id.uuidString) {
-            tileContent(piece)
-                .frame(width: min(width, 80), height: tileHeight)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-        .dropDestination(for: String.self) { items, _ in
-            guard let id = items.first.flatMap(UUID.init(uuidString:)) else { return false }
-            withAnimation(.snappy(duration: 0.3)) { model.move(id, to: index) }
-            return true
-        }
+        .onTapGesture(coordinateSpace: .local, perform: select)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Piece \(index + 1)"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        // VoiceOver: swipe up to move the piece later, down to move it earlier.
+        .accessibilityAdjustableAction { direction in
+            let to = direction == .increment ? index + 1 : index - 1
+            guard pieces.indices.contains(to) else { return }
+            withAnimation(moveAnimation) { model.move(piece.id, to: to) }
+            AccessibilityNotification.Announcement(AttributedString(localized: "Piece \(to + 1)")).post()
+        }
+    }
+
+    /// Hold a piece, then drag it along the strip. Measured in the strip's space, so the piece
+    /// moving under the finger doesn't throw off the distance.
+    private func moveGesture(_ piece: Piece, widths: [CGFloat], pieces: [Piece]) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.25)
+            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .named("strip")))
+            .updating($isHoldingPiece) { value, holding, _ in
+                if case .second(true, _) = value { holding = true }
+            }
+            .onChanged { value in
+                guard case .second(true, let drag) = value else { return }
+                moving = (piece.id, drag?.translation.width ?? 0)
+            }
+            .onEnded { value in
+                guard case .second(true, _) = value else { return }
+                finishMove(piece.id, widths: widths, pieces: pieces)
+            }
     }
 
     @ViewBuilder
