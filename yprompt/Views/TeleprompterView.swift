@@ -724,6 +724,10 @@ struct TeleprompterView: View {
         .onChange(of: cameraService.isRecording) { _, recording in
             if recording { collapsePickupBanner() }
         }
+        // The Watch shows record or stop from this.
+        .onChange(of: watchRecordingState, initial: true) { _, state in
+            WatchSessionRelay.shared.localRecordingState = state
+        }
         .onChange(of: keepsScreenAwake, initial: true) { _, awake in
             UIApplication.shared.isIdleTimerDisabled = awake
         }
@@ -1466,9 +1470,17 @@ struct TeleprompterView: View {
         viewModel.isPlaying || cameraService.isRecording || cameraService.finished != nil
     }
 
+    /// What the Watch is told: whether a take can start here, and whether one is running.
+    private var watchRecordingState: RemoteRecordingState {
+        RemoteRecordingState(canRecord: recordsTakes && cameraService.isCameraActive,
+                             isRecording: cameraService.isRecording,
+                             startedAt: cameraService.recordingStartDate)
+    }
+
     private func handlePlayModeDisappear() {
         // Covered by the take sheet, not left: the camera keeps running for Retake.
         guard cameraService.finished == nil else { return }
+        WatchSessionRelay.shared.localRecordingState = RemoteRecordingState()
         UIApplication.shared.isIdleTimerDisabled = false
         if !didRestoreTabBar {
             didRestoreTabBar = true
@@ -1501,6 +1513,9 @@ struct TeleprompterView: View {
                     await viewModel.toggleVoiceScroll()
                 }
             }
+        case .toggleRecording:
+            // Only with the camera or microphone on, as with the record button.
+            if recordsTakes && (cameraService.isCameraActive || cameraService.isRecording) { toggleRecording() }
         case .setTimedDuration(let duration):
             viewModel.timedDuration = duration
         }

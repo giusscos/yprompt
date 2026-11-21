@@ -18,6 +18,10 @@ final class WatchSessionRelay: NSObject {
     var onCommandReceived: ((RemoteControlCommand) -> Void)?
     /// Local iPhone scripts — set by ContentView so Watch can list them when not bridged to a Mac.
     var localScripts: [Script] = []
+    /// Whether the iPhone's reading screen can record and is recording; set by that screen.
+    var localRecordingState = RemoteRecordingState() {
+        didSet { if localRecordingState != oldValue { sendRecordingStateToWatch() } }
+    }
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -33,6 +37,21 @@ final class WatchSessionRelay: NSObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.sendScriptListToWatch() }
             .store(in: &cancellables)
+
+        // The Mac's recording state, when the iPhone is its remote.
+        RemoteControlService.shared.$remoteRecordingState
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.sendRecordingStateToWatch() }
+            .store(in: &cancellables)
+    }
+
+    /// Tells the Watch whether it can start a take and whether one is running.
+    func sendRecordingStateToWatch() {
+        guard WCSession.default.activationState == .activated, WCSession.default.isReachable else { return }
+        let remote = RemoteControlService.shared
+        let state = remote.isConnected ? remote.remoteRecordingState : localRecordingState
+        WCSession.default.sendMessage(state.watchMessage, replyHandler: nil, errorHandler: nil)
     }
 
     func activate() {
@@ -97,7 +116,10 @@ extension WatchSessionRelay: WCSessionDelegate {
         guard let cmdString = message["command"] as? String else { return }
 
         if cmdString == "requestScripts" {
-            Task { @MainActor in self.sendScriptListToWatch() }
+            Task { @MainActor in
+                self.sendScriptListToWatch()
+                self.sendRecordingStateToWatch()
+            }
             return
         }
 

@@ -26,6 +26,10 @@ final class WatchRemoteService: NSObject, ObservableObject {
     @Published var scrollMode: ScrollMode = .standard
     @Published var timedMinutes: Int = 5
     @Published var timedSeconds: Int = 0
+    /// Whether the phone or Mac can start a take (camera or microphone on), and whether one runs.
+    @Published var canRecord = false
+    @Published var isRecording = false
+    @Published var recordingStartedAt: Date?
 
     private var stopTask: Task<Void, Never>?
 
@@ -60,6 +64,13 @@ final class WatchRemoteService: NSObject, ObservableObject {
 
     func requestScripts() {
         send(command: "requestScripts")
+    }
+
+    /// Starts or stops a take where the script is being read.
+    func toggleRecording() {
+        guard canRecord || isRecording else { return }
+        WKInterfaceDevice.current().play(isRecording ? .stop : .start)
+        send(command: "toggleRecording")
     }
 
     func selectScript(id: String) {
@@ -108,11 +119,25 @@ extension WatchRemoteService: WCSessionDelegate {
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
             self.isPhoneReachable = WCSession.default.isReachable
+            // Catch up on scripts and recording state once the phone is back.
+            if self.isPhoneReachable { self.requestScripts() } else { self.canRecord = false }
         }
     }
 
     // Receives messages pushed by the iPhone relay (script list updates and haptic cues).
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        if let cmd = message["command"] as? String, cmd == "recordingState" {
+            let canRecord = message["canRecord"] as? Bool ?? false
+            let recording = message["recording"] as? Bool ?? false
+            let startedAt = (message["startedAt"] as? Double).map(Date.init(timeIntervalSince1970:))
+            Task { @MainActor in
+                self.canRecord = canRecord
+                self.isRecording = recording
+                self.recordingStartedAt = recording ? startedAt : nil
+            }
+            return
+        }
+
         // Haptic cue: iPhone crossed a script cue point during playback
         if let cmd = message["command"] as? String, cmd == "hapticCue" {
             Task { @MainActor in

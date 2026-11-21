@@ -31,6 +31,8 @@ enum RemoteControlCommand: Codable {
     case setNotchMode(Bool)
     case setVoiceScroll(Bool)
     case setTimedDuration(TimeInterval?)
+    /// Starts or stops a take, from the Watch or the iPhone remote.
+    case toggleRecording
 
     // Used by WatchSessionRelay to decode Watch-originated commands (no associated values).
     init?(rawValue: String) {
@@ -40,6 +42,7 @@ enum RemoteControlCommand: Codable {
         case "stopContinuous":      self = .stopContinuous
         case "togglePlayPause":     self = .togglePlayPause
         case "reset":               self = .reset
+        case "toggleRecording":     self = .toggleRecording
         default:                    return nil
         }
     }
@@ -59,6 +62,7 @@ enum RemoteControlCommand: Codable {
         case "setNotchMode":        self = .setNotchMode(try c.decode(Bool.self, forKey: .payload))
         case "setVoiceScroll":      self = .setVoiceScroll(try c.decode(Bool.self, forKey: .payload))
         case "setTimedDuration":    self = .setTimedDuration(try? c.decode(Double.self, forKey: .payload))
+        case "toggleRecording":     self = .toggleRecording
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "unknown command")
         }
@@ -87,7 +91,26 @@ enum RemoteControlCommand: Codable {
         case .setTimedDuration(let duration):
             try c.encode("setTimedDuration", forKey: .type)
             if let duration { try c.encode(duration, forKey: .payload) }
+        case .toggleRecording:
+            try c.encode("toggleRecording", forKey: .type)
         }
+    }
+}
+
+// MARK: - Recording state
+
+/// Whether a take can be started where the script is being read, and whether one is running.
+/// Sent by the reading device to its remotes, so the Watch can show record or stop.
+struct RemoteRecordingState: Codable, Equatable {
+    var canRecord = false
+    var isRecording = false
+    var startedAt: Date?
+
+    /// The form the Watch receives over WatchConnectivity.
+    var watchMessage: [String: Any] {
+        var message: [String: Any] = ["command": "recordingState", "canRecord": canRecord, "recording": isRecording]
+        if let startedAt { message["startedAt"] = startedAt.timeIntervalSince1970 }
+        return message
     }
 }
 
@@ -97,9 +120,11 @@ enum RemoteMessage: Codable {
     case command(RemoteControlCommand)
     /// Sent Mac → iOS: script list, active script ID, notch-mode, voice-scroll, timed duration.
     case scriptList([ScriptInfo], UUID?, Bool, Bool, TimeInterval?)
+    /// Sent Mac → iOS: whether the Mac can record and is recording. Older versions ignore it.
+    case recordingState(RemoteRecordingState)
 
     private enum CodingKeys: String, CodingKey {
-        case kind, command, scripts, currentID, notchMode, voiceScrollEnabled, timedDuration
+        case kind, command, scripts, currentID, notchMode, voiceScrollEnabled, timedDuration, recording
     }
 
     init(from decoder: Decoder) throws {
@@ -115,6 +140,8 @@ enum RemoteMessage: Codable {
                 (try? c.decode(Bool.self, forKey: .voiceScrollEnabled)) ?? false,
                 try? c.decode(Double.self, forKey: .timedDuration)
             )
+        case "recordingState":
+            self = .recordingState(try c.decode(RemoteRecordingState.self, forKey: .recording))
         default:
             throw DecodingError.dataCorruptedError(forKey: .kind, in: c, debugDescription: "unknown message kind")
         }
@@ -133,6 +160,9 @@ enum RemoteMessage: Codable {
             try c.encode(notchMode, forKey: .notchMode)
             try c.encode(voiceScrollEnabled, forKey: .voiceScrollEnabled)
             if let timedDuration { try c.encode(timedDuration, forKey: .timedDuration) }
+        case .recordingState(let state):
+            try c.encode("recordingState", forKey: .kind)
+            try c.encode(state, forKey: .recording)
         }
     }
 }
@@ -158,6 +188,8 @@ final class RemoteControlService: NSObject, ObservableObject {
     @Published var remoteVoiceScrollEnabled: Bool = false
     /// Timed duration set on the Mac (iOS remote side).
     @Published var remoteTimedDuration: TimeInterval? = nil
+    /// Recording state received from the Mac (iOS remote side).
+    @Published var remoteRecordingState = RemoteRecordingState()
 
     var onCommandReceived: ((RemoteControlCommand) -> Void)?
     var onLastPeerDisconnected: (() -> Void)?
@@ -230,6 +262,7 @@ final class RemoteControlService: NSObject, ObservableObject {
         remoteNotchMode = false
         remoteVoiceScrollEnabled = false
         remoteTimedDuration = nil
+        remoteRecordingState = RemoteRecordingState()
     }
 
     // MARK: - Sending
@@ -237,6 +270,12 @@ final class RemoteControlService: NSObject, ObservableObject {
     func send(command: RemoteControlCommand) {
         guard !session.connectedPeers.isEmpty,
               let data = try? JSONEncoder().encode(RemoteMessage.command(command)) else { return }
+        try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
+    }
+
+    func sendRecordingState(_ state: RemoteRecordingState) {
+        guard !session.connectedPeers.isEmpty,
+              let data = try? JSONEncoder().encode(RemoteMessage.recordingState(state)) else { return }
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
     }
 
@@ -281,6 +320,8 @@ extension RemoteControlService: MCSessionDelegate {
                 self.remoteVoiceScrollEnabled = voiceScrollEnabled
                 self.remoteTimedDuration = timedDuration
                 self.onScriptListUpdated?()
+            case .recordingState(let state):
+                self.remoteRecordingState = state
             }
         }
     }

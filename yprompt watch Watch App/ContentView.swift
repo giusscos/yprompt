@@ -88,12 +88,14 @@ private struct ControlsPage: View {
     @ObservedObject var remote: WatchRemoteService
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
             HoldScrollButton(icon: "arrowtriangle.up.fill", isEnabled: remote.isPhoneReachable) {
                 remote.startContinuous("startContinuousUp")
             } onRelease: {
                 remote.stopContinuous()
             }
+
+            RecordButton(remote: remote)
 
             HoldScrollButton(icon: "arrowtriangle.down.fill", isEnabled: remote.isPhoneReachable) {
                 remote.startContinuous("startContinuousDown")
@@ -102,6 +104,45 @@ private struct ControlsPage: View {
             }
         }
         .padding(.horizontal)
+    }
+}
+
+// MARK: - Record Button
+
+/// Starts and stops a take on the phone or Mac. Works when the camera or microphone is on there.
+private struct RecordButton: View {
+    @ObservedObject var remote: WatchRemoteService
+
+    private var isEnabled: Bool { remote.isPhoneReachable && (remote.canRecord || remote.isRecording) }
+
+    var body: some View {
+        Button { remote.toggleRecording() } label: {
+            HStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .strokeBorder(.white.opacity(0.8), lineWidth: 2)
+                        .frame(width: 30, height: 30)
+                    RoundedRectangle(cornerRadius: remote.isRecording ? 3 : 10)
+                        .fill(.red)
+                        .frame(width: remote.isRecording ? 11 : 20, height: remote.isRecording ? 11 : 20)
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.75), value: remote.isRecording)
+
+                if remote.isRecording, let start = remote.recordingStartedAt {
+                    TimelineView(.periodic(from: start, by: 1)) { timeline in
+                        let total = max(0, Int(timeline.date.timeIntervalSince(start)))
+                        Text(String(format: "%02d:%02d", total / 60, total % 60))
+                            .font(.footnote.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .opacity(isEnabled ? 1 : 0.35)
+        .disabled(!isEnabled)
+        .accessibilityLabel(remote.isRecording ? "Stop Recording" : "Start Recording")
+        .accessibilityHint(isEnabled ? "" : "Turn on the camera or microphone on your iPhone or Mac first.")
     }
 }
 

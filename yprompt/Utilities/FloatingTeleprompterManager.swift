@@ -187,6 +187,7 @@ final class FloatingTeleprompterManager {
         }
         setupRemoteControlCallbacks()
         capture.onFinished = { [weak self] selection in self?.takeFinished(selection) }
+        observeRecordingState()
     }
 
     static var screenHasNotch: Bool {
@@ -503,6 +504,7 @@ final class FloatingTeleprompterManager {
         let remote = RemoteControlService.shared
         remote.onPeerConnected = { [weak self] peer in
             guard let self else { return }
+            remote.sendRecordingState(self.remoteRecordingState)
             let infos = self.registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
             remote.sendScriptList(infos, currentID: self.currentScript?.id, notchMode: self.notchMode,
                                   voiceScrollEnabled: self.viewModel.voiceScrollEnabled,
@@ -545,6 +547,9 @@ final class FloatingTeleprompterManager {
             case .setTimedDuration(let duration):
                 self.viewModel.timedDuration = duration
                 self.pushStateToRemotes(notchMode: self.notchMode)
+            case .toggleRecording:
+                // From the Watch through the iPhone: only while the prompter is up with recording on.
+                if self.isVisible && self.recordMode != .off { self.toggleRecording() }
             }
         }
         remote.onLastPeerDisconnected = { [weak self] in
@@ -552,6 +557,26 @@ final class FloatingTeleprompterManager {
             self?.stopNotchRemoteScroll()
         }
     }
+
+    /// Whether the Mac can record and is recording, for the iPhone and Watch remotes.
+    private var remoteRecordingState: RemoteRecordingState {
+        RemoteRecordingState(canRecord: isVisible && recordMode != .off && capture.isActive,
+                             isRecording: capture.isRecording,
+                             startedAt: capture.recordingStartDate)
+    }
+
+    /// Sends the recording state to the remotes whenever it changes.
+    private func observeRecordingState() {
+        let state = withObservationTracking { remoteRecordingState } onChange: { [weak self] in
+            Task { @MainActor in self?.observeRecordingState() }
+        }
+        if state != lastSentRecordingState {
+            lastSentRecordingState = state
+            RemoteControlService.shared.sendRecordingState(state)
+        }
+    }
+
+    @ObservationIgnored private var lastSentRecordingState: RemoteRecordingState?
 
     private func pushStateToRemotes(notchMode: Bool) {
         let infos = registeredScripts.map { ScriptInfo(id: $0.id, title: $0.title) }
