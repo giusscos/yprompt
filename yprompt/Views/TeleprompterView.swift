@@ -611,6 +611,15 @@ struct TeleprompterView: View {
         // must stay clear or the ends of lines get covered.
         .ignoresSafeArea(edges: .vertical)
         .background { readingBackground }
+        .background {
+            // The layer Picture in Picture shows has to be in the window, full size, so the
+            // window grows out of the reading screen. The background covers it.
+            if TeleprompterPiP.isSupported {
+                PiPSourceView(layer: pip.displayLayer)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+        }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { layoutFrame = $0 }
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { inset in
             // Hiding the toolbar shrinks the safe area; keep its space so the text doesn't jump.
@@ -623,19 +632,10 @@ struct TeleprompterView: View {
         .onTapGesture(perform: handleSurfaceTap)
         .overlay { scriptAccessibilityElement }
         .overlay(alignment: .bottom) { bottomControls }
-        .overlay(alignment: .topLeading) {
-            // The layer Picture in Picture shows has to be on screen; a couple of points is enough.
-            if TeleprompterPiP.isSupported {
-                PiPSourceView(layer: pip.displayLayer)
-                    .frame(width: 2, height: 2)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-            }
-        }
         .accessibilityAction(.magicTap) { magicTapAction() }
         .onAppear {
             if TeleprompterPiP.isSupported {
-                pip.configure(viewModel: viewModel, text: pipText, autoStart: storeKit.isPremium)
+                pip.configure(viewModel: viewModel, style: pipStyle, autoStart: storeKit.isPremium)
             }
             viewModel.transparency = customization.transparency
             applyReadingPreferences()
@@ -661,7 +661,7 @@ struct TeleprompterView: View {
             }
         }
         .onChange(of: usesWordStyle) { _, usesWords in viewModel.setWordMode(usesWords) }
-        .onChange(of: pipText) { _, text in pip.update(text: text) }
+        .onChange(of: pipStyle) { _, style in pip.update(style: style) }
         .onChange(of: storeKit.isPremium) { _, premium in pip.setAutoStart(premium) }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -831,7 +831,7 @@ struct TeleprompterView: View {
                 }
                 .accessibilityLabel(pip.isActive ? "Stop Picture in Picture" : "Picture in Picture")
                 // The camera can't keep recording behind another app.
-                .disabled(cameraService.isRecording || (storeKit.isPremium && !pip.isPossible && !pip.isActive))
+                .disabled(cameraService.isRecording)
             }
         }
         ToolbarItem(placement: .topBarTrailing) {
@@ -1505,7 +1505,13 @@ struct TeleprompterView: View {
     }
 
     /// The script, in the Picture in Picture window, as the reading screen shows it.
-    private var pipText: String { viewModel.scriptWords?.text ?? currentScript.content }
+    private var pipStyle: PiPStyle {
+        PiPStyle(text: viewModel.scriptWords?.text ?? currentScript.content,
+                 words: usesWordStyle ? viewModel.scriptWords : nil,
+                 textColorHex: customization.textColorHex,
+                 backgroundColorHex: customization.backgroundColorHex,
+                 font: readingFont)
+    }
 
     /// Floats the script over other apps: Camera, Instagram, a FaceTime or Zoom call. Pro.
     private func togglePictureInPicture() {
