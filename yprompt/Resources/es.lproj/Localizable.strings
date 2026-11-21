@@ -497,3 +497,35 @@
 "For vertical scrolling" = "Para el desplazamiento vertical";
 "Mirror Camera" = "Reflejar Cámara";
 "Shows the preview like a mirror. Recordings are never mirrored." = "Muestra la vista previa como un espejo. Las grabaciones nunca se reflejan.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Escribir con Apple Intelligence";
+"What's it about?" = "¿De qué trata?";
+"Topic" = "Tema";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "Por ejemplo: “Bienvenidos al episodio 12 de mi podcast de cocina, sobre técnicas de cuchillo.”";
+"Length" = "Duración";
+"Tone" = "Tono";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "Escrito en este dispositivo con Apple Intelligence. Nada de lo que escribes sale de él. Comprueba datos y nombres antes de leerlo.";
+"30 sec" = "30 s";
+"%lld min" = "%lld min";
+"Writing your script…" = "Escribiendo tu guion…";
+"This takes a few seconds." = "Tarda unos segundos.";
+"Write" = "Escribir";
+"Try Again" = "Reintentar";
+"Add Script" = "Añadir Guion";
+"%lld words · about %lld min" = "%lld palabras · unos %lld min";
+"Conversational" = "Cercano";
+"Professional" = "Profesional";
+"Energetic" = "Enérgico";
+"Inspiring" = "Inspirador";
+"Funny" = "Divertido";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "Activa Apple Intelligence en Ajustes para escribir guiones con ella.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence aún se está preparando. Inténtalo de nuevo en un rato.";
+"This device doesn't support Apple Intelligence." = "Este dispositivo no es compatible con Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence no está disponible ahora.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Para escribir guiones con Apple Intelligence se necesita una versión más reciente del sistema.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "Este guion es demasiado largo para que Apple Intelligence lo reescriba de una vez. Prueba con una parte.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence no pudo escribir sobre este tema. Prueba a expresarlo de otra forma.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence no pudo terminar el guion. Inténtalo de nuevo.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "La versión gratuita admite %lld guiones. Con yPrompt Pro tienes guiones ilimitados.";
+"That script isn't in yPrompt anymore." = "Ese guion ya no está en yPrompt.";

@@ -663,7 +663,9 @@ struct SettingsView: View {
 
     private func resetAllData() {
         do {
-            try modelContext.fetch(FetchDescriptor<Script>()).forEach { modelContext.delete($0) }
+            let all = try modelContext.fetch(FetchDescriptor<Script>())
+            ScriptIndex.remove(all.map(\.id))
+            all.forEach { modelContext.delete($0) }
             try modelContext.fetch(FetchDescriptor<AppSettings>()).forEach { modelContext.delete($0) }
             try modelContext.save()
             ReadingPreferences.reset()

@@ -104,6 +104,9 @@ struct ypromptApp: App {
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await storeKit.refreshEntitlements() } }
+            // Edits made in the app, and scripts synced from other devices, reach Spotlight,
+            // Siri and Apple Intelligence.
+            if phase != .active { ScriptIndex.rebuild() }
         }
         #if os(macOS)
         .defaultSize(width: 1180, height: 760)

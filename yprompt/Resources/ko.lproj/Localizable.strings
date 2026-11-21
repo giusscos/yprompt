@@ -455,3 +455,35 @@
 "For vertical scrolling" = "세로 스크롤용";
 "Mirror Camera" = "카메라 좌우 반전";
 "Shows the preview like a mirror. Recordings are never mirrored." = "미리보기를 거울처럼 보여줍니다. 녹화는 반전되지 않습니다.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Apple Intelligence로 쓰기";
+"What's it about?" = "무엇에 관한 내용인가요?";
+"Topic" = "주제";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "예: “제 요리 팟캐스트 12화에 오신 것을 환영합니다. 오늘은 칼 다루는 법입니다.”";
+"Length" = "길이";
+"Tone" = "어조";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "이 기기에서 Apple Intelligence로 작성했습니다. 입력한 내용은 기기 밖으로 나가지 않습니다. 읽기 전에 사실과 이름을 확인하세요.";
+"30 sec" = "30초";
+"%lld min" = "%lld분";
+"Writing your script…" = "스크립트 작성 중…";
+"This takes a few seconds." = "몇 초 정도 걸립니다.";
+"Write" = "쓰기";
+"Try Again" = "다시 시도";
+"Add Script" = "스크립트 추가";
+"%lld words · about %lld min" = "%lld단어 · 약 %lld분";
+"Conversational" = "친근하게";
+"Professional" = "전문적으로";
+"Energetic" = "활기차게";
+"Inspiring" = "감동적으로";
+"Funny" = "재미있게";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "스크립트를 쓰려면 설정에서 Apple Intelligence를 켜세요.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence가 아직 준비 중입니다. 잠시 후 다시 시도하세요.";
+"This device doesn't support Apple Intelligence." = "이 기기는 Apple Intelligence를 지원하지 않습니다.";
+"Apple Intelligence isn't available right now." = "지금은 Apple Intelligence를 사용할 수 없습니다.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Apple Intelligence로 스크립트를 쓰려면 더 최신 버전의 시스템이 필요합니다.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "이 스크립트는 너무 길어 Apple Intelligence가 한 번에 다시 쓸 수 없습니다. 일부로 시도해 보세요.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence가 이 주제에 대해 쓸 수 없었습니다. 다르게 표현해 보세요.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence가 스크립트를 완성하지 못했습니다. 다시 시도하세요.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "무료 버전은 스크립트를 %lld개까지 저장합니다. yPrompt Pro로 무제한 이용하세요.";
+"That script isn't in yPrompt anymore." = "그 스크립트는 더 이상 yPrompt에 없습니다.";

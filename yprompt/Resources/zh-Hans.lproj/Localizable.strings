@@ -455,3 +455,35 @@
 "For vertical scrolling" = "用于垂直滚动";
 "Mirror Camera" = "镜像相机";
 "Shows the preview like a mirror. Recordings are never mirrored." = "像镜子一样显示预览。录制内容不会被镜像。";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "使用 Apple 智能撰写";
+"What's it about?" = "内容是关于什么的？";
+"Topic" = "主题";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "例如：“欢迎收听我的烹饪播客第 12 期，本期讲刀工。”";
+"Length" = "长度";
+"Tone" = "语气";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "由 Apple 智能在此设备上撰写。你输入的内容不会离开设备。朗读前请核对事实和名称。";
+"30 sec" = "30 秒";
+"%lld min" = "%lld 分钟";
+"Writing your script…" = "正在撰写脚本…";
+"This takes a few seconds." = "这需要几秒钟。";
+"Write" = "撰写";
+"Try Again" = "重试";
+"Add Script" = "添加脚本";
+"%lld words · about %lld min" = "%lld 个词 · 约 %lld 分钟";
+"Conversational" = "亲切自然";
+"Professional" = "专业";
+"Energetic" = "活力";
+"Inspiring" = "鼓舞人心";
+"Funny" = "幽默";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "请在“设置”中打开 Apple 智能以撰写脚本。";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple 智能仍在准备中。请稍后再试。";
+"This device doesn't support Apple Intelligence." = "此设备不支持 Apple 智能。";
+"Apple Intelligence isn't available right now." = "Apple 智能目前不可用。";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "使用 Apple 智能撰写脚本需要更新版本的系统。";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "此脚本太长，Apple 智能无法一次改写。请尝试其中一部分。";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple 智能无法撰写此主题。请换一种说法。";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple 智能未能完成脚本。请重试。";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "免费版可存储 %lld 个脚本。升级到 yPrompt Pro 可无限存储。";
+"That script isn't in yPrompt anymore." = "该脚本已不在 yPrompt 中。";

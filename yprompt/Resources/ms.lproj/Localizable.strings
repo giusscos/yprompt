@@ -455,3 +455,35 @@
 "For vertical scrolling" = "Untuk tatal menegak";
 "Mirror Camera" = "Cerminkan Kamera";
 "Shows the preview like a mirror. Recordings are never mirrored." = "Menunjukkan pratonton seperti cermin. Rakaman tidak pernah dicerminkan.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Tulis dengan Apple Intelligence";
+"What's it about?" = "Tentang apa?";
+"Topic" = "Topik";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "Contohnya: “Selamat datang ke episod 12 podcast masakan saya, tentang teknik pisau.”";
+"Length" = "Panjang";
+"Tone" = "Nada";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "Ditulis pada peranti ini dengan Apple Intelligence. Tiada apa yang anda taip meninggalkannya. Semak fakta dan nama sebelum membacanya.";
+"30 sec" = "30 saat";
+"%lld min" = "%lld min";
+"Writing your script…" = "Menulis skrip anda…";
+"This takes a few seconds." = "Ini mengambil masa beberapa saat.";
+"Write" = "Tulis";
+"Try Again" = "Cuba Lagi";
+"Add Script" = "Tambah Skrip";
+"%lld words · about %lld min" = "%lld perkataan · kira-kira %lld min";
+"Conversational" = "Santai";
+"Professional" = "Profesional";
+"Energetic" = "Bertenaga";
+"Inspiring" = "Memberi Inspirasi";
+"Funny" = "Lucu";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "Hidupkan Apple Intelligence dalam Seting untuk menulis skrip dengannya.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence masih bersedia. Cuba lagi sebentar nanti.";
+"This device doesn't support Apple Intelligence." = "Peranti ini tidak menyokong Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence tidak tersedia sekarang.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Menulis skrip dengan Apple Intelligence memerlukan versi sistem yang lebih baharu.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "Skrip ini terlalu panjang untuk ditulis semula oleh Apple Intelligence sekali gus. Cuba sebahagian daripadanya.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence tidak dapat menulis tentang topik ini. Cuba nyatakannya dengan cara lain.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence tidak dapat menyiapkan skrip. Sila cuba lagi.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Versi percuma memuatkan %lld skrip. Naik taraf ke yPrompt Pro untuk skrip tanpa had.";
+"That script isn't in yPrompt anymore." = "Skrip itu tiada lagi dalam yPrompt.";

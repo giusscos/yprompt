@@ -455,3 +455,35 @@
 "For vertical scrolling" = "Cho cuộn dọc";
 "Mirror Camera" = "Lật camera như gương";
 "Shows the preview like a mirror. Recordings are never mirrored." = "Hiển thị bản xem trước như gương. Bản ghi không bao giờ bị lật.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Viết bằng Apple Intelligence";
+"What's it about?" = "Nội dung về gì?";
+"Topic" = "Chủ đề";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "Ví dụ: “Chào mừng đến với tập 12 podcast nấu ăn của tôi, về kỹ thuật dùng dao.”";
+"Length" = "Độ dài";
+"Tone" = "Giọng điệu";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "Được viết trên thiết bị này bằng Apple Intelligence. Không gì bạn nhập rời khỏi thiết bị. Hãy kiểm tra thông tin và tên trước khi đọc.";
+"30 sec" = "30 giây";
+"%lld min" = "%lld phút";
+"Writing your script…" = "Đang viết kịch bản…";
+"This takes a few seconds." = "Việc này mất vài giây.";
+"Write" = "Viết";
+"Try Again" = "Thử lại";
+"Add Script" = "Thêm kịch bản";
+"%lld words · about %lld min" = "%lld từ · khoảng %lld phút";
+"Conversational" = "Thân mật";
+"Professional" = "Chuyên nghiệp";
+"Energetic" = "Sôi nổi";
+"Inspiring" = "Truyền cảm hứng";
+"Funny" = "Hài hước";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "Bật Apple Intelligence trong Cài đặt để viết kịch bản.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence vẫn đang chuẩn bị. Hãy thử lại sau ít phút.";
+"This device doesn't support Apple Intelligence." = "Thiết bị này không hỗ trợ Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence hiện không khả dụng.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Viết kịch bản bằng Apple Intelligence cần phiên bản hệ thống mới hơn.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "Kịch bản này quá dài để Apple Intelligence viết lại một lần. Hãy thử với một phần.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence không thể viết về chủ đề này. Hãy thử diễn đạt khác.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence không thể hoàn thành kịch bản. Vui lòng thử lại.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Bản miễn phí chứa %lld kịch bản. Nâng cấp lên yPrompt Pro để có kịch bản không giới hạn.";
+"That script isn't in yPrompt anymore." = "Kịch bản đó không còn trong yPrompt.";

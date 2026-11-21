@@ -497,3 +497,35 @@
 "For vertical scrolling" = "For vertical scrolling";
 "Mirror Camera" = "Mirror Camera";
 "Shows the preview like a mirror. Recordings are never mirrored." = "Shows the preview like a mirror. Recordings are never mirrored.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Write with Apple Intelligence";
+"What's it about?" = "What's it about?";
+"Topic" = "Topic";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”";
+"Length" = "Length";
+"Tone" = "Tone";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out.";
+"30 sec" = "30 sec";
+"%lld min" = "%lld min";
+"Writing your script…" = "Writing your script…";
+"This takes a few seconds." = "This takes a few seconds.";
+"Write" = "Write";
+"Try Again" = "Try Again";
+"Add Script" = "Add Script";
+"%lld words · about %lld min" = "%lld words · about %lld min";
+"Conversational" = "Conversational";
+"Professional" = "Professional";
+"Energetic" = "Energetic";
+"Inspiring" = "Inspiring";
+"Funny" = "Funny";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "Turn on Apple Intelligence in Settings to write scripts with it.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence is still getting ready. Try again in a little while.";
+"This device doesn't support Apple Intelligence." = "This device doesn't support Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence isn't available right now.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Writing scripts with Apple Intelligence needs a newer version of the system.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "This script is too long for Apple Intelligence to rewrite in one go. Try a part of it.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence couldn't write about this topic. Try wording it differently.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence couldn't finish the script. Please try again.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts.";
+"That script isn't in yPrompt anymore." = "That script isn't in yPrompt anymore.";

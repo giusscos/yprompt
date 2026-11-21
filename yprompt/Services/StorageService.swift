@@ -40,6 +40,7 @@ class StorageService {
     }
 
     func deleteScript(_ script: Script) {
+        ScriptIndex.remove([script.id])
         modelContext.delete(script)
         try? modelContext.save()
     }

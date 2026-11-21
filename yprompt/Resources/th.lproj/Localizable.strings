@@ -455,3 +455,35 @@
 "For vertical scrolling" = "สำหรับการเลื่อนแนวตั้ง";
 "Mirror Camera" = "กลับด้านกล้องแบบกระจก";
 "Shows the preview like a mirror. Recordings are never mirrored." = "แสดงภาพตัวอย่างเหมือนกระจก ไฟล์บันทึกจะไม่ถูกกลับด้าน";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "เขียนด้วย Apple Intelligence";
+"What's it about?" = "เกี่ยวกับอะไร";
+"Topic" = "หัวข้อ";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "ตัวอย่าง: “ยินดีต้อนรับสู่ตอนที่ 12 ของพอดแคสต์ทำอาหารของฉัน เรื่องเทคนิคการใช้มีด”";
+"Length" = "ความยาว";
+"Tone" = "น้ำเสียง";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "เขียนบนอุปกรณ์นี้ด้วย Apple Intelligence สิ่งที่คุณพิมพ์จะไม่ออกจากอุปกรณ์ โปรดตรวจสอบข้อเท็จจริงและชื่อก่อนอ่าน";
+"30 sec" = "30 วินาที";
+"%lld min" = "%lld นาที";
+"Writing your script…" = "กำลังเขียนสคริปต์…";
+"This takes a few seconds." = "ใช้เวลาไม่กี่วินาที";
+"Write" = "เขียน";
+"Try Again" = "ลองอีกครั้ง";
+"Add Script" = "เพิ่มสคริปต์";
+"%lld words · about %lld min" = "%lld คำ · ประมาณ %lld นาที";
+"Conversational" = "เป็นกันเอง";
+"Professional" = "มืออาชีพ";
+"Energetic" = "มีพลัง";
+"Inspiring" = "สร้างแรงบันดาลใจ";
+"Funny" = "ตลก";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "เปิด Apple Intelligence ในการตั้งค่าเพื่อเขียนสคริปต์";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence ยังเตรียมพร้อมอยู่ ลองอีกครั้งในอีกสักครู่";
+"This device doesn't support Apple Intelligence." = "อุปกรณ์นี้ไม่รองรับ Apple Intelligence";
+"Apple Intelligence isn't available right now." = "Apple Intelligence ไม่พร้อมใช้งานในขณะนี้";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "การเขียนสคริปต์ด้วย Apple Intelligence ต้องใช้ระบบเวอร์ชันใหม่กว่า";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "สคริปต์นี้ยาวเกินกว่าที่ Apple Intelligence จะเขียนใหม่ได้ในครั้งเดียว ลองใช้บางส่วน";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence เขียนเกี่ยวกับหัวข้อนี้ไม่ได้ ลองใช้ถ้อยคำอื่น";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence เขียนสคริปต์ไม่เสร็จ โปรดลองอีกครั้ง";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "เวอร์ชันฟรีเก็บได้ %lld สคริปต์ อัปเกรดเป็น yPrompt Pro เพื่อสคริปต์ไม่จำกัด";
+"That script isn't in yPrompt anymore." = "สคริปต์นั้นไม่อยู่ใน yPrompt แล้ว";

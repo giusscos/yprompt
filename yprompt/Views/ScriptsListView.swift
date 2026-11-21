@@ -26,6 +26,8 @@ struct ScriptsListView: View {
     #endif
 
     @State private var searchText = ""
+    /// The Write with Apple Intelligence sheet.
+    @State private var showingDraft = false
     @State private var showingPaywall = false
     @State private var scriptToDelete: Script?
     @State private var showDeleteConfirm = false
@@ -120,6 +122,17 @@ struct ScriptsListView: View {
                 }
                 #endif
             }
+            if ScriptWriter.isAvailable {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        guard canCreateScript else { showingPaywall = true; return }
+                        showingDraft = true
+                    } label: {
+                        Label("Write with Apple Intelligence", systemImage: "sparkles")
+                    }
+                    .help("Write with Apple Intelligence")
+                }
+            }
             if let tag = selectedTag, !filtered.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -164,6 +177,15 @@ struct ScriptsListView: View {
         .sheet(isPresented: $showingPaywall) {
             PaywallView().environment(storeKit)
         }
+        .sheet(isPresented: $showingDraft) {
+            DraftScriptView { script in
+                #if os(macOS)
+                selectedScript = script
+                #else
+                scriptToOpen = script
+                #endif
+            }
+        }
         .sheet(item: $scriptForTags) { script in
             TagPickerSheet(script: script)
         }
@@ -200,6 +222,9 @@ struct ScriptsListView: View {
         .onChange(of: hasSeenOnboarding) { _, seen in
             if seen { openWelcomeScript() }
         }
+        #if os(iOS) || os(visionOS)
+        .onChange(of: AppRouter.shared.pending, initial: true) { _, _ in openRoutedScript() }
+        #endif
         #if DEBUG && !os(macOS)
         // For App Store screenshots: launch with `-ypOpenFirstScript` to go straight to the player,
         // or `-ypOpenEditor` for the editor.
@@ -482,6 +507,31 @@ struct ScriptsListView: View {
         #endif
     }
 
+    #if os(iOS) || os(visionOS)
+    /// A Shortcut, Siri or Spotlight asked for a script: open it in the editor or start reading.
+    private func openRoutedScript() {
+        guard AppRouter.shared.pending != nil, let destination = AppRouter.shared.take() else { return }
+        let id: UUID
+        switch destination {
+        case .editor(let scriptID), .teleprompter(let scriptID): id = scriptID
+        }
+        guard let script = scripts.first(where: { $0.id == id }) ?? AppDataStore.script(id: id) else { return }
+        // Back to the list first, so the new screen isn't stacked on whatever was open.
+        showingQueuePlayer = false
+        scriptToOpen = nil
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            switch destination {
+            case .editor:
+                scriptToOpen = script
+            case .teleprompter:
+                queueToPlay = [script]
+                showingQueuePlayer = true
+            }
+        }
+    }
+    #endif
+
     private func requestCreateScript() {
         guard canCreateScript else {
             showingPaywall = true
@@ -535,6 +585,7 @@ struct ScriptsListView: View {
         if selectedScript?.id == script.id { selectedScript = nil }
         macSelectedIDs.remove(script.id)
         #endif
+        ScriptIndex.remove([script.id])
         modelContext.delete(script)
         try? modelContext.save()
     }

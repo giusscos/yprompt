@@ -455,3 +455,35 @@
 "For vertical scrolling" = "Dikey kaydırma için";
 "Mirror Camera" = "Kamerayı Aynala";
 "Shows the preview like a mirror. Recordings are never mirrored." = "Önizlemeyi ayna gibi gösterir. Kayıtlar asla aynalanmaz.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Apple Intelligence ile Yaz";
+"What's it about?" = "Konusu ne?";
+"Topic" = "Konu";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "Örneğin: “Yemek podcast’imin 12. bölümüne hoş geldiniz, bıçak teknikleri üzerine.”";
+"Length" = "Uzunluk";
+"Tone" = "Ton";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "Bu aygıtta Apple Intelligence ile yazıldı. Yazdığınız hiçbir şey aygıttan çıkmaz. Okumadan önce bilgileri ve isimleri kontrol edin.";
+"30 sec" = "30 sn";
+"%lld min" = "%lld dk";
+"Writing your script…" = "Metniniz yazılıyor…";
+"This takes a few seconds." = "Birkaç saniye sürer.";
+"Write" = "Yaz";
+"Try Again" = "Yeniden Dene";
+"Add Script" = "Metin Ekle";
+"%lld words · about %lld min" = "%lld kelime · yaklaşık %lld dk";
+"Conversational" = "Samimi";
+"Professional" = "Profesyonel";
+"Energetic" = "Enerjik";
+"Inspiring" = "İlham Verici";
+"Funny" = "Eğlenceli";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "Metin yazmak için Ayarlar’da Apple Intelligence’ı açın.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence hâlâ hazırlanıyor. Biraz sonra yeniden deneyin.";
+"This device doesn't support Apple Intelligence." = "Bu aygıt Apple Intelligence’ı desteklemiyor.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence şu anda kullanılamıyor.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Apple Intelligence ile metin yazmak için daha yeni bir sistem sürümü gerekir.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "Bu metin, Apple Intelligence’ın tek seferde yeniden yazması için çok uzun. Bir bölümünü deneyin.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence bu konuda yazamadı. Farklı bir şekilde ifade etmeyi deneyin.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence metni bitiremedi. Lütfen yeniden deneyin.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Ücretsiz sürüm %lld metin tutar. Sınırsız metin için yPrompt Pro’ya geçin.";
+"That script isn't in yPrompt anymore." = "Bu metin artık yPrompt’ta değil.";

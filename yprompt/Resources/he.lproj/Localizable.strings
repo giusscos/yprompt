@@ -455,3 +455,35 @@
 "For vertical scrolling" = "לגלילה אנכית";
 "Mirror Camera" = "שיקוף המצלמה";
 "Shows the preview like a mirror. Recordings are never mirrored." = "מציג את התצוגה המקדימה כמו מראה. הקלטות לעולם אינן משוקפות.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "כתיבה עם Apple Intelligence";
+"What's it about?" = "על מה מדובר?";
+"Topic" = "נושא";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "לדוגמה: ״ברוכים הבאים לפרק 12 של פודקאסט הבישול שלי, על עבודה עם סכין.״";
+"Length" = "אורך";
+"Tone" = "טון";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "נכתב במכשיר זה עם Apple Intelligence. שום דבר שמקלידים לא יוצא ממנו. כדאי לבדוק עובדות ושמות לפני הקריאה.";
+"30 sec" = "30 שנ׳";
+"%lld min" = "%lld דק׳";
+"Writing your script…" = "כותב את התסריט…";
+"This takes a few seconds." = "זה לוקח כמה שניות.";
+"Write" = "כתיבה";
+"Try Again" = "ניסיון נוסף";
+"Add Script" = "הוספת תסריט";
+"%lld words · about %lld min" = "%lld מילים · כ־%lld דק׳";
+"Conversational" = "שיחתי";
+"Professional" = "מקצועי";
+"Energetic" = "אנרגטי";
+"Inspiring" = "מעורר השראה";
+"Funny" = "מצחיק";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "יש להפעיל את Apple Intelligence ב״הגדרות״ כדי לכתוב איתה תסריטים.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence עדיין מתכוננת. יש לנסות שוב בעוד רגע.";
+"This device doesn't support Apple Intelligence." = "מכשיר זה אינו תומך ב־Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence אינה זמינה כרגע.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "כתיבת תסריטים עם Apple Intelligence דורשת גרסת מערכת חדשה יותר.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "התסריט ארוך מדי כדי ש־Apple Intelligence תשכתב אותו בבת אחת. כדאי לנסות חלק ממנו.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence לא הצליחה לכתוב על הנושא הזה. כדאי לנסח אחרת.";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence לא הצליחה לסיים את התסריט. יש לנסות שוב.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "הגרסה החינמית מכילה %lld תסריטים. עם yPrompt Pro אין הגבלה.";
+"That script isn't in yPrompt anymore." = "התסריט הזה כבר לא נמצא ב־yPrompt.";

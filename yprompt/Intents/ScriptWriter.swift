@@ -5,6 +5,7 @@
 
 import AppIntents
 import Foundation
+import NaturalLanguage
 #if canImport(FoundationModels)
 import FoundationModels
 #endif
@@ -80,7 +81,7 @@ enum ScriptWriter {
             case .available:
                 return ""
             case .unavailable(.appleIntelligenceNotEnabled):
-                return String(localized: "Turn on Apple Intelligence in System Settings to write scripts with it.")
+                return String(localized: "Turn on Apple Intelligence in Settings to write scripts with it.")
             case .unavailable(.modelNotReady):
                 return String(localized: "Apple Intelligence is still getting ready. Try again in a little while.")
             case .unavailable(.deviceNotEligible):
@@ -110,12 +111,25 @@ enum ScriptWriter {
             let prompt = """
                 Write a script about this topic: \(topic)
                 Tone: \(tone.instruction).
-                Length: about \(words) words, which is \(formatted(minutes)) when spoken.
+                Length: between \(words) and \(Int(Double(words) * 1.15)) words, which is \(formatted(minutes)) when spoken. Do not write fewer than \(words) words.
+                Break it into paragraphs of two to four sentences.
                 """
             do {
                 let draft = try await session.respond(to: prompt, generating: GeneratedScript.self).content
-                return (draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
-                        tidy(draft.text))
+                var text = draft.text
+                // The model tends to write short. Once, ask it to bring the draft up to length.
+                let written = text.split(whereSeparator: \.isWhitespace).count
+                if Double(written) < Double(words) * 0.8 {
+                    let longer = try? await session.respond(to: """
+                        That is \(written) words; it needs to be about \(words). Rewrite the whole script \
+                        at about \(words) words: keep the opening and the closing, and add detail, examples \
+                        and one practical tip in the middle. Return only the script.
+                        """).content
+                    if let longer, longer.split(whereSeparator: \.isWhitespace).count > written {
+                        text = longer
+                    }
+                }
+                return (draft.title.trimmingCharacters(in: .whitespacesAndNewlines), tidy(text))
             } catch {
                 throw map(error)
             }
@@ -152,11 +166,24 @@ enum ScriptWriter {
         return seconds % 60 == 0 ? "\(seconds / 60) minutes" : "\(seconds / 60) minutes \(seconds % 60) seconds"
     }
 
-    /// Removes what doesn't belong on a teleprompter, should the model add it anyway.
+    /// Removes what doesn't belong on a teleprompter, should the model add it anyway, and
+    /// breaks one long block into short paragraphs, which are easier to read aloud.
     private static func tidy(_ text: String) -> String {
-        text.replacingOccurrences(of: "**", with: "")
+        let cleaned = text.replacingOccurrences(of: "**", with: "")
             .replacingOccurrences(of: "#", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.contains("\n\n") else { return cleaned }
+        var sentences: [String] = []
+        let tokenizer = NLTokenizer(unit: .sentence)
+        tokenizer.string = cleaned
+        tokenizer.enumerateTokens(in: cleaned.startIndex..<cleaned.endIndex) { range, _ in
+            sentences.append(cleaned[range].trimmingCharacters(in: .whitespacesAndNewlines))
+            return true
+        }
+        guard sentences.count > 3 else { return cleaned }
+        return stride(from: 0, to: sentences.count, by: 3)
+            .map { sentences[$0..<min($0 + 3, sentences.count)].joined(separator: " ") }
+            .joined(separator: "\n\n")
     }
 
     #if canImport(FoundationModels)

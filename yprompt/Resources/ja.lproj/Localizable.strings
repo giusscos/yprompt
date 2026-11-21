@@ -455,3 +455,35 @@
 "For vertical scrolling" = "縦スクロール用";
 "Mirror Camera" = "カメラを左右反転";
 "Shows the preview like a mirror. Recordings are never mirrored." = "プレビューを鏡のように表示します。録画が反転されることはありません。";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "Apple Intelligenceで書く";
+"What's it about?" = "どんな内容ですか？";
+"Topic" = "トピック";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "例：「料理ポッドキャスト第12回へようこそ。今回は包丁さばきについてです。」";
+"Length" = "長さ";
+"Tone" = "トーン";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "このデバイス上でApple Intelligenceが書きました。入力した内容がデバイスの外に出ることはありません。読む前に事実と名前を確認してください。";
+"30 sec" = "30秒";
+"%lld min" = "%lld分";
+"Writing your script…" = "台本を作成中…";
+"This takes a few seconds." = "数秒かかります。";
+"Write" = "作成";
+"Try Again" = "やり直す";
+"Add Script" = "台本を追加";
+"%lld words · about %lld min" = "%lld語・約%lld分";
+"Conversational" = "親しみやすく";
+"Professional" = "プロフェッショナル";
+"Energetic" = "エネルギッシュ";
+"Inspiring" = "感動的";
+"Funny" = "ユーモラス";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "台本を書くには、設定でApple Intelligenceをオンにしてください。";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligenceの準備中です。しばらくしてからもう一度お試しください。";
+"This device doesn't support Apple Intelligence." = "このデバイスはApple Intelligenceに対応していません。";
+"Apple Intelligence isn't available right now." = "Apple Intelligenceは現在利用できません。";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "Apple Intelligenceで台本を書くには、より新しいバージョンのシステムが必要です。";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "この台本は長すぎて、Apple Intelligenceで一度に書き直せません。一部で試してください。";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligenceはこのトピックについて書けませんでした。表現を変えてお試しください。";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligenceは台本を完成できませんでした。もう一度お試しください。";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "無料版では台本を%lld本まで保存できます。yPrompt Proなら無制限です。";
+"That script isn't in yPrompt anymore." = "その台本はyPromptにもうありません。";

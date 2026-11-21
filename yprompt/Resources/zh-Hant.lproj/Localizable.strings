@@ -455,3 +455,35 @@
 "For vertical scrolling" = "用於垂直捲動";
 "Mirror Camera" = "鏡像相機";
 "Shows the preview like a mirror. Recordings are never mirrored." = "像鏡子一樣顯示預覽。錄製內容不會被鏡像。";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "使用 Apple Intelligence 撰寫";
+"What's it about?" = "內容是關於什麼？";
+"Topic" = "主題";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "例如：「歡迎收聽我的烹飪播客第 12 集，這集談刀工。」";
+"Length" = "長度";
+"Tone" = "語氣";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "由 Apple Intelligence 在此裝置上撰寫。你輸入的內容不會離開裝置。朗讀前請核對事實和名稱。";
+"30 sec" = "30 秒";
+"%lld min" = "%lld 分鐘";
+"Writing your script…" = "正在撰寫腳本⋯";
+"This takes a few seconds." = "這需要幾秒鐘。";
+"Write" = "撰寫";
+"Try Again" = "再試一次";
+"Add Script" = "加入腳本";
+"%lld words · about %lld min" = "%lld 個字詞 · 約 %lld 分鐘";
+"Conversational" = "親切自然";
+"Professional" = "專業";
+"Energetic" = "活力";
+"Inspiring" = "激勵人心";
+"Funny" = "幽默";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "請在「設定」中開啟 Apple Intelligence 以撰寫腳本。";
+"Apple Intelligence is still getting ready. Try again in a little while." = "Apple Intelligence 仍在準備中。請稍後再試。";
+"This device doesn't support Apple Intelligence." = "此裝置不支援 Apple Intelligence。";
+"Apple Intelligence isn't available right now." = "Apple Intelligence 目前無法使用。";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "使用 Apple Intelligence 撰寫腳本需要較新版本的系統。";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "此腳本太長，Apple Intelligence 無法一次改寫。請試試其中一部分。";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "Apple Intelligence 無法撰寫此主題。請換個說法。";
+"Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence 無法完成腳本。請再試一次。";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "免費版可儲存 %lld 個腳本。升級至 yPrompt Pro 即可無限儲存。";
+"That script isn't in yPrompt anymore." = "該腳本已不在 yPrompt 中。";

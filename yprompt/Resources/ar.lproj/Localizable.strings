@@ -455,3 +455,35 @@
 "For vertical scrolling" = "للتمرير العمودي";
 "Mirror Camera" = "عكس الكاميرا";
 "Shows the preview like a mirror. Recordings are never mirrored." = "يعرض المعاينة كالمرآة. لا تُعكس التسجيلات أبدًا.";
+
+/* Apple Intelligence */
+"Write with Apple Intelligence" = "الكتابة باستخدام Apple Intelligence";
+"What's it about?" = "عمّ يتحدث؟";
+"Topic" = "الموضوع";
+"For example: “Welcome to episode 12 of my cooking podcast, about knife skills.”" = "مثلًا: «مرحبًا بكم في الحلقة 12 من بودكاست الطبخ، عن مهارات استخدام السكين.»";
+"Length" = "المدة";
+"Tone" = "النبرة";
+"Written on this device with Apple Intelligence. Nothing you type leaves it. Check facts and names before you read it out." = "كُتب على هذا الجهاز باستخدام Apple Intelligence. لا يغادره أي شيء تكتبه. تحقّق من الحقائق والأسماء قبل قراءته.";
+"30 sec" = "30 ث";
+"%lld min" = "%lld د";
+"Writing your script…" = "جارٍ كتابة النص…";
+"This takes a few seconds." = "يستغرق ذلك بضع ثوانٍ.";
+"Write" = "اكتب";
+"Try Again" = "حاول مرة أخرى";
+"Add Script" = "إضافة النص";
+"%lld words · about %lld min" = "%lld كلمة · نحو %lld د";
+"Conversational" = "ودّية";
+"Professional" = "احترافية";
+"Energetic" = "حماسية";
+"Inspiring" = "ملهمة";
+"Funny" = "مرحة";
+"Turn on Apple Intelligence in Settings to write scripts with it." = "شغّل Apple Intelligence من الإعدادات لكتابة النصوص بها.";
+"Apple Intelligence is still getting ready. Try again in a little while." = "لا تزال Apple Intelligence قيد التجهيز. حاول مرة أخرى بعد قليل.";
+"This device doesn't support Apple Intelligence." = "هذا الجهاز لا يدعم Apple Intelligence.";
+"Apple Intelligence isn't available right now." = "Apple Intelligence غير متاحة حاليًا.";
+"Writing scripts with Apple Intelligence needs a newer version of the system." = "تتطلب كتابة النصوص باستخدام Apple Intelligence إصدارًا أحدث من النظام.";
+"This script is too long for Apple Intelligence to rewrite in one go. Try a part of it." = "هذا النص أطول من أن تعيد Apple Intelligence كتابته دفعة واحدة. جرّب جزءًا منه.";
+"Apple Intelligence couldn't write about this topic. Try wording it differently." = "تعذّر على Apple Intelligence الكتابة عن هذا الموضوع. جرّب صياغة مختلفة.";
+"Apple Intelligence couldn't finish the script. Please try again." = "تعذّر على Apple Intelligence إكمال النص. يُرجى المحاولة مرة أخرى.";
+"The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "يتسع الإصدار المجاني لـ %lld نصوص. رقِّ إلى yPrompt Pro لنصوص بلا حدود.";
+"That script isn't in yPrompt anymore." = "لم يعد هذا النص موجودًا في yPrompt.";

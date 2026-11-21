@@ -59,6 +59,7 @@ struct ContentView: View {
             // A new install has nothing to catch up on.
             if !hasSeenOnboarding { whatsNewSeen = WhatsNew.release }
             seedStartingScripts()
+            ScriptIndex.rebuild()
         }
         .onChange(of: scripts) { _, scripts in removeSyncedWelcomeCopies(in: scripts) }
     }
@@ -259,6 +260,7 @@ struct ContentView: View {
             showRequestedRecording()
         }
         .onChange(of: manager.requestedRecording) { _, _ in showRequestedRecording() }
+        .onChange(of: AppRouter.shared.pending, initial: true) { _, _ in showRoutedScript() }
         .onChange(of: scripts) { _, newScripts in
             FloatingTeleprompterManager.shared.registeredScripts = newScripts
         }
@@ -267,6 +269,20 @@ struct ContentView: View {
     private var recordingSelection: Binding<UUID?> {
         Binding(get: { openRecording?.recordingID },
                 set: { id in openRecording = id.map { RecordingSelection(recordingID: $0) } })
+    }
+
+    /// A Shortcut, Siri or Spotlight asked for a script.
+    private func showRoutedScript() {
+        guard let destination = AppRouter.shared.take() else { return }
+        switch destination {
+        case .editor(let id):
+            sidebarMode = .scripts
+            selectedScript = scripts.first { $0.id == id } ?? AppDataStore.script(id: id)
+        case .teleprompter(let id):
+            if let script = AppDataStore.script(id: id) {
+                manager.show(script: script, storeKit: storeKit)
+            }
+        }
     }
 
     /// A take that just finished: show it in the editor.
@@ -388,6 +404,10 @@ struct ContentView: View {
             #if os(iOS)
             WatchSessionRelay.shared.localScripts = newScripts
             #endif
+        }
+        // A Shortcut, Siri or Spotlight asked for a script: the Scripts tab handles it.
+        .onChange(of: AppRouter.shared.pending, initial: true) { _, pending in
+            if pending != nil { selectedTab = 0 }
         }
     }
     #endif
