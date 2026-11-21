@@ -20,6 +20,9 @@ class StoreKitService {
 
     @ObservationIgnored nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
 
+    /// One for the app: its windows, the Mac prompter and the App Intents all ask the same one.
+    static let shared = StoreKitService()
+
     init() {
         transactionListener = listenForTransactions()
         Task {

@@ -75,22 +75,15 @@ private struct MenuBarScriptsLoader: View {
 
 @main
 struct ypromptApp: App {
-    @State private var storeKit = StoreKitService()
+    @State private var storeKit = StoreKitService.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
         ReadingFont.registerBundledFonts()
     }
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([Script.self, AppSettings.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        do {
-            return try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    /// Shared with the App Intents, which can run without a window open.
+    var sharedModelContainer: ModelContainer { AppDataStore.container }
 
     var body: some Scene {
         WindowGroup(id: AppConstants.mainWindowID) {
