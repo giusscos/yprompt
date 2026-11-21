@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "Hazır olduğunuzda kayda dokunun.";
 "%@ is in yPrompt." = "%@ yPrompt’ta.";
 "%@ (%lld min)" = "%@ (%lld dk)";
+
+/* Picture in Picture */
+"Picture in Picture" = "Resim İçinde Resim";
+"Stop Picture in Picture" = "Resim İçinde Resmi Durdur";
+"Script is empty" = "Metin boş";

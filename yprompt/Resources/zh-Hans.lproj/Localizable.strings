@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "准备好后轻点录制。";
 "%@ is in yPrompt." = "“%@”已添加到 yPrompt。";
 "%@ (%lld min)" = "%@（%lld 分钟）";
+
+/* Picture in Picture */
+"Picture in Picture" = "画中画";
+"Stop Picture in Picture" = "停止画中画";
+"Script is empty" = "文稿为空";

@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "準備好後點一下錄製。";
 "%@ is in yPrompt." = "「%@」已加入 yPrompt。";
 "%@ (%lld min)" = "%@（%lld 分鐘）";
+
+/* Picture in Picture */
+"Picture in Picture" = "子母畫面";
+"Stop Picture in Picture" = "停止子母畫面";
+"Script is empty" = "講稿是空的";

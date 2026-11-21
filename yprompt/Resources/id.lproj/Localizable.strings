@@ -551,3 +551,8 @@
 "Tap record when you're ready." = "Ketuk rekam saat Anda siap.";
 "%@ is in yPrompt." = "%@ ada di yPrompt.";
 "%@ (%lld min)" = "%@ (%lld mnt)";
+
+/* Picture in Picture */
+"Picture in Picture" = "Gambar dalam Gambar";
+"Stop Picture in Picture" = "Hentikan Gambar dalam Gambar";
+"Script is empty" = "Naskah kosong";

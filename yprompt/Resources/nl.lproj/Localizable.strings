@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "Tik op opnemen als je klaar bent.";
 "%@ is in yPrompt." = "%@ staat in yPrompt.";
 "%@ (%lld min)" = "%@ (%lld min)";
+
+/* Picture in Picture */
+"Picture in Picture" = "Beeld-in-beeld";
+"Stop Picture in Picture" = "Stop beeld-in-beeld";
+"Script is empty" = "Script is leeg";

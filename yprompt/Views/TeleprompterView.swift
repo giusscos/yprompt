@@ -157,6 +157,9 @@ struct TeleprompterView: View {
 #if !os(watchOS)
     @Environment(StoreKitService.self) private var storeKit
     @State private var showingPaywall = false
+    #if os(iOS)
+    @StateObject private var pip = TeleprompterPiP()
+    #endif
     @Environment(\.requestReview) private var requestReview
 #endif
 #if os(iOS)
@@ -620,8 +623,20 @@ struct TeleprompterView: View {
         .onTapGesture(perform: handleSurfaceTap)
         .overlay { scriptAccessibilityElement }
         .overlay(alignment: .bottom) { bottomControls }
+        .overlay(alignment: .topLeading) {
+            // The layer Picture in Picture shows has to be on screen; a couple of points is enough.
+            if TeleprompterPiP.isSupported {
+                PiPSourceView(layer: pip.displayLayer)
+                    .frame(width: 2, height: 2)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+        }
         .accessibilityAction(.magicTap) { magicTapAction() }
         .onAppear {
+            if TeleprompterPiP.isSupported {
+                pip.configure(viewModel: viewModel, text: pipText, autoStart: storeKit.isPremium)
+            }
             viewModel.transparency = customization.transparency
             applyReadingPreferences()
             if viewModel.scriptWords == nil {
@@ -646,6 +661,8 @@ struct TeleprompterView: View {
             }
         }
         .onChange(of: usesWordStyle) { _, usesWords in viewModel.setWordMode(usesWords) }
+        .onChange(of: pipText) { _, text in pip.update(text: text) }
+        .onChange(of: storeKit.isPremium) { _, premium in pip.setAutoStart(premium) }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .background(NavigationInteractivePopGestureDisabler(disabled: true))
@@ -805,6 +822,16 @@ struct TeleprompterView: View {
                         .frame(idealHeight: 460)
                         .presentationCompactAdaptation(.popover)
                     }
+            }
+        }
+        if TeleprompterPiP.isSupported {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: togglePictureInPicture) {
+                    Image(systemName: pip.isActive ? "pip.exit" : "pip.enter")
+                }
+                .accessibilityLabel(pip.isActive ? "Stop Picture in Picture" : "Picture in Picture")
+                // The camera can't keep recording behind another app.
+                .disabled(cameraService.isRecording || (storeKit.isPremium && !pip.isPossible && !pip.isActive))
             }
         }
         ToolbarItem(placement: .topBarTrailing) {
@@ -1477,9 +1504,26 @@ struct TeleprompterView: View {
                              startedAt: cameraService.recordingStartDate)
     }
 
+    /// The script, in the Picture in Picture window, as the reading screen shows it.
+    private var pipText: String { viewModel.scriptWords?.text ?? currentScript.content }
+
+    /// Floats the script over other apps: Camera, Instagram, a FaceTime or Zoom call. Pro.
+    private func togglePictureInPicture() {
+        guard storeKit.isPremium else {
+            showingPaywall = true
+            return
+        }
+        if pip.isActive {
+            pip.stop()
+        } else {
+            pip.start()
+        }
+    }
+
     private func handlePlayModeDisappear() {
         // Covered by the take sheet, not left: the camera keeps running for Retake.
         guard cameraService.finished == nil else { return }
+        pip.tearDown()
         WatchSessionRelay.shared.localRecordingState = RemoteRecordingState()
         UIApplication.shared.isIdleTimerDisabled = false
         if !didRestoreTabBar {

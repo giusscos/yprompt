@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "اضغط تسجيل عندما تكون جاهزًا.";
 "%@ is in yPrompt." = "%@ موجود في yPrompt.";
 "%@ (%lld min)" = "%@ (%lld د)";
+
+/* Picture in Picture */
+"Picture in Picture" = "صورة داخل صورة";
+"Stop Picture in Picture" = "إيقاف صورة داخل صورة";
+"Script is empty" = "النص فارغ";

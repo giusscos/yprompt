@@ -551,3 +551,8 @@
 "Tap record when you're ready." = "Toca grabar cuando estés listo.";
 "%@ is in yPrompt." = "%@ está en yPrompt.";
 "%@ (%lld min)" = "%@ (%lld min)";
+
+/* Picture in Picture */
+"Picture in Picture" = "Imagen en imagen";
+"Stop Picture in Picture" = "Detener imagen en imagen";
+"Script is empty" = "El script está vacío";

@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "준비되면 녹화를 탭하세요.";
 "%@ is in yPrompt." = "%@이(가) yPrompt에 있습니다.";
 "%@ (%lld min)" = "%@ (%lld분)";
+
+/* Picture in Picture */
+"Picture in Picture" = "화면 속 화면";
+"Stop Picture in Picture" = "화면 속 화면 끝내기";
+"Script is empty" = "대본이 비어 있습니다";

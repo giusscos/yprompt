@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "แตะอัดเมื่อคุณพร้อม";
 "%@ is in yPrompt." = "%@ อยู่ใน yPrompt แล้ว";
 "%@ (%lld min)" = "%@ (%lld นาที)";
+
+/* Picture in Picture */
+"Picture in Picture" = "ภาพซ้อนภาพ";
+"Stop Picture in Picture" = "หยุดภาพซ้อนภาพ";
+"Script is empty" = "สคริปต์ว่างเปล่า";

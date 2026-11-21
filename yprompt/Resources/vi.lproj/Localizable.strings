@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "Chạm ghi khi bạn sẵn sàng.";
 "%@ is in yPrompt." = "%@ đã có trong yPrompt.";
 "%@ (%lld min)" = "%@ (%lld phút)";
+
+/* Picture in Picture */
+"Picture in Picture" = "Hình trong hình";
+"Stop Picture in Picture" = "Dừng hình trong hình";
+"Script is empty" = "Kịch bản trống";

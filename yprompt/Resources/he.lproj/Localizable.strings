@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "יש להקיש על הקלטה כשמוכנים.";
 "%@ is in yPrompt." = "%@ נמצא ב־yPrompt.";
 "%@ (%lld min)" = "%@ (%lld דק׳)";
+
+/* Picture in Picture */
+"Picture in Picture" = "תמונה בתוך תמונה";
+"Stop Picture in Picture" = "הפסקת תמונה בתוך תמונה";
+"Script is empty" = "התסריט ריק";

@@ -509,3 +509,8 @@
 "Tap record when you're ready." = "準備ができたら録画をタップしてください。";
 "%@ is in yPrompt." = "%@をyPromptに追加しました。";
 "%@ (%lld min)" = "%@（%lld分）";
+
+/* Picture in Picture */
+"Picture in Picture" = "ピクチャ・イン・ピクチャ";
+"Stop Picture in Picture" = "ピクチャ・イン・ピクチャを終了";
+"Script is empty" = "原稿が空です";
