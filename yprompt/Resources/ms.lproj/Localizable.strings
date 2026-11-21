@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence tidak dapat menyiapkan skrip. Sila cuba lagi.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Versi percuma memuatkan %lld skrip. Naik taraf ke yPrompt Pro untuk skrip tanpa had.";
 "That script isn't in yPrompt anymore." = "Skrip itu tiada lagi dalam yPrompt.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Tambah Teks pada Skrip";
+"Replace Script Text" = "Ganti Teks Skrip";
+"Get Script Text" = "Dapatkan Teks Skrip";
+"Open Script" = "Buka Skrip";
+"Start Teleprompter" = "Mulakan Teleprompter";
+"Record While Reading" = "Rakam Sambil Membaca";
+"Stop Teleprompter" = "Hentikan Teleprompter";
+"Write Script with Apple Intelligence" = "Tulis Skrip dengan Apple Intelligence";
+"Fit Script to Time" = "Muatkan Skrip pada Masa";
+"Write Script" = "Tulis Skrip";
+"Text" = "Teks";
+"Length (minutes)" = "Panjang (minit)";
+"Words" = "Perkataan";
+"Reading Time (minutes)" = "Masa Bacaan (minit)";
+"Modified" = "Diubah suai";
+"%@ is ready to read." = "%@ sedia untuk dibaca.";
+"Recording %@." = "Merakam %@.";
+"Tap record when you're ready." = "Ketik rakam apabila anda sedia.";
+"%@ is in yPrompt." = "%@ ada dalam yPrompt.";
+"%@ (%lld min)" = "%@ (%lld min)";

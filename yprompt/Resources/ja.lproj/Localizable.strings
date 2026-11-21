@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligenceは台本を完成できませんでした。もう一度お試しください。";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "無料版では台本を%lld本まで保存できます。yPrompt Proなら無制限です。";
 "That script isn't in yPrompt anymore." = "その台本はyPromptにもうありません。";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "台本にテキストを追加";
+"Replace Script Text" = "台本のテキストを置き換え";
+"Get Script Text" = "台本のテキストを取得";
+"Open Script" = "台本を開く";
+"Start Teleprompter" = "プロンプターを開始";
+"Record While Reading" = "読みながら録画";
+"Stop Teleprompter" = "プロンプターを停止";
+"Write Script with Apple Intelligence" = "Apple Intelligenceで台本を書く";
+"Fit Script to Time" = "台本を時間に合わせる";
+"Write Script" = "台本を書く";
+"Text" = "テキスト";
+"Length (minutes)" = "長さ（分）";
+"Words" = "語数";
+"Reading Time (minutes)" = "読む時間（分）";
+"Modified" = "変更日";
+"%@ is ready to read." = "%@を読む準備ができました。";
+"Recording %@." = "%@を録画中。";
+"Tap record when you're ready." = "準備ができたら録画をタップしてください。";
+"%@ is in yPrompt." = "%@をyPromptに追加しました。";
+"%@ (%lld min)" = "%@（%lld分）";

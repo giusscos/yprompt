@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence 無法完成腳本。請再試一次。";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "免費版可儲存 %lld 個腳本。升級至 yPrompt Pro 即可無限儲存。";
 "That script isn't in yPrompt anymore." = "該腳本已不在 yPrompt 中。";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "在腳本加入文字";
+"Replace Script Text" = "取代腳本文字";
+"Get Script Text" = "取得腳本文字";
+"Open Script" = "打開腳本";
+"Start Teleprompter" = "開始提詞機";
+"Record While Reading" = "邊讀邊錄";
+"Stop Teleprompter" = "停止提詞機";
+"Write Script with Apple Intelligence" = "使用 Apple Intelligence 撰寫腳本";
+"Fit Script to Time" = "依時長調整腳本";
+"Write Script" = "撰寫腳本";
+"Text" = "文字";
+"Length (minutes)" = "長度（分鐘）";
+"Words" = "字數";
+"Reading Time (minutes)" = "朗讀時間（分鐘）";
+"Modified" = "修改日期";
+"%@ is ready to read." = "「%@」已可朗讀。";
+"Recording %@." = "正在錄製「%@」。";
+"Tap record when you're ready." = "準備好後點一下錄製。";
+"%@ is in yPrompt." = "「%@」已加入 yPrompt。";
+"%@ (%lld min)" = "%@（%lld 分鐘）";

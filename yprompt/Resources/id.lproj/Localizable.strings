@@ -529,3 +529,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence tidak dapat menyelesaikan naskah. Silakan coba lagi.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Versi gratis memuat %lld naskah. Tingkatkan ke yPrompt Pro untuk naskah tanpa batas.";
 "That script isn't in yPrompt anymore." = "Naskah itu sudah tidak ada di yPrompt.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Tambah Teks ke Naskah";
+"Replace Script Text" = "Ganti Teks Naskah";
+"Get Script Text" = "Dapatkan Teks Naskah";
+"Open Script" = "Buka Naskah";
+"Start Teleprompter" = "Mulai Teleprompter";
+"Record While Reading" = "Rekam Sambil Membaca";
+"Stop Teleprompter" = "Hentikan Teleprompter";
+"Write Script with Apple Intelligence" = "Tulis Naskah dengan Apple Intelligence";
+"Fit Script to Time" = "Sesuaikan Naskah dengan Waktu";
+"Write Script" = "Tulis Naskah";
+"Text" = "Teks";
+"Length (minutes)" = "Durasi (menit)";
+"Words" = "Kata";
+"Reading Time (minutes)" = "Waktu Baca (menit)";
+"Modified" = "Diubah";
+"%@ is ready to read." = "%@ siap dibaca.";
+"Recording %@." = "Merekam %@.";
+"Tap record when you're ready." = "Ketuk rekam saat Anda siap.";
+"%@ is in yPrompt." = "%@ ada di yPrompt.";
+"%@ (%lld min)" = "%@ (%lld mnt)";

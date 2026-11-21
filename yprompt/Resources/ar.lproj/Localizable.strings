@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "تعذّر على Apple Intelligence إكمال النص. يُرجى المحاولة مرة أخرى.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "يتسع الإصدار المجاني لـ %lld نصوص. رقِّ إلى yPrompt Pro لنصوص بلا حدود.";
 "That script isn't in yPrompt anymore." = "لم يعد هذا النص موجودًا في yPrompt.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "إضافة نص إلى النص";
+"Replace Script Text" = "استبدال محتوى النص";
+"Get Script Text" = "الحصول على محتوى النص";
+"Open Script" = "فتح النص";
+"Start Teleprompter" = "تشغيل الملقّن";
+"Record While Reading" = "التسجيل أثناء القراءة";
+"Stop Teleprompter" = "إيقاف الملقّن";
+"Write Script with Apple Intelligence" = "كتابة نص باستخدام Apple Intelligence";
+"Fit Script to Time" = "ملاءمة النص للمدة";
+"Write Script" = "كتابة نص";
+"Text" = "المحتوى";
+"Length (minutes)" = "المدة (دقائق)";
+"Words" = "الكلمات";
+"Reading Time (minutes)" = "مدة القراءة (دقائق)";
+"Modified" = "آخر تعديل";
+"%@ is ready to read." = "%@ جاهز للقراءة.";
+"Recording %@." = "جارٍ تسجيل %@.";
+"Tap record when you're ready." = "اضغط تسجيل عندما تكون جاهزًا.";
+"%@ is in yPrompt." = "%@ موجود في yPrompt.";
+"%@ (%lld min)" = "%@ (%lld د)";

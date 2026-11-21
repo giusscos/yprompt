@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence metni bitiremedi. Lütfen yeniden deneyin.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Ücretsiz sürüm %lld metin tutar. Sınırsız metin için yPrompt Pro’ya geçin.";
 "That script isn't in yPrompt anymore." = "Bu metin artık yPrompt’ta değil.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Metne Yazı Ekle";
+"Replace Script Text" = "Metin Yazısını Değiştir";
+"Get Script Text" = "Metin Yazısını Al";
+"Open Script" = "Metni Aç";
+"Start Teleprompter" = "Teleprompter’ı Başlat";
+"Record While Reading" = "Okurken Kaydet";
+"Stop Teleprompter" = "Teleprompter’ı Durdur";
+"Write Script with Apple Intelligence" = "Apple Intelligence ile Metin Yaz";
+"Fit Script to Time" = "Metni Süreye Uydur";
+"Write Script" = "Metin Yaz";
+"Text" = "Yazı";
+"Length (minutes)" = "Uzunluk (dakika)";
+"Words" = "Kelime";
+"Reading Time (minutes)" = "Okuma Süresi (dakika)";
+"Modified" = "Değiştirilme";
+"%@ is ready to read." = "%@ okumaya hazır.";
+"Recording %@." = "%@ kaydediliyor.";
+"Tap record when you're ready." = "Hazır olduğunuzda kayda dokunun.";
+"%@ is in yPrompt." = "%@ yPrompt’ta.";
+"%@ (%lld min)" = "%@ (%lld dk)";

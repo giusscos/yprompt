@@ -120,11 +120,12 @@ enum ScriptWriter {
                 // The model tends to write short. Once, ask it to bring the draft up to length.
                 let written = text.split(whereSeparator: \.isWhitespace).count
                 if Double(written) < Double(words) * 0.8 {
+                    // Structured again: asked for plain text, it copies the first answer's format.
                     let longer = try? await session.respond(to: """
                         That is \(written) words; it needs to be about \(words). Rewrite the whole script \
                         at about \(words) words: keep the opening and the closing, and add detail, examples \
-                        and one practical tip in the middle. Return only the script.
-                        """).content
+                        and one practical tip in the middle.
+                        """, generating: GeneratedScript.self).content.text
                     if let longer, longer.split(whereSeparator: \.isWhitespace).count > written {
                         text = longer
                     }
@@ -169,7 +170,8 @@ enum ScriptWriter {
     /// Removes what doesn't belong on a teleprompter, should the model add it anyway, and
     /// breaks one long block into short paragraphs, which are easier to read aloud.
     private static func tidy(_ text: String) -> String {
-        let cleaned = text.replacingOccurrences(of: "**", with: "")
+        let cleaned = text.replacingOccurrences(of: "\\n", with: "\n")
+            .replacingOccurrences(of: "**", with: "")
             .replacingOccurrences(of: "#", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.contains("\n\n") else { return cleaned }

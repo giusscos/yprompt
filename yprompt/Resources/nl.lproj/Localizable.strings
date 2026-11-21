@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence kon het script niet afmaken. Probeer het opnieuw.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "De gratis versie bevat %lld scripts. Met yPrompt Pro heb je onbeperkt scripts.";
 "That script isn't in yPrompt anymore." = "Dat script staat niet meer in yPrompt.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Voeg tekst toe aan script";
+"Replace Script Text" = "Vervang scripttekst";
+"Get Script Text" = "Haal scripttekst op";
+"Open Script" = "Open script";
+"Start Teleprompter" = "Start teleprompter";
+"Record While Reading" = "Neem op tijdens lezen";
+"Stop Teleprompter" = "Stop teleprompter";
+"Write Script with Apple Intelligence" = "Schrijf script met Apple Intelligence";
+"Fit Script to Time" = "Pas script aan tijd aan";
+"Write Script" = "Schrijf script";
+"Text" = "Tekst";
+"Length (minutes)" = "Lengte (minuten)";
+"Words" = "Woorden";
+"Reading Time (minutes)" = "Leestijd (minuten)";
+"Modified" = "Gewijzigd";
+"%@ is ready to read." = "%@ is klaar om te lezen.";
+"Recording %@." = "%@ wordt opgenomen.";
+"Tap record when you're ready." = "Tik op opnemen als je klaar bent.";
+"%@ is in yPrompt." = "%@ staat in yPrompt.";
+"%@ (%lld min)" = "%@ (%lld min)";

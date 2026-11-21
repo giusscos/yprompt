@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence không thể hoàn thành kịch bản. Vui lòng thử lại.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "Bản miễn phí chứa %lld kịch bản. Nâng cấp lên yPrompt Pro để có kịch bản không giới hạn.";
 "That script isn't in yPrompt anymore." = "Kịch bản đó không còn trong yPrompt.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Thêm văn bản vào kịch bản";
+"Replace Script Text" = "Thay văn bản kịch bản";
+"Get Script Text" = "Lấy văn bản kịch bản";
+"Open Script" = "Mở kịch bản";
+"Start Teleprompter" = "Bắt đầu máy nhắc chữ";
+"Record While Reading" = "Ghi khi đọc";
+"Stop Teleprompter" = "Dừng máy nhắc chữ";
+"Write Script with Apple Intelligence" = "Viết kịch bản bằng Apple Intelligence";
+"Fit Script to Time" = "Điều chỉnh kịch bản theo thời lượng";
+"Write Script" = "Viết kịch bản";
+"Text" = "Văn bản";
+"Length (minutes)" = "Độ dài (phút)";
+"Words" = "Số từ";
+"Reading Time (minutes)" = "Thời gian đọc (phút)";
+"Modified" = "Đã sửa";
+"%@ is ready to read." = "%@ đã sẵn sàng để đọc.";
+"Recording %@." = "Đang ghi %@.";
+"Tap record when you're ready." = "Chạm ghi khi bạn sẵn sàng.";
+"%@ is in yPrompt." = "%@ đã có trong yPrompt.";
+"%@ (%lld min)" = "%@ (%lld phút)";

@@ -529,3 +529,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence couldn't finish the script. Please try again.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts.";
 "That script isn't in yPrompt anymore." = "That script isn't in yPrompt anymore.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "Add Text to Script";
+"Replace Script Text" = "Replace Script Text";
+"Get Script Text" = "Get Script Text";
+"Open Script" = "Open Script";
+"Start Teleprompter" = "Start Teleprompter";
+"Record While Reading" = "Record While Reading";
+"Stop Teleprompter" = "Stop Teleprompter";
+"Write Script with Apple Intelligence" = "Write Script with Apple Intelligence";
+"Fit Script to Time" = "Fit Script to Time";
+"Write Script" = "Write Script";
+"Text" = "Text";
+"Length (minutes)" = "Length (minutes)";
+"Words" = "Words";
+"Reading Time (minutes)" = "Reading Time (minutes)";
+"Modified" = "Modified";
+"%@ is ready to read." = "%@ is ready to read.";
+"Recording %@." = "Recording %@.";
+"Tap record when you're ready." = "Tap record when you're ready.";
+"%@ is in yPrompt." = "%@ is in yPrompt.";
+"%@ (%lld min)" = "%@ (%lld min)";

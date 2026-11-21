@@ -1,0 +1,7 @@
+/* Siri and Spotlight phrases for yPrompt's App Shortcuts */
+"Start reading ${script} in ${applicationName}" = "Start reading ${script} in ${applicationName}";
+"Start the teleprompter in ${applicationName}" = "Start the teleprompter in ${applicationName}";
+"Record ${script} with ${applicationName}" = "Record ${script} with ${applicationName}";
+"Record a take in ${applicationName}" = "Record a take in ${applicationName}";
+"Write a script with ${applicationName}" = "Write a script with ${applicationName}";
+"Open ${target} in ${applicationName}" = "Open ${target} in ${applicationName}";

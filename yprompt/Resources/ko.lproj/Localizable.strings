@@ -487,3 +487,25 @@
 "Apple Intelligence couldn't finish the script. Please try again." = "Apple Intelligence가 스크립트를 완성하지 못했습니다. 다시 시도하세요.";
 "The free version holds %lld scripts. Upgrade to yPrompt Pro for unlimited scripts." = "무료 버전은 스크립트를 %lld개까지 저장합니다. yPrompt Pro로 무제한 이용하세요.";
 "That script isn't in yPrompt anymore." = "그 스크립트는 더 이상 yPrompt에 없습니다.";
+
+/* Shortcuts and Siri */
+"Add Text to Script" = "스크립트에 텍스트 추가";
+"Replace Script Text" = "스크립트 텍스트 바꾸기";
+"Get Script Text" = "스크립트 텍스트 가져오기";
+"Open Script" = "스크립트 열기";
+"Start Teleprompter" = "프롬프터 시작";
+"Record While Reading" = "읽으면서 녹화";
+"Stop Teleprompter" = "프롬프터 중지";
+"Write Script with Apple Intelligence" = "Apple Intelligence로 스크립트 쓰기";
+"Fit Script to Time" = "스크립트를 시간에 맞추기";
+"Write Script" = "스크립트 쓰기";
+"Text" = "텍스트";
+"Length (minutes)" = "길이(분)";
+"Words" = "단어 수";
+"Reading Time (minutes)" = "읽는 시간(분)";
+"Modified" = "수정일";
+"%@ is ready to read." = "%@ 읽을 준비가 되었습니다.";
+"Recording %@." = "%@ 녹화 중.";
+"Tap record when you're ready." = "준비되면 녹화를 탭하세요.";
+"%@ is in yPrompt." = "%@이(가) yPrompt에 있습니다.";
+"%@ (%lld min)" = "%@ (%lld분)";

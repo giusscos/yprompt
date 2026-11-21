@@ -1,0 +1,7 @@
+/* Siri and Spotlight phrases for yPrompt's App Shortcuts */
+"Start reading ${script} in ${applicationName}" = "เริ่มอ่าน ${script} ใน ${applicationName}";
+"Start the teleprompter in ${applicationName}" = "เปิดเครื่องบอกบทใน ${applicationName}";
+"Record ${script} with ${applicationName}" = "อัด ${script} ด้วย ${applicationName}";
+"Record a take in ${applicationName}" = "อัดเทคใน ${applicationName}";
+"Write a script with ${applicationName}" = "เขียนสคริปต์ด้วย ${applicationName}";
+"Open ${target} in ${applicationName}" = "เปิด ${target} ใน ${applicationName}";

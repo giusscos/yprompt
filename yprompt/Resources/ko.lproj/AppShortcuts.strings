@@ -1,0 +1,7 @@
+/* Siri and Spotlight phrases for yPrompt's App Shortcuts */
+"Start reading ${script} in ${applicationName}" = "${applicationName}에서 ${script} 읽기";
+"Start the teleprompter in ${applicationName}" = "${applicationName}에서 프롬프터 시작";
+"Record ${script} with ${applicationName}" = "${applicationName}으로 ${script} 녹화";
+"Record a take in ${applicationName}" = "${applicationName}에서 테이크 녹화";
+"Write a script with ${applicationName}" = "${applicationName}으로 스크립트 쓰기";
+"Open ${target} in ${applicationName}" = "${applicationName}에서 ${target} 열기";
