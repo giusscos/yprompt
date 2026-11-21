@@ -93,7 +93,7 @@ extension ScriptEntity: IndexedEntity {
 enum ScriptIndex {
     @MainActor
     static func update(_ scripts: [Script]) {
-        guard #available(iOS 18.0, macOS 15.0, *), !scripts.isEmpty else { return }
+        guard #available(iOS 18.0, macOS 15.0, *), !scripts.isEmpty, !isDemo else { return }
         let entities = scripts.map(ScriptEntity.init)
         Task { try? await CSSearchableIndex.default().indexAppEntities(entities) }
     }
@@ -104,9 +104,24 @@ enum ScriptIndex {
         Task { try? await CSSearchableIndex.default().deleteAppEntities(identifiedBy: ids, ofType: ScriptEntity.self) }
     }
 
-    /// Everything, once per launch: picks up scripts that synced in from other devices.
+    /// Everything, once per launch: picks up scripts that synced in from other devices, and
+    /// drops any left over from scripts deleted elsewhere.
     @MainActor
     static func rebuild() {
-        update(AppDataStore.allScripts())
+        guard #available(iOS 18.0, macOS 15.0, *), !isDemo else { return }
+        let entities = AppDataStore.allScripts().map(ScriptEntity.init)
+        Task {
+            try? await CSSearchableIndex.default().deleteAppEntities(ofType: ScriptEntity.self)
+            if !entities.isEmpty { try? await CSSearchableIndex.default().indexAppEntities(entities) }
+        }
+    }
+
+    /// The screenshot library's sample scripts stay out of Spotlight.
+    private static var isDemo: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-ypDemoStore")
+        #else
+        false
+        #endif
     }
 }

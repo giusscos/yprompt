@@ -19,6 +19,7 @@ struct CameraPreviewWindowView: View {
             Color.black
             if let session = capture.captureSession {
                 CameraPreviewLayerView(session: session, movesWindow: true, mirrored: manager.mirrorsCamera)
+                    .overlay { DemoCameraPicture() }
             }
         }
         .overlay(alignment: .topLeading) {
@@ -271,6 +272,33 @@ private struct ResizeHandle: NSViewRepresentable {
                             display: true)
             cursor.set()
         }
+    }
+}
+#endif
+
+#if os(macOS)
+/// For App Store screenshots: with the Demo Camera Background setting on (or launched with
+/// `-debug.demoCameraBackground YES`), a photo covers the live picture.
+struct DemoCameraPicture: View {
+    var body: some View {
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: AppConstants.debugDemoCameraKey) {
+            GeometryReader { proxy in
+                // Portrait photo in a wide frame: cropped high, so the face stays in view.
+                let image = NSImage(named: "CameraDemoBackground")
+                let size = image?.size ?? CGSize(width: 3, height: 4)
+                let scale = max(proxy.size.width / size.width, proxy.size.height / size.height)
+                let height = size.height * scale
+                let offset = min(0, max(proxy.size.height - height, -height * 0.12))
+                Image("CameraDemoBackground")
+                    .resizable()
+                    .frame(width: size.width * scale, height: height)
+                    .offset(x: (proxy.size.width - size.width * scale) / 2, y: offset)
+            }
+            .clipped()
+            .allowsHitTesting(false)
+        }
+        #endif
     }
 }
 #endif

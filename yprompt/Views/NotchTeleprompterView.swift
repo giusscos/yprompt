@@ -177,6 +177,7 @@ struct NotchTeleprompterView: View {
                     // notch with its corners rounded all the way, instead of being cut off.
                     let radius = FloatingTeleprompterManager.notchCameraBottomRadius - inset
                     CameraPreviewLayerView(session: session, mirrored: manager.mirrorsCamera)
+                        .overlay { DemoCameraPicture() }
                         .frame(height: max(0, room.size.height - inset))
                         .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
                         .padding(.horizontal, FloatingTeleprompterManager.notchTopRadius + inset)

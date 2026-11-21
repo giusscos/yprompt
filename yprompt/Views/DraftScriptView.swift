@@ -19,6 +19,7 @@ struct DraftScriptView: View {
     @State private var text = ""
     @State private var task: Task<Void, Never>?
     @FocusState private var topicFocused: Bool
+    @FocusState private var scriptFocused: Bool
 
     private enum Stage: Equatable {
         case compose, writing, review
@@ -41,6 +42,10 @@ struct DraftScriptView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar { toolbar }
+            #if os(macOS)
+            // Otherwise the Mac selects the whole title, as the first field.
+            .onChange(of: stage) { _, stage in if stage == .review { scriptFocused = true } }
+            #endif
         }
         #if os(macOS)
         .frame(width: 520, height: 560)
@@ -69,6 +74,9 @@ struct DraftScriptView: View {
             Here's a practical tip: keep your knife sharp. A dull knife slips, and slipping is how most kitchen cuts happen.
             """
         stage = .review
+        #if os(macOS)
+        Task { scriptFocused = true }
+        #endif
     }
     #endif
 
@@ -150,11 +158,14 @@ struct DraftScriptView: View {
         Form {
             Section("Title") {
                 TextField("Title", text: $title)
+                    // The section already says it; on the Mac the field would repeat it.
+                    .labelsHidden()
             }
             Section {
                 TextEditor(text: $text)
                     .frame(minHeight: 260)
                     .font(.body)
+                    .focused($scriptFocused)
             } header: {
                 Text("Script")
             } footer: {

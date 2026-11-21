@@ -12,7 +12,14 @@ import SwiftData
 enum AppDataStore {
     static let container: ModelContainer = {
         let schema = Schema([Script.self, AppSettings.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        var config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        #if DEBUG
+        // For App Store screenshots: an empty library in memory, apart from iCloud, which the
+        // sample scripts then fill. The real library isn't touched.
+        if ProcessInfo.processInfo.arguments.contains("-ypDemoStore") {
+            config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        }
+        #endif
         do {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {

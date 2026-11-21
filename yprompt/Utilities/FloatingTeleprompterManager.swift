@@ -201,12 +201,21 @@ final class FloatingTeleprompterManager {
     func show(script: Script, storeKit: StoreKitService? = nil) {
         currentScript = script
         if let storeKit { self.storeKit = storeKit }
+        #if DEBUG
+        // For App Store screenshots: `-ypShotNotch YES` reads in the notch.
+        if UserDefaults.standard.bool(forKey: "ypShotNotch") { notchMode = true }
+        #endif
         // A saved notch preference from before notch mode became Pro, or a lapsed subscription.
         if notchMode && !isPremium { notchMode = false }
         viewModel.load(words: script.scriptWords)
         viewModel.scrollSpeed = ReadingPreferences.speed > 0 ? ReadingPreferences.speed : script.customization.scrollSpeed
         viewModel.isNotchMode = notchMode
         viewModel.resetToTop()
+        #if DEBUG
+        // For App Store screenshots: `-ypShotProgress 0.2` opens partway through.
+        let shot = UserDefaults.standard.double(forKey: "ypShotProgress")
+        if shot > 0 { viewModel.seek(to: shot) }
+        #endif
         let alreadyShowingNotch = isVisible && notchMode && notchPresented
         if notchMode {
             panel?.orderOut(nil)

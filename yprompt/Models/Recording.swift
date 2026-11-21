@@ -104,6 +104,14 @@ nonisolated enum RecordingStore {
     static let root: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         var root = base.appendingPathComponent("Recordings", isDirectory: true)
+        #if DEBUG
+        // For App Store screenshots, with the demo library: a fresh folder each launch, so demo
+        // takes never mix with real ones.
+        if ProcessInfo.processInfo.arguments.contains("-ypDemoStore") {
+            root = FileManager.default.temporaryDirectory.appendingPathComponent("DemoRecordings", isDirectory: true)
+            try? FileManager.default.removeItem(at: root)
+        }
+        #endif
         try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         // Large, and saved to Photos when they matter; the tab says they aren't backed up.
         var values = URLResourceValues()
