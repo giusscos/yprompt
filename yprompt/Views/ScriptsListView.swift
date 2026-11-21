@@ -177,6 +177,12 @@ struct ScriptsListView: View {
         .sheet(isPresented: $showingPaywall) {
             PaywallView().environment(storeKit)
         }
+        #if DEBUG
+        // For App Store screenshots: `-ypShotDraft` opens Write Script with a sample draft.
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-ypShotDraft") { showingDraft = true }
+        }
+        #endif
         .sheet(isPresented: $showingDraft) {
             DraftScriptView { script in
                 #if os(macOS)

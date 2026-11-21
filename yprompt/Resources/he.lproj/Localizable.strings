@@ -514,3 +514,18 @@
 "Picture in Picture" = "תמונה בתוך תמונה";
 "Stop Picture in Picture" = "הפסקת תמונה בתוך תמונה";
 "Script is empty" = "התסריט ריק";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "הקלטה תוך כדי קריאה";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "הקליטו וידאו או אודיו מהמגרעת או מהפרומפטר הצף, עם תצוגה מקדימה של המצלמה שאפשר להזיז ולשנות את גודלה.";
+"Edit Your Takes" = "עריכת הטייקים";
+"Trim, split and caption your recordings, then save them as video files or share them." = "חתכו, פצלו והוסיפו כתוביות להקלטות, ואז שמרו אותן כקובצי וידאו או שתפו.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "תארו את הנושא, בחרו אורך וטון, וקבלו טיוטה ראשונה שנכתבת ב-Mac שלכם.";
+"A Simpler Menu Bar" = "שורת תפריטים פשוטה יותר";
+"Reading, recording and display settings, laid out more clearly." = "הגדרות הקריאה, ההקלטה והתצוגה, מסודרות בצורה ברורה יותר.";
+"Siri and Shortcuts" = "Siri וקיצורים";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "הפעילו את הפרומפטר או הקלטה מ-Siri, מ-Spotlight או מהיישום ״קיצורים״.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "התסריט נשאר צף מעל יישום המצלמה, רשתות חברתיות או שיחת וידאו. הפעלה, השהיה ודילוג מתוך החלון.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "תארו את הנושא, בחרו אורך וטון, וקבלו טיוטה ראשונה שנכתבת ב-iPhone שלכם.";
+"Record from Apple Watch" = "הקלטה מ-Apple Watch";
+"Start and stop a take from your wrist while the camera is ready." = "התחילו ועצרו טייק מפרק היד כשהמצלמה מוכנה.";

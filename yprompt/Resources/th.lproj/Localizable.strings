@@ -514,3 +514,18 @@
 "Picture in Picture" = "ภาพซ้อนภาพ";
 "Stop Picture in Picture" = "หยุดภาพซ้อนภาพ";
 "Script is empty" = "สคริปต์ว่างเปล่า";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "บันทึกขณะอ่าน";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "บันทึกวิดีโอหรือเสียงจากรอยบากหรือพรอมต์เตอร์แบบลอย พร้อมภาพตัวอย่างกล้องที่ย้ายและปรับขนาดได้";
+"Edit Your Takes" = "แก้ไขเทคของคุณ";
+"Trim, split and caption your recordings, then save them as video files or share them." = "ตัด แยก และใส่คำบรรยายให้การบันทึก แล้วบันทึกเป็นไฟล์วิดีโอหรือแชร์";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "อธิบายหัวข้อ เลือกความยาวและน้ำเสียง แล้วรับร่างแรกที่เขียนบน Mac ของคุณ";
+"A Simpler Menu Bar" = "แถบเมนูที่เรียบง่ายขึ้น";
+"Reading, recording and display settings, laid out more clearly." = "การตั้งค่าการอ่าน การบันทึก และการแสดงผล จัดวางให้ชัดเจนขึ้น";
+"Siri and Shortcuts" = "Siri และคำสั่งลัด";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "เริ่มเทเลพรอมต์เตอร์หรือการบันทึกจาก Siri, Spotlight หรือแอปคำสั่งลัด";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "ให้สคริปต์ลอยอยู่เหนือแอปกล้อง แอปโซเชียล หรือวิดีโอคอล เล่น หยุดชั่วคราว และข้ามได้จากหน้าต่าง";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "อธิบายหัวข้อ เลือกความยาวและน้ำเสียง แล้วรับร่างแรกที่เขียนบน iPhone ของคุณ";
+"Record from Apple Watch" = "บันทึกจาก Apple Watch";
+"Start and stop a take from your wrist while the camera is ready." = "เริ่มและหยุดเทคจากข้อมือเมื่อกล้องพร้อม";

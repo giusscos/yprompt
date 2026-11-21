@@ -46,7 +46,31 @@ struct DraftScriptView: View {
         .frame(width: 520, height: 560)
         #endif
         .onDisappear { task?.cancel() }
+        #if DEBUG
+        .onAppear(perform: showSampleDraftForScreenshots)
+        #endif
     }
+
+    #if DEBUG
+    /// For App Store screenshots: the Simulator's model doesn't answer, so a written draft is shown.
+    private func showSampleDraftForScreenshots() {
+        guard ProcessInfo.processInfo.arguments.contains("-ypShotDraft") else { return }
+        topic = "Episode 12 of my cooking podcast, about knife skills"
+        title = "Knife Skills for Every Cook"
+        text = """
+            Welcome back to episode twelve. Today we're talking about the one tool you use every time you cook: your knife.
+
+            Good knife skills make cooking faster, safer and a lot more fun. And you don't need a drawer full of gadgets. One sharp chef's knife will do almost everything.
+
+            Let's start with the grip. Pinch the blade just above the handle, between your thumb and your index finger. It feels strange at first, but it gives you far more control.
+
+            Now the other hand. Curl your fingertips under, like a claw, and let your knuckles guide the side of the blade. Your fingers stay safely out of the way.
+
+            Here's a practical tip: keep your knife sharp. A dull knife slips, and slipping is how most kitchen cuts happen.
+            """
+        stage = .review
+    }
+    #endif
 
     // MARK: Compose
 

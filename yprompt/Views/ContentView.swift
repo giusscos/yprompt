@@ -39,7 +39,7 @@ struct ContentView: View {
                 .sheet(isPresented: isWhatsNewPresented) {
                     WhatsNewView()
                         .environment(storeKit)
-                        .frame(width: 460, height: 480)
+                        .frame(width: 480, height: 560)
                 }
             #elseif os(watchOS)
             watchOSContent
@@ -66,8 +66,20 @@ struct ContentView: View {
 
     private var isWhatsNewPresented: Binding<Bool> {
         Binding(
-            get: { hasSeenOnboarding && whatsNewSeen != WhatsNew.release },
-            set: { if !$0 { whatsNewSeen = WhatsNew.release } }
+            get: {
+                #if DEBUG
+                // For App Store screenshots.
+                if ProcessInfo.processInfo.arguments.contains("-ypShotWhatsNew") { return whatsNewSeen != "shot" }
+                #endif
+                return hasSeenOnboarding && whatsNewSeen != WhatsNew.release
+            },
+            set: {
+                guard !$0 else { return }
+                #if DEBUG
+                if ProcessInfo.processInfo.arguments.contains("-ypShotWhatsNew") { whatsNewSeen = "shot"; return }
+                #endif
+                whatsNewSeen = WhatsNew.release
+            }
         )
     }
 

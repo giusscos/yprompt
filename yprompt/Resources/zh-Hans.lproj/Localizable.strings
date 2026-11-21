@@ -514,3 +514,18 @@
 "Picture in Picture" = "画中画";
 "Stop Picture in Picture" = "停止画中画";
 "Script is empty" = "文稿为空";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "边读边录";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "从刘海区域或浮动提词器录制视频或音频，摄像头预览可以移动和调整大小。";
+"Edit Your Takes" = "编辑你的片段";
+"Trim, split and caption your recordings, then save them as video files or share them." = "修剪、拆分录制内容并添加字幕，然后存储为视频文件或进行共享。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "描述主题，选择时长和语气，即可在你的 Mac 上写出第一版文稿。";
+"A Simpler Menu Bar" = "更简洁的菜单栏";
+"Reading, recording and display settings, laid out more clearly." = "朗读、录制和显示设置，排列得更清晰。";
+"Siri and Shortcuts" = "Siri 与快捷指令";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "通过 Siri、聚焦搜索或“快捷指令”App 启动提词器或录制。";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "让文稿浮在“相机”App、社交 App 或视频通话上方。在窗口中即可播放、暂停和跳过。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "描述主题，选择时长和语气，即可在你的 iPhone 上写出第一版文稿。";
+"Record from Apple Watch" = "用 Apple Watch 录制";
+"Start and stop a take from your wrist while the camera is ready." = "摄像头准备好后，在手腕上开始和停止录制。";

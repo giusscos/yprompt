@@ -556,3 +556,18 @@
 "Picture in Picture" = "Bild-in-Bild";
 "Stop Picture in Picture" = "Bild-in-Bild beenden";
 "Script is empty" = "Das Skript ist leer";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "Aufnehmen beim Vorlesen";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Nimm Video oder Audio aus der Notch oder dem schwebenden Prompter auf, mit einer Kameravorschau, die du verschieben und skalieren kannst.";
+"Edit Your Takes" = "Aufnahmen bearbeiten";
+"Trim, split and caption your recordings, then save them as video files or share them." = "Kürze, teile und untertitle deine Aufnahmen und sichere sie als Videodateien oder teile sie.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "Beschreibe dein Thema, wähle Länge und Ton und erhalte einen ersten Entwurf, geschrieben auf deinem Mac.";
+"A Simpler Menu Bar" = "Einfachere Menüleiste";
+"Reading, recording and display settings, laid out more clearly." = "Einstellungen für Lesen, Aufnahme und Anzeige, übersichtlicher angeordnet.";
+"Siri and Shortcuts" = "Siri und Kurzbefehle";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Starte den Teleprompter oder eine Aufnahme mit Siri, Spotlight oder der Kurzbefehle-App.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "Dein Skript schwebt über der Kamera-App, sozialen Apps oder einem Videoanruf. Abspielen, pausieren und springen direkt im Fenster.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Beschreibe dein Thema, wähle Länge und Ton und erhalte einen ersten Entwurf, geschrieben auf deinem iPhone.";
+"Record from Apple Watch" = "Aufnehmen mit der Apple Watch";
+"Start and stop a take from your wrist while the camera is ready." = "Starte und stoppe eine Aufnahme am Handgelenk, sobald die Kamera bereit ist.";

@@ -514,3 +514,18 @@
 "Picture in Picture" = "ピクチャ・イン・ピクチャ";
 "Stop Picture in Picture" = "ピクチャ・イン・ピクチャを終了";
 "Script is empty" = "原稿が空です";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "読みながら録画";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "ノッチやフローティングプロンプターから動画や音声を録画。カメラプレビューは移動やサイズ変更ができます。";
+"Edit Your Takes" = "テイクを編集";
+"Trim, split and caption your recordings, then save them as video files or share them." = "録画をトリミング、分割し、字幕を付けて、動画ファイルとして保存したり共有したりできます。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "トピックを入力し、長さとトーンを選ぶと、Mac上で最初の原稿が書き上がります。";
+"A Simpler Menu Bar" = "シンプルになったメニューバー";
+"Reading, recording and display settings, laid out more clearly." = "読み上げ、録画、表示の設定がよりわかりやすく並びました。";
+"Siri and Shortcuts" = "Siriとショートカット";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Siri、Spotlight、ショートカットAppからプロンプターや録画を開始できます。";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "原稿をカメラApp、SNS、ビデオ通話の上に表示したままに。ウインドウから再生、一時停止、スキップができます。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "トピックを入力し、長さとトーンを選ぶと、iPhone上で最初の原稿が書き上がります。";
+"Record from Apple Watch" = "Apple Watchから録画";
+"Start and stop a take from your wrist while the camera is ready." = "カメラの準備ができたら、手首からテイクを開始・停止できます。";

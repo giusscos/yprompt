@@ -514,3 +514,18 @@
 "Picture in Picture" = "子母畫面";
 "Stop Picture in Picture" = "停止子母畫面";
 "Script is empty" = "講稿是空的";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "邊讀邊錄";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "從瀏海或浮動提詞器錄製影片或音訊，相機預覽可以移動和調整大小。";
+"Edit Your Takes" = "編輯你的片段";
+"Trim, split and caption your recordings, then save them as video files or share them." = "修剪、分割錄製內容並加上字幕，然後儲存為影片檔或分享。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "描述主題，選擇長度和語氣，即可在你的 Mac 上寫出第一版講稿。";
+"A Simpler Menu Bar" = "更簡潔的選單列";
+"Reading, recording and display settings, laid out more clearly." = "朗讀、錄製和顯示設定，排列得更清楚。";
+"Siri and Shortcuts" = "Siri 與捷徑";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "透過 Siri、Spotlight 或「捷徑」App 啟動提詞器或錄製。";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "讓講稿浮在「相機」App、社群 App 或視訊通話上方。在視窗中即可播放、暫停和略過。";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "描述主題，選擇長度和語氣，即可在你的 iPhone 上寫出第一版講稿。";
+"Record from Apple Watch" = "用 Apple Watch 錄製";
+"Start and stop a take from your wrist while the camera is ready." = "相機準備好後，在手腕上開始和停止錄製。";

@@ -514,3 +514,18 @@
 "Picture in Picture" = "Hình trong hình";
 "Stop Picture in Picture" = "Dừng hình trong hình";
 "Script is empty" = "Kịch bản trống";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "Ghi hình khi đọc";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Ghi video hoặc âm thanh từ phần tai thỏ hoặc trình nhắc chữ nổi, với bản xem trước camera có thể di chuyển và đổi kích thước.";
+"Edit Your Takes" = "Chỉnh sửa các đoạn quay";
+"Trim, split and caption your recordings, then save them as video files or share them." = "Cắt, tách và thêm phụ đề cho bản ghi, rồi lưu thành tệp video hoặc chia sẻ.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "Mô tả chủ đề, chọn độ dài và giọng điệu, rồi nhận bản nháp đầu tiên được viết trên máy Mac.";
+"A Simpler Menu Bar" = "Thanh menu đơn giản hơn";
+"Reading, recording and display settings, laid out more clearly." = "Cài đặt đọc, ghi và hiển thị, được sắp xếp rõ ràng hơn.";
+"Siri and Shortcuts" = "Siri và Phím tắt";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Bắt đầu trình nhắc chữ hoặc ghi hình từ Siri, Spotlight hoặc ứng dụng Phím tắt.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "Giữ kịch bản nổi trên ứng dụng Camera, mạng xã hội hoặc cuộc gọi video. Phát, tạm dừng và bỏ qua ngay trong cửa sổ.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Mô tả chủ đề, chọn độ dài và giọng điệu, rồi nhận bản nháp đầu tiên được viết trên iPhone.";
+"Record from Apple Watch" = "Ghi hình từ Apple Watch";
+"Start and stop a take from your wrist while the camera is ready." = "Bắt đầu và dừng một đoạn quay từ cổ tay khi camera đã sẵn sàng.";

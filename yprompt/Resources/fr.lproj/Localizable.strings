@@ -556,3 +556,18 @@
 "Picture in Picture" = "Image dans l’image";
 "Stop Picture in Picture" = "Arrêter Image dans l’image";
 "Script is empty" = "Le script est vide";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "Enregistrez en lisant";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Enregistrez de la vidéo ou du son depuis l’encoche ou le prompteur flottant, avec un aperçu de la caméra que vous pouvez déplacer et redimensionner.";
+"Edit Your Takes" = "Montez vos prises";
+"Trim, split and caption your recordings, then save them as video files or share them." = "Coupez, divisez et sous-titrez vos enregistrements, puis enregistrez-les en fichiers vidéo ou partagez-les.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "Décrivez votre sujet, choisissez une durée et un ton, et obtenez un premier jet rédigé sur votre Mac.";
+"A Simpler Menu Bar" = "Une barre des menus plus simple";
+"Reading, recording and display settings, laid out more clearly." = "Les réglages de lecture, d’enregistrement et d’affichage, organisés plus clairement.";
+"Siri and Shortcuts" = "Siri et Raccourcis";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Lancez le prompteur ou un enregistrement depuis Siri, Spotlight ou l’app Raccourcis.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "Gardez votre script au-dessus de l’app Appareil photo, des réseaux sociaux ou d’un appel vidéo. Lecture, pause et saut depuis la fenêtre.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Décrivez votre sujet, choisissez une durée et un ton, et obtenez un premier jet rédigé sur votre iPhone.";
+"Record from Apple Watch" = "Enregistrez depuis l’Apple Watch";
+"Start and stop a take from your wrist while the camera is ready." = "Lancez et arrêtez une prise depuis votre poignet quand la caméra est prête.";

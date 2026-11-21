@@ -8,7 +8,7 @@ import SwiftUI
 enum WhatsNew {
     static let seenKey = "whatsNew.seen"
     /// Change this only when the rows below change, so a bug-fix update doesn't show them again.
-    static let release = "1.0.6"
+    static let release = "1.0.8"
 }
 
 /// Shown once to people who update. New installs get the onboarding instead.
@@ -26,9 +26,7 @@ struct WhatsNewView: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 32)
 
-                    row("textformat", .blue, "Reading Fonts", "OpenDyslexic and Atkinson Hyperlegible, free for everyone, with wider letter spacing if you like.")
-                    row("globe", .green, "More Languages", "yPrompt now comes in 19 languages, including Japanese, Korean, Chinese, Turkish and Arabic.")
-                    row("accessibility", .purple, "Better with VoiceOver", "Sliders and steppers adjust with a swipe, and every button says what it does.")
+                    rows
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -49,6 +47,26 @@ struct WhatsNewView: View {
             .padding(.vertical, 12)
         }
         .presentationBackground(.ultraThinMaterial)
+    }
+
+    @ViewBuilder
+    private var rows: some View {
+        #if os(macOS)
+        row("record.circle", .red, "Record While You Read", "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize.")
+        row("film.stack", .orange, "Edit Your Takes", "Trim, split and caption your recordings, then save them as video files or share them.")
+        if ScriptWriter.isAvailable {
+            row("sparkles", .purple, "Write with Apple Intelligence", "Describe your topic, pick a length and a tone, and get a first draft written on your Mac.")
+        }
+        row("menubar.rectangle", .blue, "A Simpler Menu Bar", "Reading, recording and display settings, laid out more clearly.")
+        row("mic.fill", .green, "Siri and Shortcuts", "Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app.")
+        #else
+        row("pip.enter", .blue, "Picture in Picture", "Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window.", isPro: true)
+        if ScriptWriter.isAvailable {
+            row("sparkles", .purple, "Write with Apple Intelligence", "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone.")
+        }
+        row("applewatch", .red, "Record from Apple Watch", "Start and stop a take from your wrist while the camera is ready.")
+        row("mic.fill", .green, "Siri and Shortcuts", "Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app.")
+        #endif
     }
 
     private func row(_ icon: String, _ color: Color, _ title: LocalizedStringKey, _ description: LocalizedStringKey, isPro: Bool = false) -> some View {

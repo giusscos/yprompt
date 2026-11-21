@@ -514,3 +514,18 @@
 "Picture in Picture" = "Resim İçinde Resim";
 "Stop Picture in Picture" = "Resim İçinde Resmi Durdur";
 "Script is empty" = "Metin boş";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "Okurken kaydedin";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Çentikten ya da yüzen metin okuyucudan video veya ses kaydedin; kamera önizlemesini taşıyabilir ve boyutlandırabilirsiniz.";
+"Edit Your Takes" = "Çekimlerinizi düzenleyin";
+"Trim, split and caption your recordings, then save them as video files or share them." = "Kayıtlarınızı kırpın, bölün ve altyazı ekleyin; ardından video dosyası olarak kaydedin ya da paylaşın.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "Konunuzu anlatın, uzunluk ve ton seçin, ilk taslak Mac’inizde yazılsın.";
+"A Simpler Menu Bar" = "Daha sade bir menü çubuğu";
+"Reading, recording and display settings, laid out more clearly." = "Okuma, kayıt ve görüntü ayarları, daha anlaşılır biçimde düzenlendi.";
+"Siri and Shortcuts" = "Siri ve Kestirmeler";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Metin okuyucuyu ya da bir kaydı Siri, Spotlight veya Kestirmeler uygulamasından başlatın.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "Metniniz Kamera uygulamasının, sosyal uygulamaların ya da görüntülü aramanın üzerinde dursun. Pencereden oynatın, duraklatın ve atlayın.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Konunuzu anlatın, uzunluk ve ton seçin, ilk taslak iPhone’unuzda yazılsın.";
+"Record from Apple Watch" = "Apple Watch’tan kaydedin";
+"Start and stop a take from your wrist while the camera is ready." = "Kamera hazır olduğunda çekimi bileğinizden başlatıp durdurun.";

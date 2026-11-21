@@ -514,3 +514,18 @@
 "Picture in Picture" = "화면 속 화면";
 "Stop Picture in Picture" = "화면 속 화면 끝내기";
 "Script is empty" = "대본이 비어 있습니다";
+
+/* What's New 1.0.8 */
+"Record While You Read" = "읽으면서 녹화";
+"Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "노치나 떠 있는 프롬프터에서 비디오나 오디오를 녹화하세요. 카메라 미리보기는 옮기고 크기를 조절할 수 있습니다.";
+"Edit Your Takes" = "테이크 편집";
+"Trim, split and caption your recordings, then save them as video files or share them." = "녹화를 자르고 나누고 자막을 넣은 뒤 비디오 파일로 저장하거나 공유하세요.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your Mac." = "주제를 설명하고 길이와 어조를 고르면 Mac에서 첫 초안이 작성됩니다.";
+"A Simpler Menu Bar" = "더 간결해진 메뉴 막대";
+"Reading, recording and display settings, laid out more clearly." = "읽기, 녹화, 화면 설정을 더 알아보기 쉽게 정리했습니다.";
+"Siri and Shortcuts" = "Siri 및 단축어";
+"Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app." = "Siri, Spotlight 또는 단축어 앱에서 프롬프터나 녹화를 시작하세요.";
+"Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window." = "카메라 앱, 소셜 앱, 영상 통화 위에 대본을 띄워 두세요. 창에서 재생, 일시 정지, 건너뛰기가 가능합니다.";
+"Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "주제를 설명하고 길이와 어조를 고르면 iPhone에서 첫 초안이 작성됩니다.";
+"Record from Apple Watch" = "Apple Watch로 녹화";
+"Start and stop a take from your wrist while the camera is ready." = "카메라가 준비되면 손목에서 테이크를 시작하고 멈추세요.";
