@@ -36,7 +36,7 @@ struct DraftScriptView: View {
                 case .review: reviewForm
                 }
             }
-            .navigationTitle("Write with Apple Intelligence")
+            .navigationTitle("Write Script")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -52,6 +52,14 @@ struct DraftScriptView: View {
 
     private var composeForm: some View {
         Form {
+            // At the top, where it's seen even with the keyboard up.
+            if case .failed(let message) = stage {
+                Section {
+                    Label(message, systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section {
                 TextField("What's it about?", text: $topic, axis: .vertical)
                     .lineLimit(3...8)
@@ -83,13 +91,6 @@ struct DraftScriptView: View {
                 .pickerStyle(.menu)
                 #endif
                 .labelsHidden()
-            }
-
-            if case .failed(let message) = stage {
-                Section {
-                    Label(message, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.secondary)
-                }
             }
 
             Section {

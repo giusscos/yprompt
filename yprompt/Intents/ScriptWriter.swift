@@ -115,7 +115,7 @@ enum ScriptWriter {
                 Break it into paragraphs of two to four sentences.
                 """
             do {
-                let draft = try await session.respond(to: prompt, generating: GeneratedScript.self).content
+                let draft = try await withTimeout { try await session.respond(to: prompt, generating: GeneratedScript.self).content }
                 var text = draft.text
                 // The model tends to write short. Once, ask it to bring the draft up to length.
                 let written = text.split(whereSeparator: \.isWhitespace).count
@@ -153,13 +153,31 @@ enum ScriptWriter {
                 \(text)
                 """
             do {
-                return tidy(try await session.respond(to: prompt).content)
+                return tidy(try await withTimeout { try await session.respond(to: prompt).content })
             } catch {
                 throw map(error)
             }
         }
         #endif
         throw WriterError.unavailable(unavailableReason)
+    }
+
+    /// Gives up after a minute, rather than leaving someone looking at a spinner forever.
+    /// Not a task group: that waits for the model to stop, which it may not do when cancelled.
+    private static func withTimeout<T: Sendable>(seconds: Double = 60,
+                                                 _ work: @escaping @Sendable () async throws -> T) async throws -> T {
+        let gate = TimeoutGate<T>()
+        return try await withCheckedThrowingContinuation { continuation in
+            let worker = Task {
+                do { gate.finish(continuation, with: .success(try await work())) }
+                catch { gate.finish(continuation, with: .failure(error)) }
+            }
+            Task {
+                try? await Task.sleep(for: .seconds(seconds))
+                worker.cancel()
+                gate.finish(continuation, with: .failure(WriterError.failed))
+            }
+        }
     }
 
     private static func formatted(_ minutes: Double) -> String {
@@ -191,6 +209,7 @@ enum ScriptWriter {
     #if canImport(FoundationModels)
     @available(iOS 26.0, macOS 26.0, *)
     private static func map(_ error: Error) -> WriterError {
+        if let error = error as? WriterError { return error }
         guard let error = error as? LanguageModelSession.GenerationError else { return .failed }
         switch error {
         case .exceededContextWindowSize: return .tooLong
@@ -269,5 +288,19 @@ struct FitScriptToTimeIntent: AppIntent {
         let title = String(localized: "\(stored.title) (\(Int(minutes.rounded())) min)")
         let copy = try await AppDataStore.makeScript(title: title, text: fitted)
         return .result(value: ScriptEntity(copy), dialog: "\(copy.title) is in yPrompt.")
+    }
+}
+
+/// Resumes a continuation once: whichever of the work and the timer comes first.
+private final class TimeoutGate<T: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+
+    func finish(_ continuation: CheckedContinuation<T, Error>, with result: Result<T, Error>) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !done else { return }
+        done = true
+        continuation.resume(with: result)
     }
 }
