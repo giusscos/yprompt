@@ -237,7 +237,7 @@ private struct GeneratedScript {
 struct DraftScriptIntent: AppIntent {
     static let title: LocalizedStringResource = "Write Script with Apple Intelligence"
     static let description = IntentDescription(
-        "Writes a new script on your device with Apple Intelligence and adds it to yPrompt.",
+        "Writes a new script on your device and adds it to yPrompt.",
         categoryName: "Scripts"
     )
 
@@ -267,7 +267,7 @@ struct DraftScriptIntent: AppIntent {
 struct FitScriptToTimeIntent: AppIntent {
     static let title: LocalizedStringResource = "Fit Script to Time"
     static let description = IntentDescription(
-        "Rewrites a script with Apple Intelligence, on your device, so it reads in the time you choose. The original is kept as a copy.",
+        "Rewrites a script on your device so it reads in the time you choose. The original is kept as a copy.",
         categoryName: "Scripts"
     )
 

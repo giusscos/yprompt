@@ -14,7 +14,7 @@ import AppKit
 struct CreateScriptIntent: AppIntent {
     static let title: LocalizedStringResource = "Create Script"
     static let description = IntentDescription(
-        "Adds a new script to yPrompt. Use it after Apple Intelligence or another action has written the text.",
+        "Adds a new script to yPrompt, for example with text another action has written.",
         categoryName: "Scripts"
     )
 
@@ -60,7 +60,7 @@ struct AppendToScriptIntent: AppIntent {
 struct ReplaceScriptTextIntent: AppIntent {
     static let title: LocalizedStringResource = "Replace Script Text"
     static let description = IntentDescription(
-        "Replaces everything a script says, for example with a version Apple Intelligence rewrote.",
+        "Replaces everything a script says, for example with a rewritten version.",
         categoryName: "Scripts"
     )
 
@@ -85,7 +85,7 @@ struct ReplaceScriptTextIntent: AppIntent {
 struct GetScriptTextIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Script Text"
     static let description = IntentDescription(
-        "Gives a script's text to the next action, for example to have Apple Intelligence shorten or translate it.",
+        "Gives a script's text to the next action, for example to shorten or translate it.",
         categoryName: "Scripts"
     )
 
@@ -171,7 +171,7 @@ struct StartTeleprompterIntent: AppIntent {
 struct StartRecordingIntent: AppIntent {
     static let title: LocalizedStringResource = "Record While Reading"
     static let description = IntentDescription(
-        "Opens a script in the teleprompter and records you reading it. On iPhone and iPad, the camera is ready and you start the take.",
+        "Opens a script in the teleprompter and records you reading it. The camera gets ready and you start the take.",
         categoryName: "Reading"
     )
     #if os(macOS)
