@@ -180,7 +180,12 @@ struct ScriptsListView: View {
         #if DEBUG
         // For App Store screenshots: `-ypShotDraft` opens Write Script with a sample draft.
         .onAppear {
-            if ProcessInfo.processInfo.arguments.contains("-ypShotDraft") { showingDraft = true }
+            guard ProcessInfo.processInfo.arguments.contains("-ypShotDraft") else { return }
+            // After launch settles: a sheet asked for during launch is dropped.
+            Task {
+                try? await Task.sleep(for: .seconds(1))
+                showingDraft = true
+            }
         }
         #endif
         .sheet(isPresented: $showingDraft) {
