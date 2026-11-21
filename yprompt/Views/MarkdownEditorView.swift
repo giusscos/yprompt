@@ -75,6 +75,9 @@ private struct RichTextEditor: View {
             #if os(iOS)
             .toolbar { keyboardToolbar }
             #endif
+            #if os(macOS)
+            .modifier(BelowToolbar())
+            #endif
     }
 
     // MARK: - Formatting
@@ -173,3 +176,16 @@ private struct PlainTextEditor: View {
         #endif
     }
 }
+
+#if os(macOS)
+/// Keeps the text view from reaching under the toolbar. When it did, the toolbar's glass
+/// sampled it and drew the title and buttons dark: black on black in Dark Mode.
+private struct BelowToolbar: ViewModifier {
+    func body(content: Content) -> some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: 1)
+            content
+        }
+    }
+}
+#endif
