@@ -52,7 +52,7 @@ class TeleprompterViewModel {
     var remainingTime: TimeInterval {
         guard let duration = timedDuration else { return 0 }
         // Floating mode: position-based remaining
-        if !isNotchMode {
+        if !usesNotchScroll {
             if usesWordClock { return remainingWordTime }
             let maxOffset = max(0, Double(contentHeight - screenHeight) + 80)
             let remaining = maxOffset - Double(contentOffset)
@@ -118,7 +118,10 @@ class TeleprompterViewModel {
         }
     }
 
-    private var usesWordClock: Bool { isWordMode && !isNotchMode }
+    /// Lyrics style runs on the word clock everywhere, the notch included.
+    private var usesWordClock: Bool { isWordMode }
+    /// The notch's plain text scrolls on the notch's own timer, not this one.
+    private var usesNotchScroll: Bool { isNotchMode && !isWordMode }
 
     /// Coming back from lyrics style: same place in the script, once the text has been measured.
     func restoreClassicPositionIfNeeded() {
@@ -236,7 +239,7 @@ class TeleprompterViewModel {
     // MARK: - Progress
 
     var progress: Double {
-        guard !isNotchMode else { return notchProgress }
+        guard !usesNotchScroll else { return notchProgress }
         if isWordMode {
             guard let count = scriptWords?.count, count > 0 else { return 0 }
             return min(1, Double(wordIndex) / Double(count))
@@ -246,7 +249,7 @@ class TeleprompterViewModel {
     }
 
     func seek(to fraction: Double) {
-        if isNotchMode {
+        if usesNotchScroll {
             notchSeekRequest.send(fraction)
             return
         }
@@ -263,7 +266,7 @@ class TeleprompterViewModel {
     // MARK: - Cue Points
 
     func jumpToCue(_ cue: CuePoint) {
-        if isNotchMode {
+        if usesNotchScroll {
             notchSeekRequest.send(cue.position)
             return
         }

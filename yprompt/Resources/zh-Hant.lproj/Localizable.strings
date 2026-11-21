@@ -430,3 +430,28 @@
 "Paused" = "已暫停";
 "Back to the top" = "已回到開頭";
 "Recording stopped" = "已停止錄製";
+
+/* Mac recording */
+"Record" = "錄製";
+"Camera Access Required" = "需要相機權限";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "若要在朗讀時錄下自己，請在「系統設定」›「隱私權與安全性」中允許 yPrompt 使用相機和麥克風。";
+"Show Camera Preview" = "顯示相機預覽";
+"Hide Camera Preview" = "隱藏相機預覽";
+"Recording" = "正在錄製";
+"Read this script with the camera on, ready to record" = "開啟相機朗讀此腳本，隨時開始錄製";
+"Click a piece to edit it" = "按一下片段進行編輯";
+"Saved" = "已儲存";
+"Save…" = "儲存⋯";
+"It hasn't been saved. This can't be undone." = "它尚未儲存。此操作無法還原。";
+"Files you saved stay. This can't be undone." = "你儲存的檔案會保留。此操作無法還原。";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "錄製內容在這台 Mac 上佔用 %@。它們不會被備份，請儲存你想保留的內容。";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "打開一個腳本並按一下「錄製」，或在選單列的「錄製」中選擇相機或音訊。每次錄製都會出現在這裡，可以直接編輯。";
+"No Recording Selected" = "未選擇錄製內容";
+"Pick a recording in the sidebar to watch and edit it." = "在側邊欄中選擇一段錄製內容來觀看和編輯。";
+"Show" = "顯示";
+"Display" = "顯示";
+"Scrolling" = "捲動";
+"Text Size" = "文字大小";
+"For vertical scrolling" = "用於垂直捲動";
+"Mirror Camera" = "鏡像相機";
+"Shows the preview like a mirror. Recordings are never mirrored." = "像鏡子一樣顯示預覽。錄製內容不會被鏡像。";

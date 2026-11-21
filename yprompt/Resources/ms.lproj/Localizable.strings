@@ -430,3 +430,28 @@
 "Paused" = "Dijeda";
 "Back to the top" = "Kembali ke permulaan";
 "Recording stopped" = "Rakaman dihentikan";
+
+/* Mac recording */
+"Record" = "Rakam";
+"Camera Access Required" = "Akses Kamera Diperlukan";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Untuk merakam diri anda semasa membaca, benarkan yPrompt menggunakan kamera dan mikrofon dalam Seting Sistem › Privasi & Keselamatan.";
+"Show Camera Preview" = "Tunjukkan Pratonton Kamera";
+"Hide Camera Preview" = "Sembunyikan Pratonton Kamera";
+"Recording" = "Merakam";
+"Read this script with the camera on, ready to record" = "Baca skrip ini dengan kamera dihidupkan, sedia untuk merakam";
+"Click a piece to edit it" = "Klik bahagian untuk mengeditnya";
+"Saved" = "Disimpan";
+"Save…" = "Simpan…";
+"It hasn't been saved. This can't be undone." = "Ia belum disimpan. Tindakan ini tidak boleh dibuat asal.";
+"Files you saved stay. This can't be undone." = "Fail yang anda simpan kekal. Tindakan ini tidak boleh dibuat asal.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Rakaman menggunakan %@ pada Mac ini. Rakaman tidak disandarkan, jadi simpan yang ingin anda kekalkan.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Buka skrip dan klik Rakam, atau pilih Kamera atau Audio di bawah Rakam dalam bar menu. Setiap rakaman sampai di sini, sedia untuk diedit.";
+"No Recording Selected" = "Tiada Rakaman Dipilih";
+"Pick a recording in the sidebar to watch and edit it." = "Pilih rakaman dalam bar sisi untuk menonton dan mengeditnya.";
+"Show" = "Tunjukkan";
+"Display" = "Paparan";
+"Scrolling" = "Tatal";
+"Text Size" = "Saiz Teks";
+"For vertical scrolling" = "Untuk tatal menegak";
+"Mirror Camera" = "Cerminkan Kamera";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Menunjukkan pratonton seperti cermin. Rakaman tidak pernah dicerminkan.";

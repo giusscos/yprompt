@@ -473,3 +473,27 @@
 "Paused" = "Dijeda";
 "Back to the top" = "Kembali ke awal";
 "Recording stopped" = "Perekaman dihentikan";
+
+/* Mac recording */
+"Camera Access Required" = "Perlu Akses Kamera";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Untuk merekam diri Anda saat membaca, izinkan yPrompt memakai kamera dan mikrofon di Pengaturan Sistem › Privasi & Keamanan.";
+"Show Camera Preview" = "Tampilkan Pratinjau Kamera";
+"Hide Camera Preview" = "Sembunyikan Pratinjau Kamera";
+"Recording" = "Merekam";
+"Read this script with the camera on, ready to record" = "Baca naskah ini dengan kamera menyala, siap merekam";
+"Click a piece to edit it" = "Klik satu bagian untuk mengeditnya";
+"Saved" = "Tersimpan";
+"Save…" = "Simpan…";
+"It hasn't been saved. This can't be undone." = "Rekaman ini belum disimpan. Tindakan ini tidak dapat dibatalkan.";
+"Files you saved stay. This can't be undone." = "File yang sudah Anda simpan tetap ada. Tindakan ini tidak dapat dibatalkan.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Rekaman memakai %@ di Mac ini. Rekaman tidak dicadangkan, jadi simpan yang ingin Anda pertahankan.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Buka naskah dan klik Rekam, atau pilih Kamera atau Audio di bawah Rekam pada bar menu. Setiap rekaman masuk ke sini, siap diedit.";
+"No Recording Selected" = "Tidak Ada Rekaman yang Dipilih";
+"Pick a recording in the sidebar to watch and edit it." = "Pilih rekaman di bar samping untuk menonton dan mengeditnya.";
+"Show" = "Tampilkan";
+"Display" = "Tampilan";
+"Scrolling" = "Gulir";
+"Text Size" = "Ukuran Teks";
+"For vertical scrolling" = "Untuk gulir vertikal";
+"Mirror Camera" = "Cerminkan Kamera";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Menampilkan pratinjau seperti cermin. Rekaman tidak pernah dicerminkan.";

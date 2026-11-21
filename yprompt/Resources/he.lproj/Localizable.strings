@@ -430,3 +430,28 @@
 "Paused" = "מושהה";
 "Back to the top" = "חזרה להתחלה";
 "Recording stopped" = "ההקלטה נעצרה";
+
+/* Mac recording */
+"Record" = "הקלטה";
+"Camera Access Required" = "נדרשת גישה למצלמה";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "כדי לצלם את עצמך בזמן הקריאה, יש לאפשר ל‑yPrompt להשתמש במצלמה ובמיקרופון בהגדרות המערכת › פרטיות ואבטחה.";
+"Show Camera Preview" = "הצגת תצוגה מקדימה של המצלמה";
+"Hide Camera Preview" = "הסתרת תצוגה מקדימה של המצלמה";
+"Recording" = "מקליט";
+"Read this script with the camera on, ready to record" = "קריאת התסריט הזה עם מצלמה פועלת, מוכן להקלטה";
+"Click a piece to edit it" = "יש ללחוץ על קטע כדי לערוך אותו";
+"Saved" = "נשמר";
+"Save…" = "שמירה…";
+"It hasn't been saved. This can't be undone." = "היא לא נשמרה. לא ניתן לבטל פעולה זו.";
+"Files you saved stay. This can't be undone." = "קבצים ששמרת נשארים. לא ניתן לבטל פעולה זו.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "ההקלטות תופסות %@ ב‑Mac זה. אין להן גיבוי, לכן כדאי לשמור את אלה שרוצים להשאיר.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "יש לפתוח תסריט וללחוץ על ״הקלטה״, או לבחור ״מצלמה״ או ״שמע״ תחת ״הקלטה״ בשורת התפריטים. כל טייק מגיע לכאן, מוכן לעריכה.";
+"No Recording Selected" = "לא נבחרה הקלטה";
+"Pick a recording in the sidebar to watch and edit it." = "יש לבחור הקלטה בסרגל הצד כדי לצפות בה ולערוך אותה.";
+"Show" = "הצגה";
+"Display" = "תצוגה";
+"Scrolling" = "גלילה";
+"Text Size" = "גודל טקסט";
+"For vertical scrolling" = "לגלילה אנכית";
+"Mirror Camera" = "שיקוף המצלמה";
+"Shows the preview like a mirror. Recordings are never mirrored." = "מציג את התצוגה המקדימה כמו מראה. הקלטות לעולם אינן משוקפות.";

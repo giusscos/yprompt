@@ -3,9 +3,13 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import SwiftUI
+#if os(macOS)
+import AppKit
+import UniformTypeIdentifiers
+#endif
 import os
 
 private let log = Logger(subsystem: "com.giusscos.yprompt", category: "Editor")
@@ -514,7 +518,25 @@ final class RecordingEditorModel {
 
     // MARK: Saving and sharing
 
+    #if os(macOS)
+    /// Where the next save goes, picked in a save panel before rendering starts.
+    @ObservationIgnored private var saveDestination: URL?
+
+    /// Asks where to put the file first, so nobody waits for a render and then for a question.
+    func save() {
+        guard !isRendering, hasItem else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = fileName + "." + (isVideo ? "mov" : "m4a")
+        panel.allowedContentTypes = [isVideo ? .quickTimeMovie : .mpeg4Audio]
+        panel.directoryURL = FileManager.default.urls(for: isVideo ? .moviesDirectory : .musicDirectory, in: .userDomainMask).first
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        saveDestination = url
+        startRender(.save)
+    }
+    #else
     func save() { startRender(.save) }
+    #endif
     func share() { startRender(.share) }
     func cancelRender() { renderTask?.cancel() }
 
@@ -542,7 +564,15 @@ final class RecordingEditorModel {
                 try Task.checkCancellation()
                 switch purpose {
                 case .save:
+                    #if os(macOS)
+                    guard let destination = saveDestination else { throw CancellationError() }
+                    let textFiles = isVideo && recording.captionStyle == .off
+                        ? []
+                        : RecordingExporter.writeTextFiles(next: url, lines: captionLines, editList: editList)
+                    try RecordingExporter.saveToFile(url, to: destination, with: textFiles)
+                    #else
                     try await RecordingExporter.saveToPhotos(url)
+                    #endif
                     recording.savedAt = Date()
                     RecordingLibrary.shared.save(recording)
                     RatingService.shared.recordRecordingSaved()

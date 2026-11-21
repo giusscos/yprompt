@@ -3,11 +3,15 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import CoreImage
 import CoreText
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 
 nonisolated enum CaptionStyle: String, CaseIterable, Identifiable, Codable, Sendable {
     case off, lyrics, clean
@@ -201,9 +205,15 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
     // MARK: - Text
 
     private static func font(size: CGFloat) -> CTFont {
+        #if os(macOS)
+        let base = NSFont.systemFont(ofSize: size, weight: .heavy)
+        let descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
+        return (NSFont(descriptor: descriptor, size: size) ?? base) as CTFont
+        #else
         let base = UIFont.systemFont(ofSize: size, weight: .heavy)
         let descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
         return UIFont(descriptor: descriptor, size: size) as CTFont
+        #endif
     }
 
     /// A run of text that takes its color from the context, so one line serves every state.

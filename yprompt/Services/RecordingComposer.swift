@@ -3,11 +3,15 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import CoreImage
 import CoreText
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 
 /// A recording put together for AVFoundation: its pieces one after another, each video piece
 /// turned upright, rotated as chosen, and filling a frame the size of the first piece.
@@ -332,10 +336,19 @@ nonisolated struct Watermark: @unchecked Sendable {
 
     /// The home screen icon as built into the app: a square picture, without the rounded corners.
     private static func appIcon() -> CGImage? {
+        #if os(macOS)
+        // The Mac icon carries its own shape and margin, so it's cropped to the artwork inside.
+        guard let icon = NSImage(named: NSImage.applicationIconName) else { return nil }
+        var rect = CGRect(x: 0, y: 0, width: 512, height: 512)
+        guard let image = icon.cgImage(forProposedRect: &rect, context: nil, hints: nil) else { return nil }
+        let inset = CGFloat(image.width) * 0.1
+        return image.cropping(to: CGRect(x: 0, y: 0, width: image.width, height: image.height).insetBy(dx: inset, dy: inset)) ?? image
+        #else
         let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any]
         let primary = icons?["CFBundlePrimaryIcon"] as? [String: Any]
         let name = (primary?["CFBundleIconFiles"] as? [String])?.last
         return name.flatMap { UIImage(named: $0)?.cgImage }
+        #endif
     }
 }
 #endif

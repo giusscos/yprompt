@@ -3,11 +3,15 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import StoreKit
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 
 /// Opens after every take and from the Recordings tab: watch the recording, cut it into
 /// pieces, trim, reorder, remove pauses, caption it, and record more where it left off.
@@ -53,6 +57,10 @@ struct RecordingEditorView: View {
             self.model = model
         }
         .task(id: model == nil) { await model?.load() }
+        #if os(macOS)
+        // Another recording was picked in the list, or the window closed.
+        .onDisappear { model?.close() }
+        #endif
         .onChange(of: storeKit.isPremium) { _, premium in model?.showsMark = !premium }
         .onChange(of: model?.renderState) { _, state in
             if state == .saved { reviewAfterSave = UUID() }
@@ -88,6 +96,12 @@ struct RecordingEditorView: View {
 }
 
 private struct EditorContent: View {
+    #if os(macOS)
+    static let alwaysSideBySide = true
+    #else
+    static let alwaysSideBySide = false
+    #endif
+
     @Bindable var model: RecordingEditorModel
     let canRecordMore: Bool
     let onRecordMore: (Pickup) -> Void
@@ -98,7 +112,8 @@ private struct EditorContent: View {
 
     var body: some View {
         GeometryReader { geometry in
-            if geometry.size.width > geometry.size.height {
+            // The Mac window keeps a readable minimum size, so it always fits side by side.
+            if Self.alwaysSideBySide || geometry.size.width > geometry.size.height {
                 // Landscape: the recording on one side, everything to edit it on the other.
                 HStack(spacing: 16) {
                     VStack(spacing: 10) {
@@ -138,9 +153,13 @@ private struct EditorContent: View {
                 .padding(.bottom, 8)
             }
         }
+        #if os(iOS)
         .sheet(item: $model.shareItems, onDismiss: { model.resume() }) { items in
             ActivityView(items: items.urls)
         }
+        #else
+        .background { editorShortcuts }
+        #endif
         .alert("Couldn't Save", isPresented: Binding(
             get: { if case .failed = model.renderState { true } else { false } },
             set: { if !$0 { model.clearFailure() } }
@@ -160,10 +179,12 @@ private struct EditorContent: View {
 
     private var header: some View {
         HStack {
+            #if os(iOS)
             Button("Done", action: onClose)
                 .font(.headline)
                 .ypGlassButtonStyle()
                 .disabled(model.isRendering)
+            #endif
             Spacer()
             VStack(spacing: 2) {
                 Text(model.recording.title).font(.headline).lineLimit(1)
@@ -181,6 +202,13 @@ private struct EditorContent: View {
             }
             .buttonStyle(.plain)
             .ypGlassEffect(cornerRadius: 22)
+            #if os(macOS)
+            // The share menu opens from the button once the file is ready.
+            .background {
+                SharePickerAnchor(items: $model.shareItems) { model.resume() }
+            }
+            .help("Share")
+            #endif
             .accessibilityLabel("Share")
             .disabled(model.isRendering || !model.hasItem)
         }
@@ -323,12 +351,20 @@ private struct EditorContent: View {
                             Text(rateLabel(rate)).tag(rate)
                         }
                     }
+                    // Flat in the menu: one click picks a speed, without a submenu on the Mac.
+                    .pickerStyle(.inline)
+                    .labelsHidden()
                 } label: {
                     Text(rateLabel(model.playbackRate))
                         .font(.subheadline.weight(.semibold).monospacedDigit())
                         .contentTransition(.numericText())
                         .frame(width: 44, height: 44)
                 }
+                #if os(macOS)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                #endif
                 .accessibilityLabel("Speed")
             }
             Spacer(minLength: 0)
@@ -365,9 +401,15 @@ private struct EditorContent: View {
                     }
                 }
             } else {
+                #if os(macOS)
+                Text("Click a piece to edit it")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                #else
                 Text("Tap a piece to edit it")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                #endif
             }
         }
         .disabled(model.isRendering)
@@ -405,37 +447,70 @@ private struct EditorContent: View {
             }
             .tint(.accentColor)
 
-            HStack(spacing: 10) {
-                Text(model.isVideo ? "Captions" : "Transcript")
-                Spacer()
-                if model.isVideo {
-                    Picker("Captions", selection: Binding(get: { model.recording.captionStyle },
-                                                          set: { model.setCaptionStyle($0) })) {
-                        ForEach(CaptionStyle.allCases) { Text($0.title).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: 220)
-                    if model.recording.captionStyle != .off {
-                        Menu {
-                            Picker("Position", selection: Binding(get: { model.recording.captionPosition },
-                                                                  set: { model.setCaptionPosition($0) })) {
-                                ForEach(CaptionPosition.allCases) { Text($0.title).tag($0) }
-                            }
-                        } label: {
-                            Image(systemName: model.recording.captionPosition == .bottom
-                                  ? "rectangle.bottomhalf.inset.filled" : "rectangle.center.inset.filled")
-                                .font(.title3)
-                                .contentTransition(.symbolEffect(.replace))
-                        }
-                        .accessibilityLabel("Position")
-                    }
+            #if os(macOS)
+            // Beside the video the column can be narrow: the controls go under the label then.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    captionLabel
+                    Spacer()
+                    captionControls
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    captionLabel
+                    HStack(spacing: 10) { captionControls }
                 }
             }
+            #else
+            HStack(spacing: 10) {
+                captionLabel
+                Spacer()
+                captionControls
+            }
+            #endif
             captionStatus
         }
         .padding(14)
         .ypGlassEffect(cornerRadius: 20)
         .disabled(model.isRendering)
+    }
+
+    private var captionLabel: some View {
+        Text(model.isVideo ? "Captions" : "Transcript")
+            .fixedSize()
+    }
+
+    @ViewBuilder
+    private var captionControls: some View {
+        if model.isVideo {
+            Picker("Captions", selection: Binding(get: { model.recording.captionStyle },
+                                                  set: { model.setCaptionStyle($0) })) {
+                ForEach(CaptionStyle.allCases) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 220)
+            if model.recording.captionStyle != .off {
+                Menu {
+                    Picker("Position", selection: Binding(get: { model.recording.captionPosition },
+                                                          set: { model.setCaptionPosition($0) })) {
+                        ForEach(CaptionPosition.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                } label: {
+                    Image(systemName: model.recording.captionPosition == .bottom
+                          ? "rectangle.bottomhalf.inset.filled" : "rectangle.center.inset.filled")
+                        .font(.title3)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                #if os(macOS)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                #endif
+                .accessibilityLabel("Position")
+            }
+        }
     }
 
     @ViewBuilder
@@ -453,7 +528,12 @@ private struct EditorContent: View {
                 Text("Allow Speech Recognition in Settings to make captions.")
                 Spacer()
                 Button("Settings") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                    #if os(macOS)
+                    let settings = "x-apple.systempreferences:com.apple.preference.security?Privacy_SpeechRecognition"
+                    #else
+                    let settings = UIApplication.openSettingsURLString
+                    #endif
+                    if let url = URL(string: settings) { openURL(url) }
                 }
             }
             .font(.caption)
@@ -488,7 +568,7 @@ private struct EditorContent: View {
             }
             .frame(minHeight: 50)
         case .saved:
-            Label("Saved to Photos", systemImage: "checkmark.circle.fill")
+            Label(savedLabel, systemImage: "checkmark.circle.fill")
                 .font(.headline)
                 .foregroundStyle(.green)
                 .symbolEffect(.bounce, value: model.renderState == .saved)
@@ -511,6 +591,18 @@ private struct EditorContent: View {
                     .ypGlassButtonStyle()
                     .accessibilityLabel("Record More")
                 }
+                #if os(macOS)
+                // Video or audio, the Mac saves a file where you choose.
+                Button { model.save() } label: {
+                    Label("Save…", systemImage: "square.and.arrow.down")
+                        .fontWeight(.semibold)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                }
+                .ypGlassProminentButtonStyle()
+                .disabled(!model.hasItem)
+                .keyboardShortcut("s", modifiers: .command)
+                #else
                 if model.isVideo {
                     Button { model.save() } label: {
                         Label("Save to Photos", systemImage: "square.and.arrow.down")
@@ -531,9 +623,52 @@ private struct EditorContent: View {
                     .ypGlassProminentButtonStyle()
                     .disabled(!model.hasItem)
                 }
+                #endif
             }
         }
     }
+
+    private var savedLabel: LocalizedStringKey {
+        #if os(macOS)
+        "Saved"
+        #else
+        "Saved to Photos"
+        #endif
+    }
+
+    #if os(macOS)
+    /// Keyboard shortcuts for the editor, as invisible buttons so they work wherever focus is.
+    private var editorShortcuts: some View {
+        Group {
+            Button("Play or Pause") { model.togglePlay() }
+                .keyboardShortcut(.space, modifiers: [])
+            Button("Split") { if model.canSplit { model.split() } }
+                .keyboardShortcut("b", modifiers: .command)
+            Button("Delete Piece") { deleteSelectedPiece() }
+                .keyboardShortcut(.delete, modifiers: [])
+            Button("Undo") { if model.canUndo { model.undo() } }
+                .keyboardShortcut("z", modifiers: .command)
+            Button("Back One Second") { model.seek(to: max(0, model.currentTime - 1)) }
+                .keyboardShortcut(.leftArrow, modifiers: [])
+            Button("Forward One Second") { model.seek(to: min(model.length, model.currentTime + 1)) }
+                .keyboardShortcut(.rightArrow, modifiers: [])
+        }
+        .disabled(model.isRendering || !model.hasItem)
+        .opacity(0)
+        .frame(width: 0, height: 0)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func deleteSelectedPiece() {
+        guard let index = model.selectedIndex else { return }
+        if model.recording.pieces.count > 1 {
+            model.deletePiece(model.recording.pieces[index].id)
+        } else {
+            onDeleteRecording()
+        }
+    }
+    #endif
 }
 
 // MARK: - Piece strip
@@ -882,6 +1017,68 @@ private struct WaveformView: View {
 
 // MARK: - Player and overlays
 
+#if os(macOS)
+private struct PlayerLayerView: NSViewRepresentable {
+    let player: AVPlayer
+
+    func makeNSView(context: Context) -> PlayerView {
+        let view = PlayerView()
+        view.playerLayer.player = player
+        view.playerLayer.videoGravity = .resizeAspect
+        return view
+    }
+
+    func updateNSView(_ view: PlayerView, context: Context) {}
+
+    final class PlayerView: NSView {
+        let playerLayer = AVPlayerLayer()
+
+        override init(frame: NSRect) {
+            super.init(frame: frame)
+            wantsLayer = true
+            layer = playerLayer
+        }
+
+        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    }
+}
+
+/// Opens the macOS share menu from the view it sits behind once there's something to share.
+private struct SharePickerAnchor: NSViewRepresentable {
+    @Binding var items: RecordingEditorModel.ShareItems?
+    let onDismiss: () -> Void
+
+    func makeNSView(context: Context) -> NSView { NSView() }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        context.coordinator.parent = self
+        guard let items, context.coordinator.shownID != items.id else { return }
+        context.coordinator.shownID = items.id
+        let picker = NSSharingServicePicker(items: items.urls)
+        picker.delegate = context.coordinator
+        DispatchQueue.main.async {
+            picker.show(relativeTo: view.bounds, of: view, preferredEdge: .minY)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+
+    final class Coordinator: NSObject, NSSharingServicePickerDelegate {
+        var parent: SharePickerAnchor
+        var shownID: UUID?
+
+        init(parent: SharePickerAnchor) { self.parent = parent }
+
+        func sharingServicePicker(_ picker: NSSharingServicePicker, didChoose service: NSSharingService?) {
+            // Called when something was chosen and when the menu was dismissed.
+            Task { @MainActor in
+                parent.items = nil
+                parent.onDismiss()
+            }
+        }
+    }
+}
+#else
 private struct PlayerLayerView: UIViewRepresentable {
     let player: AVPlayer
 
@@ -899,6 +1096,7 @@ private struct PlayerLayerView: UIViewRepresentable {
         var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
     }
 }
+#endif
 
 /// The captions over the playing recording, drawn by the renderer the saved video uses.
 private struct CaptionOverlay: View {
@@ -927,6 +1125,7 @@ private struct CaptionOverlay: View {
     }
 }
 
+#if os(iOS)
 struct ActivityView: UIViewControllerRepresentable {
     let items: [Any]
 
@@ -936,4 +1135,5 @@ struct ActivityView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
+#endif
 #endif

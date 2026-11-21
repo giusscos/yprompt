@@ -430,3 +430,28 @@
 "Paused" = "Duraklatıldı";
 "Back to the top" = "Başa dönüldü";
 "Recording stopped" = "Kayıt durduruldu";
+
+/* Mac recording */
+"Record" = "Kayıt Yap";
+"Camera Access Required" = "Kamera Erişimi Gerekli";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Okurken kendinizi kaydetmek için Sistem Ayarları › Gizlilik ve Güvenlik’te yPrompt’un kamerayı ve mikrofonu kullanmasına izin verin.";
+"Show Camera Preview" = "Kamera Önizlemesini Göster";
+"Hide Camera Preview" = "Kamera Önizlemesini Gizle";
+"Recording" = "Kaydediliyor";
+"Read this script with the camera on, ready to record" = "Bu metni kamera açıkken okuyun, kayda hazır";
+"Click a piece to edit it" = "Düzenlemek için bir parçayı tıklayın";
+"Saved" = "Kaydedildi";
+"Save…" = "Kaydet…";
+"It hasn't been saved. This can't be undone." = "Kaydedilmedi. Bu işlem geri alınamaz.";
+"Files you saved stay. This can't be undone." = "Kaydettiğiniz dosyalar kalır. Bu işlem geri alınamaz.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Kayıtlar bu Mac’te %@ yer kaplıyor. Yedeklenmedikleri için saklamak istediklerinizi kaydedin.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Bir metin açıp Kayıt Yap’ı tıklayın ya da menü çubuğunda Kayıt Yap altından Kamera veya Ses’i seçin. Her çekim düzenlenmeye hazır olarak buraya gelir.";
+"No Recording Selected" = "Kayıt Seçilmedi";
+"Pick a recording in the sidebar to watch and edit it." = "İzlemek ve düzenlemek için kenar çubuğundan bir kayıt seçin.";
+"Show" = "Göster";
+"Display" = "Görüntü";
+"Scrolling" = "Kaydırma";
+"Text Size" = "Metin Boyutu";
+"For vertical scrolling" = "Dikey kaydırma için";
+"Mirror Camera" = "Kamerayı Aynala";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Önizlemeyi ayna gibi gösterir. Kayıtlar asla aynalanmaz.";

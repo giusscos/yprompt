@@ -473,3 +473,27 @@
 "Paused" = "In pausa";
 "Back to the top" = "Tornato all'inizio";
 "Recording stopped" = "Registrazione interrotta";
+
+/* Mac recording */
+"Camera Access Required" = "Accesso alla Fotocamera Necessario";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Per registrarti mentre leggi, consenti a yPrompt di usare fotocamera e microfono in Impostazioni di Sistema › Privacy e sicurezza.";
+"Show Camera Preview" = "Mostra Anteprima Fotocamera";
+"Hide Camera Preview" = "Nascondi Anteprima Fotocamera";
+"Recording" = "Registrazione in corso";
+"Read this script with the camera on, ready to record" = "Leggi questo copione con la fotocamera accesa, pronto a registrare";
+"Click a piece to edit it" = "Fai clic su un pezzo per modificarlo";
+"Saved" = "Salvata";
+"Save…" = "Salva…";
+"It hasn't been saved. This can't be undone." = "Non è stata salvata. L'azione non si può annullare.";
+"Files you saved stay. This can't be undone." = "I file salvati restano. L'azione non si può annullare.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Le registrazioni occupano %@ su questo Mac. Non hanno backup, quindi salva quelle che vuoi tenere.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Apri un copione e fai clic su Registra, oppure scegli Fotocamera o Audio in Registra nella barra dei menu. Ogni ripresa arriva qui, pronta da modificare.";
+"No Recording Selected" = "Nessuna Registrazione Selezionata";
+"Pick a recording in the sidebar to watch and edit it." = "Scegli una registrazione nella barra laterale per guardarla e modificarla.";
+"Show" = "Mostra";
+"Display" = "Visualizzazione";
+"Scrolling" = "Scorrimento";
+"Text Size" = "Dimensione Testo";
+"For vertical scrolling" = "Per lo scorrimento verticale";
+"Mirror Camera" = "Specchia Fotocamera";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Mostra l'anteprima come uno specchio. Le registrazioni non vengono mai specchiate.";

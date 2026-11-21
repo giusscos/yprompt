@@ -13,6 +13,7 @@ struct FloatingTeleprompterView: View {
     @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled = true
     @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
     @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
+    @State private var isHovering = false
 
     /// Lyrics style is Pro. Voice needs it to show the word being read, and the sample script lets everyone try it.
     private var usesWordStyle: Bool {
@@ -34,6 +35,7 @@ struct FloatingTeleprompterView: View {
             RoundedRectangle(cornerRadius: 18)
                 .fill(.black.opacity(manager.backgroundOpacity))
 
+            Group {
             if viewModel.isWordMode, let words = viewModel.scriptWords {
                 WordTeleprompterView(
                     viewModel: viewModel,
@@ -56,26 +58,56 @@ struct FloatingTeleprompterView: View {
                         .onChange(of: geo.size.height) { _, h in viewModel.screenHeight = h }
                 }
             }
-
-            VStack(spacing: 0) {
-                LinearGradient(
-                    colors: [.black.opacity(manager.backgroundOpacity), .clear],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .frame(height: 22)
-                .allowsHitTesting(false)
-                Spacer()
-                LinearGradient(
-                    colors: [.clear, .black.opacity(manager.backgroundOpacity)],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .frame(height: 22)
-                .allowsHitTesting(false)
+            }
+            // The text fades out at the edges by itself, so the fade looks the same over any
+            // background, blur or transparency.
+            .mask(verticalFade)
+            .mask(horizontalFade)
+        }
+        // Drag anywhere on the prompter to move it; the corner grip resizes it.
+        .overlay { WindowDragArea() }
+        .overlay(alignment: .bottomTrailing) {
+            ResizeGrip(cornerRadius: 18, isVisible: isHovering)
+        }
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { isHovering = hovering }
+        }
+        .overlay(alignment: .topTrailing) {
+            if manager.capture.isRecording, let start = manager.capture.recordingStartDate {
+                RecordingBadge(start: start)
+                    .padding(8)
+                    .allowsHitTesting(false)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 18))
+        // Text size changes grow and shrink the text smoothly, as in the notch.
+        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: manager.floatingFontSize)
         .onChange(of: manager.currentScript?.id) { viewModel.resetToTop() }
         .onChange(of: usesWordStyle, initial: true) { _, usesWords in viewModel.setWordMode(usesWords) }
+    }
+
+    // MARK: - Edge fades
+
+    private var verticalFade: some View {
+        VStack(spacing: 0) {
+            LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                .frame(height: 10)
+            Rectangle()
+            LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: 30)
+        }
+    }
+
+    /// Inside the side margins, so it only softens text that reaches into them.
+    private var horizontalFade: some View {
+        let width = min(28, max(8, manager.horizontalPadding * 0.6))
+        return HStack(spacing: 0) {
+            LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
+                .frame(width: width)
+            Rectangle()
+            LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                .frame(width: width)
+        }
     }
 
     // MARK: - Scrolling text

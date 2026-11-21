@@ -20,7 +20,29 @@ private struct PaywallWindowRegistration: ViewModifier {
                 NSApp.activate(ignoringOtherApps: true)
                 openWindow(id: AppConstants.paywallWindowID)
             }
+            FloatingTeleprompterManager.shared.openMainWindow = {
+                openWindow(id: AppConstants.mainWindowID)
+            }
         }
+    }
+}
+
+/// ⇧⌘R starts or stops a take while the prompter shows and yPrompt is the active app.
+private struct RecordCommand: View {
+    private let manager = FloatingTeleprompterManager.shared
+
+    var body: some View {
+        Button(manager.capture.isRecording ? "Stop Recording" : "Start Recording") {
+            manager.toggleRecording()
+        }
+        .keyboardShortcut("r", modifiers: [.command, .shift])
+        .disabled(!manager.isVisible)
+
+        Button(manager.showsCameraPreview ? "Hide Camera Preview" : "Show Camera Preview") {
+            manager.showsCameraPreview.toggle()
+        }
+        .keyboardShortcut("p", modifiers: [.command, .shift])
+        .disabled(manager.recordMode != .camera)
     }
 }
 
@@ -39,6 +61,9 @@ private struct MenuBarScriptsLoader: View {
                 manager.presentPaywall = {
                     NSApp.activate(ignoringOtherApps: true)
                     openWindow(id: AppConstants.paywallWindowID)
+                }
+                manager.openMainWindow = {
+                    openWindow(id: AppConstants.mainWindowID)
                 }
             }
             .onChange(of: scripts) { _, newScripts in
@@ -68,7 +93,7 @@ struct ypromptApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: AppConstants.mainWindowID) {
             ContentView()
                 .environment(storeKit)
                 #if os(macOS)
@@ -88,7 +113,12 @@ struct ypromptApp: App {
             if phase == .active { Task { await storeKit.refreshEntitlements() } }
         }
         #if os(macOS)
-        .defaultSize(width: 1000, height: 750)
+        .defaultSize(width: 1180, height: 760)
+        .commands {
+            CommandMenu("Teleprompter") {
+                RecordCommand()
+            }
+        }
         #endif
 
         #if os(macOS)

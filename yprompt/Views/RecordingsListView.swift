@@ -3,7 +3,7 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import SwiftData
 import SwiftUI
@@ -17,6 +17,10 @@ struct RecordingsListView: View {
     @State private var route: PickupRoute?
     @State private var deleting: Recording?
     @State private var thumbnails: [UUID: CGImage] = [:]
+    #if os(macOS)
+    /// The recording open in the editor beside the list.
+    @Binding var selection: UUID?
+    #endif
 
     /// Recording more from the tab opens the reading screen for the recording's script.
     struct PickupRoute: Hashable {
@@ -30,7 +34,11 @@ struct RecordingsListView: View {
                 ContentUnavailableView {
                     Label("No Recordings Yet", systemImage: "film.stack")
                 } description: {
+                    #if os(macOS)
+                    Text("Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit.")
+                    #else
                     Text("Open a script and choose Camera or Audio Only to record. Every take lands here, ready to edit.")
+                    #endif
                 }
             } else {
                 list
@@ -44,6 +52,11 @@ struct RecordingsListView: View {
             #endif
         }
         .task(id: library.recordings.map(\.id)) { await loadThumbnails() }
+        #if os(macOS)
+        .onChange(of: opened) { _, opened in
+            if let opened { selection = opened.recordingID }
+        }
+        #else
         .fullScreenCover(item: $opened) { selection in
             let script = scriptFor(selection.recordingID)
             RecordingEditorView(
@@ -67,17 +80,53 @@ struct RecordingsListView: View {
             TeleprompterView(script: route.script, pickup: route.pickup)
                 .environment(storeKit)
         }
+        #endif
         .confirmationDialog("Delete this recording?", isPresented: Binding(
             get: { deleting != nil }, set: { if !$0 { deleting = nil } }
         ), titleVisibility: .visible, presenting: deleting) { recording in
-            Button("Delete Recording", role: .destructive) { library.delete(recording) }
+            Button("Delete Recording", role: .destructive) {
+                #if os(macOS)
+                if selection == recording.id { selection = nil }
+                #endif
+                library.delete(recording)
+            }
         } message: { recording in
+            #if os(macOS)
+            Text(recording.savedAt == nil
+                 ? "It hasn't been saved. This can't be undone."
+                 : "Files you saved stay. This can't be undone.")
+            #else
             Text(recording.savedAt == nil
                  ? "It hasn't been saved to Photos. This can't be undone."
                  : "The copy in Photos stays. This can't be undone.")
+            #endif
         }
     }
 
+    #if os(macOS)
+    private var list: some View {
+        List(selection: $selection) {
+            ForEach(sections, id: \.id) { section in
+                Section(section.title) {
+                    ForEach(section.recordings) { recording in
+                        row(recording)
+                            .tag(recording.id)
+                            .contextMenu {
+                                Button("Delete", systemImage: "trash", role: .destructive) { deleting = recording }
+                            }
+                    }
+                }
+            }
+            Section {
+            } footer: {
+                Text("Recordings use \(ByteCountFormatter.string(fromByteCount: library.usedBytes, countStyle: .file)) on this Mac. They aren't backed up, so save the ones you want to keep.")
+            }
+        }
+        .onDeleteCommand {
+            deleting = library.recordings.first { $0.id == selection }
+        }
+    }
+    #else
     private var list: some View {
         List {
             ForEach(sections, id: \.id) { section in
@@ -102,6 +151,7 @@ struct RecordingsListView: View {
             }
         }
     }
+    #endif
 
     private func row(_ recording: Recording) -> some View {
         HStack(spacing: 14) {
@@ -116,13 +166,14 @@ struct RecordingsListView: View {
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .frame(width: 56, height: 56)
+            .frame(width: rowThumbnail, height: rowThumbnail)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(recording.title)
                     .font(.headline)
                     .lineLimit(1)
+                    .truncationMode(.tail)
                 HStack(spacing: 6) {
                     Text(Duration.seconds(recording.length), format: .time(pattern: .minuteSecond))
                         .monospacedDigit()
@@ -142,13 +193,23 @@ struct RecordingsListView: View {
             if recording.savedAt != nil {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
+                    #if os(macOS)
+                    .accessibilityLabel("Saved")
+                    #else
                     .accessibilityLabel("Saved to Photos")
+                    #endif
             }
         }
         .contentShape(Rectangle())
     }
 
     // MARK: Data
+
+    #if os(macOS)
+    private let rowThumbnail: CGFloat = 40
+    #else
+    private let rowThumbnail: CGFloat = 56
+    #endif
 
     private struct DaySection {
         let id: String

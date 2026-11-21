@@ -3,7 +3,7 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
 import Foundation
 import Observation
@@ -221,6 +221,26 @@ nonisolated enum RecordingStore {
         recording.modifiedAt = Date()
         save(recording)
         return (recording, piece)
+    }
+
+    /// Called when the movie output stops writing a piece. Reads the piece's info from the file
+    /// written next to the movie, so it's kept even if the reading screen has already closed.
+    /// Returns the piece to open in the editor, or nil when nothing playable was recorded.
+    @MainActor
+    static func completePiece(at url: URL, error: Error?, endProgress: Double?) async -> RecordingSelection? {
+        // Some errors still leave a complete movie, e.g. when the disk fills up.
+        let completed = error == nil
+            || ((error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool ?? false)
+        guard let data = try? Data(contentsOf: url.appendingPathExtension("pending.json")),
+              let pending = try? JSONDecoder().decode(PendingPiece.self, from: data) else { return nil }
+        guard completed else {
+            try? FileManager.default.removeItem(at: pending.url)
+            try? FileManager.default.removeItem(at: pending.infoURL)
+            return nil
+        }
+        guard let (recording, piece) = await finishPiece(pending, endProgress: endProgress ?? pending.startProgress) else { return nil }
+        RecordingLibrary.shared.refresh()
+        return RecordingSelection(recordingID: recording.id, pieceID: piece.id)
     }
 
     /// Pieces left pending because the app closed while recording: added if they play,

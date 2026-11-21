@@ -25,6 +25,9 @@ enum AppConstants {
     // MARK: - Settings keys
     static let lyricsStyleKey = "lyricsStyleEnabled"
     static let paywallWindowID = "paywall"
+    static let mainWindowID = "main"
+    static let notchAlignmentKey = "notch.verticalAlignment"
+    static let mirrorCameraKey = "camera.mirrorPreview"
 
     // MARK: - Debug
     /// Debug builds only: show the bundled demo photo as the camera background (for App Store screenshots).

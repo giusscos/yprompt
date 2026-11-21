@@ -3,7 +3,7 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import Foundation
 
 /// A stretch of a source file placed on the recording's timeline.

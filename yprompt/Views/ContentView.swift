@@ -16,6 +16,14 @@ struct ContentView: View {
 
     #if os(macOS)
     @State private var selectedScript: Script?
+    @State private var sidebarMode: SidebarMode = .scripts
+    /// The recording open in the editor, with the piece to select when it opens.
+    @State private var openRecording: RecordingSelection?
+    private let manager = FloatingTeleprompterManager.shared
+
+    private enum SidebarMode: Hashable {
+        case scripts, recordings
+    }
     #endif
     @State private var selectedTab = 0
 
@@ -207,22 +215,85 @@ struct ContentView: View {
     #if os(macOS)
     private var macOSContent: some View {
         NavigationSplitView {
-            ScriptsListView(selectedScript: $selectedScript)
-                .navigationSplitViewColumnWidth(min: 220, ideal: 270)
+            Group {
+                switch sidebarMode {
+                case .scripts:
+                    ScriptsListView(selectedScript: $selectedScript)
+                case .recordings:
+                    RecordingsListView(selection: recordingSelection)
+                }
+            }
+            .safeAreaInset(edge: .top) {
+                Picker("Show", selection: $sidebarMode) {
+                    Text("Scripts").tag(SidebarMode.scripts)
+                    Text("Recordings").tag(SidebarMode.recordings)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.horizontal, 10)
+                .padding(.bottom, 6)
+            }
+            .navigationSplitViewColumnWidth(min: 220, ideal: 270)
         } detail: {
-            if let script = selectedScript {
-                EditorView(script: script)
-            } else {
-                emptyDetail
+            switch sidebarMode {
+            case .scripts:
+                if let script = selectedScript {
+                    EditorView(script: script)
+                } else {
+                    emptyDetail
+                }
+            case .recordings:
+                if let openRecording {
+                    recordingEditor(openRecording)
+                } else {
+                    ContentUnavailableView("No Recording Selected", systemImage: "film.stack",
+                                           description: Text("Pick a recording in the sidebar to watch and edit it."))
+                }
             }
         }
+        // Below this the editor's strip, options and buttons stop being readable.
+        .frame(minWidth: 1080, minHeight: 640)
         .onAppear {
             FloatingTeleprompterManager.shared.registeredScripts = scripts
             applySettingsToManager()
+            showRequestedRecording()
         }
+        .onChange(of: manager.requestedRecording) { _, _ in showRequestedRecording() }
         .onChange(of: scripts) { _, newScripts in
             FloatingTeleprompterManager.shared.registeredScripts = newScripts
         }
+    }
+
+    private var recordingSelection: Binding<UUID?> {
+        Binding(get: { openRecording?.recordingID },
+                set: { id in openRecording = id.map { RecordingSelection(recordingID: $0) } })
+    }
+
+    /// A take that just finished: show it in the editor.
+    private func showRequestedRecording() {
+        guard let request = manager.requestedRecording else { return }
+        manager.requestedRecording = nil
+        sidebarMode = .recordings
+        openRecording = request
+    }
+
+    private func recordingEditor(_ selection: RecordingSelection) -> some View {
+        let recording = RecordingLibrary.shared.recording(selection.recordingID)
+        let script = scripts.first { $0.id == recording?.scriptID }
+        return RecordingEditorView(
+            selection: selection,
+            script: script?.scriptWords,
+            onRecordMore: script.map { script in
+                { pickup in
+                    openRecording = nil
+                    manager.startPickup(pickup, script: script)
+                }
+            },
+            onClose: { openRecording = nil }
+        )
+        .environment(storeKit)
+        // A new editor for each recording, and again when a take was added to the open one.
+        .id("\(selection.recordingID)-\(selection.pieceID?.uuidString ?? "")")
     }
 
     private func applySettingsToManager() {

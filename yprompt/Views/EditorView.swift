@@ -201,6 +201,16 @@ struct EditorView: View {
             .buttonStyle(.borderedProminent)
             .disabled(script.content.isEmpty)
 
+            Button {
+                let manager = FloatingTeleprompterManager.shared
+                if manager.recordMode == .off { manager.recordMode = .camera }
+                manager.show(script: script, storeKit: storeKit)
+            } label: {
+                Label("Record", systemImage: "record.circle")
+            }
+            .help("Read this script with the camera on, ready to record")
+            .disabled(script.content.isEmpty)
+
             if MarkdownEditorView.supportsFormatting {
                 Button { formatRequest = .bold } label: { Label("Bold", systemImage: "bold") }
                 Button { formatRequest = .italic } label: { Label("Italic", systemImage: "italic") }

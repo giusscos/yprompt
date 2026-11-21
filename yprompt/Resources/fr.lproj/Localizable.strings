@@ -473,3 +473,27 @@
 "Paused" = "En pause";
 "Back to the top" = "Retour au début";
 "Recording stopped" = "Enregistrement arrêté";
+
+/* Mac recording */
+"Camera Access Required" = "Accès à la Caméra Requis";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Pour vous filmer pendant la lecture, autorisez yPrompt à utiliser la caméra et le micro dans Réglages Système › Confidentialité et sécurité.";
+"Show Camera Preview" = "Afficher l’Aperçu de la Caméra";
+"Hide Camera Preview" = "Masquer l’Aperçu de la Caméra";
+"Recording" = "Enregistrement en cours";
+"Read this script with the camera on, ready to record" = "Lire ce script caméra allumée, prêt à enregistrer";
+"Click a piece to edit it" = "Cliquez sur un morceau pour le modifier";
+"Saved" = "Enregistré";
+"Save…" = "Enregistrer…";
+"It hasn't been saved. This can't be undone." = "Il n’a pas été enregistré. Cette action est irréversible.";
+"Files you saved stay. This can't be undone." = "Les fichiers enregistrés sont conservés. Cette action est irréversible.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Les enregistrements occupent %@ sur ce Mac. Ils ne sont pas sauvegardés : enregistrez ceux que vous voulez garder.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Ouvrez un script et cliquez sur Enregistrer, ou choisissez Caméra ou Audio sous Enregistrer dans la barre des menus. Chaque prise arrive ici, prête à être montée.";
+"No Recording Selected" = "Aucun Enregistrement Sélectionné";
+"Pick a recording in the sidebar to watch and edit it." = "Choisissez un enregistrement dans la barre latérale pour le regarder et le modifier.";
+"Show" = "Afficher";
+"Display" = "Affichage";
+"Scrolling" = "Défilement";
+"Text Size" = "Taille du Texte";
+"For vertical scrolling" = "Pour le défilement vertical";
+"Mirror Camera" = "Effet Miroir";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Affiche l’aperçu comme un miroir. Les enregistrements ne sont jamais inversés.";

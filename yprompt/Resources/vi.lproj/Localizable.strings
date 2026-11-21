@@ -430,3 +430,28 @@
 "Paused" = "Đã tạm dừng";
 "Back to the top" = "Đã quay về đầu";
 "Recording stopped" = "Đã dừng ghi hình";
+
+/* Mac recording */
+"Record" = "Ghi";
+"Camera Access Required" = "Cần quyền truy cập camera";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Để tự quay khi đọc, hãy cho phép yPrompt dùng camera và micrô trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật.";
+"Show Camera Preview" = "Hiện bản xem trước camera";
+"Hide Camera Preview" = "Ẩn bản xem trước camera";
+"Recording" = "Đang ghi";
+"Read this script with the camera on, ready to record" = "Đọc kịch bản này với camera bật, sẵn sàng ghi";
+"Click a piece to edit it" = "Bấm vào một đoạn để sửa";
+"Saved" = "Đã lưu";
+"Save…" = "Lưu…";
+"It hasn't been saved. This can't be undone." = "Bản ghi chưa được lưu. Không thể hoàn tác.";
+"Files you saved stay. This can't be undone." = "Các tệp bạn đã lưu vẫn còn. Không thể hoàn tác.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Bản ghi đang dùng %@ trên máy Mac này. Chúng không được sao lưu, vì vậy hãy lưu những bản bạn muốn giữ.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Mở một kịch bản và bấm Ghi, hoặc chọn Camera hay Âm thanh trong mục Ghi trên thanh menu. Mỗi lần ghi sẽ có ở đây, sẵn sàng để sửa.";
+"No Recording Selected" = "Chưa chọn bản ghi";
+"Pick a recording in the sidebar to watch and edit it." = "Chọn một bản ghi trong thanh bên để xem và sửa.";
+"Show" = "Hiện";
+"Display" = "Hiển thị";
+"Scrolling" = "Cuộn";
+"Text Size" = "Cỡ chữ";
+"For vertical scrolling" = "Cho cuộn dọc";
+"Mirror Camera" = "Lật camera như gương";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Hiển thị bản xem trước như gương. Bản ghi không bao giờ bị lật.";

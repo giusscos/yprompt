@@ -430,3 +430,28 @@
 "Paused" = "หยุดชั่วคราวแล้ว";
 "Back to the top" = "กลับไปที่จุดเริ่มต้นแล้ว";
 "Recording stopped" = "หยุดบันทึกแล้ว";
+
+/* Mac recording */
+"Record" = "อัด";
+"Camera Access Required" = "ต้องได้รับสิทธิ์เข้าถึงกล้อง";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "หากต้องการบันทึกตัวเองขณะอ่าน ให้อนุญาตให้ yPrompt ใช้กล้องและไมโครโฟนในการตั้งค่าระบบ › ความเป็นส่วนตัวและความปลอดภัย";
+"Show Camera Preview" = "แสดงภาพตัวอย่างจากกล้อง";
+"Hide Camera Preview" = "ซ่อนภาพตัวอย่างจากกล้อง";
+"Recording" = "กำลังบันทึก";
+"Read this script with the camera on, ready to record" = "อ่านสคริปต์นี้โดยเปิดกล้อง พร้อมบันทึก";
+"Click a piece to edit it" = "คลิกส่วนเพื่อแก้ไข";
+"Saved" = "บันทึกแล้ว";
+"Save…" = "บันทึก…";
+"It hasn't been saved. This can't be undone." = "ยังไม่ได้บันทึก การทำงานนี้ไม่สามารถเลิกทำได้";
+"Files you saved stay. This can't be undone." = "ไฟล์ที่คุณบันทึกไว้จะยังอยู่ การทำงานนี้ไม่สามารถเลิกทำได้";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "ไฟล์บันทึกใช้พื้นที่ %@ บน Mac เครื่องนี้ และไม่ได้ถูกสำรองข้อมูล โปรดบันทึกไฟล์ที่ต้องการเก็บไว้";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "เปิดสคริปต์แล้วคลิกอัด หรือเลือกกล้องหรือเสียงใต้อัดในแถบเมนู ทุกเทคจะมาอยู่ที่นี่ พร้อมให้แก้ไข";
+"No Recording Selected" = "ไม่ได้เลือกไฟล์บันทึก";
+"Pick a recording in the sidebar to watch and edit it." = "เลือกไฟล์บันทึกในแถบด้านข้างเพื่อดูและแก้ไข";
+"Show" = "แสดง";
+"Display" = "การแสดงผล";
+"Scrolling" = "การเลื่อน";
+"Text Size" = "ขนาดข้อความ";
+"For vertical scrolling" = "สำหรับการเลื่อนแนวตั้ง";
+"Mirror Camera" = "กลับด้านกล้องแบบกระจก";
+"Shows the preview like a mirror. Recordings are never mirrored." = "แสดงภาพตัวอย่างเหมือนกระจก ไฟล์บันทึกจะไม่ถูกกลับด้าน";

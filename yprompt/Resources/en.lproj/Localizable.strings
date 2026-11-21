@@ -473,3 +473,27 @@
 "Paused" = "Paused";
 "Back to the top" = "Back to the top";
 "Recording stopped" = "Recording stopped";
+
+/* Mac recording */
+"Camera Access Required" = "Camera Access Required";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security.";
+"Show Camera Preview" = "Show Camera Preview";
+"Hide Camera Preview" = "Hide Camera Preview";
+"Recording" = "Recording";
+"Read this script with the camera on, ready to record" = "Read this script with the camera on, ready to record";
+"Click a piece to edit it" = "Click a piece to edit it";
+"Saved" = "Saved";
+"Save…" = "Save…";
+"It hasn't been saved. This can't be undone." = "It hasn't been saved. This can't be undone.";
+"Files you saved stay. This can't be undone." = "Files you saved stay. This can't be undone.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit.";
+"No Recording Selected" = "No Recording Selected";
+"Pick a recording in the sidebar to watch and edit it." = "Pick a recording in the sidebar to watch and edit it.";
+"Show" = "Show";
+"Display" = "Display";
+"Scrolling" = "Scrolling";
+"Text Size" = "Text Size";
+"For vertical scrolling" = "For vertical scrolling";
+"Mirror Camera" = "Mirror Camera";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Shows the preview like a mirror. Recordings are never mirrored.";

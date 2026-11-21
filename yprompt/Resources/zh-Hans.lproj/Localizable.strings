@@ -177,8 +177,8 @@
 "Smooth continuous scroll at your chosen pace." = "按你选择的速度平稳连续滚动。";
 "Advance each line manually with a tap." = "轻点一下前进一行。";
 "Auto-pace to hit your target duration." = "自动调节速度，准时读完。";
-"Float Near\nYour Camera" = "悬浮在\n摄像头旁";
-"A floating window hovers just below your webcam so you look straight into the lens while delivering every word." = "悬浮窗口位于摄像头正下方，让你说每一句话时都能直视镜头。";
+"Float Near\nYour Camera" = "悬浮在\n相机旁";
+"A floating window hovers just below your webcam so you look straight into the lens while delivering every word." = "悬浮窗口位于相机正下方，让你说每一句话时都能直视镜头。";
 "Record\nAs You Read" = "边读\n边录";
 "Unlock everything. No limits." = "解锁全部功能。没有限制。";
 "Loading products…" = "正在载入商品…";
@@ -208,7 +208,7 @@
 "Timed Mode" = "定时模式";
 "Paces your script to finish right on time." = "调节速度，让你准时读完文稿。";
 "Mac Notch Teleprompter" = "Mac 刘海提词器";
-"Read from the notch, right next to your Mac's camera." = "在刘海处阅读，就在 Mac 摄像头旁边。";
+"Read from the notch, right next to your Mac's camera." = "在刘海处阅读，就在 Mac 相机旁边。";
 "iPhone Remote" = "iPhone 遥控";
 "Control your Mac teleprompter from your iPhone." = "用 iPhone 控制 Mac 上的提词器。";
 "Custom Colors" = "自定颜色";
@@ -217,13 +217,13 @@
 "All Future Pro Features" = "未来所有 Pro 功能";
 "New Pro features are included in every plan." = "每个方案都包含新的 Pro 功能。";
 "Write from scratch, paste any text, or import a file. Organised with tags and search." = "从头写、粘贴任意文字或导入文件。用标签和搜索整理。";
-"Your script sits right under the camera, so you look straight into the lens. Nothing but you ends up in the video." = "文稿就在摄像头正下方，让你直视镜头。视频里只有你。";
-"Under the Camera" = "摄像头下方";
+"Your script sits right under the camera, so you look straight into the lens. Nothing but you ends up in the video." = "文稿就在相机正下方，让你直视镜头。视频里只有你。";
+"Under the Camera" = "相机下方";
 "Full Screen" = "全屏";
 "Split Screen" = "分屏";
 "Swap Sides" = "交换两侧";
-"Use Back Camera" = "使用后置摄像头";
-"Use Front Camera" = "使用前置摄像头";
+"Use Back Camera" = "使用后置相机";
+"Use Front Camera" = "使用前置相机";
 "Camera Settings…" = "相机设置…";
 "Go Back" = "返回";
 "Back" = "后置";
@@ -240,7 +240,7 @@
 "Type or paste your script here…" = "在此输入或粘贴文稿…";
 "Your scripts sync automatically on devices signed in to the same Apple Account." = "登录同一 Apple 账户的设备会自动同步你的文稿。";
 "Welcome to yPrompt" = "欢迎使用 yPrompt";
-"Welcome to yPrompt. Press play and read this out loud at your own pace. Every word lights up as you go, just like song lyrics.\n\nKeep your eyes near the camera and your voice will sound natural. When you are ready, add your own script and speak with confidence." = "欢迎使用 yPrompt。轻点播放，按自己的节奏大声读出来。像歌词一样，你读到的每个字都会亮起来。\n\n让视线靠近摄像头，你的声音会更自然。准备好后，就添加你自己的文稿，自信地开口吧。";
+"Welcome to yPrompt. Press play and read this out loud at your own pace. Every word lights up as you go, just like song lyrics.\n\nKeep your eyes near the camera and your voice will sound natural. When you are ready, add your own script and speak with confidence." = "欢迎使用 yPrompt。轻点播放，按自己的节奏大声读出来。像歌词一样，你读到的每个字都会亮起来。\n\n让视线靠近相机，你的声音会更自然。准备好后，就添加你自己的文稿，自信地开口吧。";
 "Good morning everyone, and welcome to today's keynote. I'm honored to share what we've built..." = "大家早上好，欢迎来到今天的主题演讲。很荣幸能与大家分享我们打造的成果……";
 "The quick brown fox jumps over the lazy dog." = "天地玄黄，宇宙洪荒。日月盈昃，辰宿列张。";
 "Add cue point" = "添加提示点";
@@ -351,7 +351,7 @@
 "Pro saves your videos without the \"Made with yPrompt\" mark, and unlocks every Pro tool." = "Pro 可保存不带“Made with yPrompt”水印的视频，并解锁所有 Pro 工具。";
 "No yPrompt Mark" = "无 yPrompt 水印";
 "Save your videos without the \"Made with yPrompt\" mark." = "保存不带“Made with yPrompt”水印的视频。";
-"Record with your script right under the camera, then edit and caption your takes." = "让文稿就在摄像头正下方，边读边录，然后编辑并为录制内容添加字幕。";
+"Record with your script right under the camera, then edit and caption your takes." = "让文稿就在相机正下方，边读边录，然后编辑并为录制内容添加字幕。";
 "Every take is kept in the new Recordings tab, ready to edit." = "每次录制都保存在新的“录制”标签页中，随时可以编辑。";
 "Edit in Seconds" = "几秒完成编辑";
 "Cut, trim and reorder pieces, and remove the pauses between sentences." = "剪切、修剪和重新排序片段，并移除句子之间的停顿。";
@@ -362,7 +362,7 @@
 "Record just your voice and share it with its transcript." = "只录下你的声音，并与文字记录一起分享。";
 "Recording Is Free" = "录制免费";
 "Camera, audio and captions are free for everyone. Pro saves your videos without the yPrompt mark." = "相机、音频和字幕对所有人免费。Pro 保存的视频不带 yPrompt 水印。";
-"%d lines under the camera" = "摄像头下方 %d 行";
+"%d lines under the camera" = "相机下方 %d 行";
 "Play from the Start" = "从头播放";
 "Playhead" = "播放头";
 "Adding piece %lld to “%@”" = "正在将片段 %1$lld 添加到“%2$@”";
@@ -430,3 +430,28 @@
 "Paused" = "已暂停";
 "Back to the top" = "已回到开头";
 "Recording stopped" = "已停止录制";
+
+/* Mac recording */
+"Record" = "录制";
+"Camera Access Required" = "需要相机权限";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "要在朗读时录下自己，请在“系统设置”›“隐私与安全性”中允许 yPrompt 使用相机和麦克风。";
+"Show Camera Preview" = "显示相机预览";
+"Hide Camera Preview" = "隐藏相机预览";
+"Recording" = "正在录制";
+"Read this script with the camera on, ready to record" = "打开相机朗读此脚本，随时开始录制";
+"Click a piece to edit it" = "点按片段进行编辑";
+"Saved" = "已存储";
+"Save…" = "存储…";
+"It hasn't been saved. This can't be undone." = "它尚未存储。此操作无法撤销。";
+"Files you saved stay. This can't be undone." = "你存储的文件会保留。此操作无法撤销。";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "录制内容在这台 Mac 上占用 %@。它们不会被备份，请保存你想保留的内容。";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "打开一个脚本并点按“录制”，或在菜单栏的“录制”中选择相机或音频。每次录制都会出现在这里，可以直接编辑。";
+"No Recording Selected" = "未选择录制内容";
+"Pick a recording in the sidebar to watch and edit it." = "在边栏中选择一段录制内容来观看和编辑。";
+"Show" = "显示";
+"Display" = "显示";
+"Scrolling" = "滚动";
+"Text Size" = "文字大小";
+"For vertical scrolling" = "用于垂直滚动";
+"Mirror Camera" = "镜像相机";
+"Shows the preview like a mirror. Recordings are never mirrored." = "像镜子一样显示预览。录制内容不会被镜像。";

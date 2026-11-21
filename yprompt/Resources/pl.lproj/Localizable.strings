@@ -430,3 +430,28 @@
 "Paused" = "Wstrzymano";
 "Back to the top" = "Powrót na początek";
 "Recording stopped" = "Nagrywanie zatrzymane";
+
+/* Mac recording */
+"Record" = "Nagraj";
+"Camera Access Required" = "Wymagany dostęp do kamery";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Aby nagrywać się podczas czytania, pozwól yPrompt używać kamery i mikrofonu w Ustawieniach systemowych › Prywatność i ochrona.";
+"Show Camera Preview" = "Pokaż podgląd kamery";
+"Hide Camera Preview" = "Ukryj podgląd kamery";
+"Recording" = "Nagrywanie";
+"Read this script with the camera on, ready to record" = "Czytaj ten skrypt z włączoną kamerą, gotowy do nagrania";
+"Click a piece to edit it" = "Kliknij fragment, aby go edytować";
+"Saved" = "Zachowano";
+"Save…" = "Zachowaj…";
+"It hasn't been saved. This can't be undone." = "Nie zostało zachowane. Tej operacji nie można cofnąć.";
+"Files you saved stay. This can't be undone." = "Zachowane pliki pozostaną. Tej operacji nie można cofnąć.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Nagrania zajmują %@ na tym Macu. Nie mają kopii zapasowej, więc zachowaj te, które chcesz zatrzymać.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Otwórz skrypt i kliknij Nagraj albo wybierz Kamera lub Audio w sekcji Nagraj na pasku menu. Każde ujęcie trafia tutaj, gotowe do edycji.";
+"No Recording Selected" = "Nie wybrano nagrania";
+"Pick a recording in the sidebar to watch and edit it." = "Wybierz nagranie na pasku bocznym, aby je obejrzeć i edytować.";
+"Show" = "Pokaż";
+"Display" = "Wyświetlanie";
+"Scrolling" = "Przewijanie";
+"Text Size" = "Rozmiar tekstu";
+"For vertical scrolling" = "Dla przewijania pionowego";
+"Mirror Camera" = "Odbicie lustrzane kamery";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Pokazuje podgląd jak w lustrze. Nagrania nigdy nie są odbijane.";

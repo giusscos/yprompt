@@ -473,3 +473,27 @@
 "Paused" = "En pausa";
 "Back to the top" = "De vuelta al principio";
 "Recording stopped" = "Grabación detenida";
+
+/* Mac recording */
+"Camera Access Required" = "Acceso a la Cámara Requerido";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Para grabarte mientras lees, permite que yPrompt use la cámara y el micrófono en Ajustes del Sistema › Privacidad y seguridad.";
+"Show Camera Preview" = "Mostrar Vista de la Cámara";
+"Hide Camera Preview" = "Ocultar Vista de la Cámara";
+"Recording" = "Grabando";
+"Read this script with the camera on, ready to record" = "Lee este guion con la cámara encendida, listo para grabar";
+"Click a piece to edit it" = "Haz clic en una parte para editarla";
+"Saved" = "Guardado";
+"Save…" = "Guardar…";
+"It hasn't been saved. This can't be undone." = "No se ha guardado. No se puede deshacer.";
+"Files you saved stay. This can't be undone." = "Los archivos que guardaste se conservan. No se puede deshacer.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Las grabaciones ocupan %@ en este Mac. No tienen copia de seguridad, así que guarda las que quieras conservar.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Abre un guion y haz clic en Grabar, o elige Cámara o Audio en Grabar en la barra de menús. Cada toma llega aquí, lista para editar.";
+"No Recording Selected" = "Ninguna Grabación Seleccionada";
+"Pick a recording in the sidebar to watch and edit it." = "Elige una grabación en la barra lateral para verla y editarla.";
+"Show" = "Mostrar";
+"Display" = "Pantalla";
+"Scrolling" = "Desplazamiento";
+"Text Size" = "Tamaño del Texto";
+"For vertical scrolling" = "Para el desplazamiento vertical";
+"Mirror Camera" = "Reflejar Cámara";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Muestra la vista previa como un espejo. Las grabaciones nunca se reflejan.";

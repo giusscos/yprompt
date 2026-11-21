@@ -34,6 +34,8 @@ struct WordLayout: Equatable {
         var textHash: Int
         var font: ReadingFont = .system
         var spacing: LetterSpacing = .normal
+        /// Everything on one line, for the notch's horizontal ticker.
+        var singleLine = false
     }
 
     var key: Key
@@ -98,15 +100,20 @@ struct WordLayout: Equatable {
         for (index, word) in words.words.enumerated() {
             let tracked = LetterSpacing.suits(word.text)
             let width = measure(word, tracked: tracked)
-            let scale = min(1, available / max(width, 1))
+            let scale = key.singleLine ? 1 : min(1, available / max(width, 1))
             let scaled = width * scale
-            if x > 0, x + scaled > available {
+            if !key.singleLine, x > 0, x + scaled > available {
                 closeLine(upTo: index)
                 y += lineStep
                 x = 0
             }
             placements.append(Placement(x: x, width: width, line: lines.count, scale: scale, tracked: tracked))
             x += scaled + (word.spaceAfter ? spaceWidth : 0)
+            if key.singleLine {
+                // A new paragraph is a wider gap on the ticker.
+                if word.breaksAfter > 0 { x += spaceWidth * 3 }
+                continue
+            }
             if word.breaksAfter > 0, index < words.count - 1 {
                 closeLine(upTo: index + 1)
                 y += lineStep * (word.breaksAfter > 1 ? 1.5 : 1)
@@ -210,6 +217,8 @@ struct WordTeleprompterView: View {
     var pastOpacity: Double = 0.22
     /// Set to let the reader drag the script to move through it; true while a drag is going on.
     var onScrub: ((Bool) -> Void)? = nil
+    /// One line that slides sideways, the word being read held near the left: the notch ticker.
+    var singleLine = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
@@ -278,7 +287,8 @@ struct WordTeleprompterView: View {
             horizontalPadding: horizontalPadding,
             textHash: words.textHash,
             font: readingFont.resolved(for: words.text),
-            spacing: letterSpacing
+            spacing: letterSpacing,
+            singleLine: singleLine
         )
     }
 
@@ -297,6 +307,10 @@ struct WordTeleprompterView: View {
 
     private func draw(in context: GraphicsContext, size: CGSize, layout: WordLayout, time: TimeInterval) {
         guard !layout.lines.isEmpty else { return }
+        if layout.key.singleLine {
+            drawTicker(in: context, size: size, layout: layout, time: time)
+            return
+        }
         let position = viewModel.wordPosition
         let currentWord = min(Int(position), layout.placements.count - 1)
         let currentLine = layout.placements[currentWord].line
@@ -319,6 +333,32 @@ struct WordTeleprompterView: View {
             // 1 while this line sits at the resting place, falling to 0 a line away.
             let emphasis = max(0, 1 - abs(Double(line.y) - settled) / Double(lineStep))
             drawLine(line, y: y, emphasis: emphasis, position: position, layout: layout, in: context)
+        }
+    }
+
+    /// The ticker: the reading point glides along the line and the words fill as it passes.
+    private func drawTicker(in context: GraphicsContext, size: CGSize, layout: WordLayout, time: TimeInterval) {
+        let count = layout.placements.count
+        guard count > 0 else { return }
+        let position = viewModel.wordPosition
+        let index = min(max(Int(position), 0), count - 1)
+        let current = layout.placements[index]
+        let fill = min(max(position - Double(index), 0), 1)
+        motion.advance(to: Double(current.x) + Double(current.width) * fill, at: time)
+
+        let readingPoint = size.width * 0.38
+        let offset = readingPoint - CGFloat(motion.value(delayedBy: 0))
+        let y = (size.height - layout.lineHeight) / 2
+        for wordIndex in 0..<count {
+            let placement = layout.placements[wordIndex]
+            let x = placement.x + offset
+            if x + placement.width < -20 { continue }
+            if x > size.width + 20 { break }
+            var shifted = placement
+            shifted.x = x
+            drawWord(words.words[wordIndex], placement: shifted, key: layout.key, y: y,
+                     fill: min(max(position - Double(wordIndex), 0), 1),
+                     emphasis: 1, height: layout.lineHeight, in: context)
         }
     }
 

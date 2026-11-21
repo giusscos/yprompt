@@ -430,3 +430,28 @@
 "Paused" = "일시정지됨";
 "Back to the top" = "처음으로 돌아감";
 "Recording stopped" = "녹화 중지됨";
+
+/* Mac recording */
+"Record" = "녹화";
+"Camera Access Required" = "카메라 접근 권한 필요";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "읽으면서 자신을 녹화하려면 시스템 설정 › 개인정보 보호 및 보안에서 yPrompt가 카메라와 마이크를 사용하도록 허용하세요.";
+"Show Camera Preview" = "카메라 미리보기 보기";
+"Hide Camera Preview" = "카메라 미리보기 숨기기";
+"Recording" = "녹화 중";
+"Read this script with the camera on, ready to record" = "카메라를 켠 채 이 스크립트를 읽고 바로 녹화";
+"Click a piece to edit it" = "조각을 클릭하여 편집";
+"Saved" = "저장됨";
+"Save…" = "저장…";
+"It hasn't been saved. This can't be undone." = "아직 저장되지 않았습니다. 이 작업은 되돌릴 수 없습니다.";
+"Files you saved stay. This can't be undone." = "저장한 파일은 남아 있습니다. 이 작업은 되돌릴 수 없습니다.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "녹화가 이 Mac에서 %@를 사용 중입니다. 백업되지 않으니 남기고 싶은 녹화는 저장하세요.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "스크립트를 열고 녹화를 클릭하거나, 메뉴 막대의 녹화에서 카메라 또는 오디오를 선택하세요. 모든 테이크가 여기에 모여 바로 편집할 수 있습니다.";
+"No Recording Selected" = "선택된 녹화 없음";
+"Pick a recording in the sidebar to watch and edit it." = "사이드바에서 녹화를 선택하면 보고 편집할 수 있습니다.";
+"Show" = "보기";
+"Display" = "디스플레이";
+"Scrolling" = "스크롤";
+"Text Size" = "텍스트 크기";
+"For vertical scrolling" = "세로 스크롤용";
+"Mirror Camera" = "카메라 좌우 반전";
+"Shows the preview like a mirror. Recordings are never mirrored." = "미리보기를 거울처럼 보여줍니다. 녹화는 반전되지 않습니다.";

@@ -13,9 +13,15 @@ struct NotchShape: Shape {
     var topRadius: CGFloat = 12
     var bottomRadius: CGFloat = 14
 
+    /// The bottom corners grow and shrink with the camera.
+    var animatableData: CGFloat {
+        get { bottomRadius }
+        set { bottomRadius = newValue }
+    }
+
     func path(in rect: CGRect) -> Path {
         let tr = min(topRadius, rect.width / 4)
-        let br = min(bottomRadius, max(0, rect.width / 2 - tr), max(0, rect.height - tr))
+        let br = min(bottomRadius, max(0, rect.width / 2 - tr), max(0, rect.height / 2))
         var path = Path()
 
         // Top-left inverted corner — log-like cubic: stays along the bezel, then eases down.
@@ -27,23 +33,17 @@ struct NotchShape: Shape {
             control2: CGPoint(x: tr, y: tr * 0.28)
         )
 
-        // Left edge → bottom-left
-        path.addLine(to: CGPoint(x: tr, y: rect.height - br))
-        path.addCurve(
-            to: CGPoint(x: tr + br, y: rect.height),
-            control1: CGPoint(x: tr, y: rect.height - br * 0.45),
-            control2: CGPoint(x: tr + br * 0.45, y: rect.height)
-        )
+        // The body: straight sides and continuous ("squircle") bottom corners, as Apple's own
+        // rounded shapes are drawn.
+        path.addLine(to: CGPoint(x: tr, y: 0))
+        path.closeSubpath()
+        let body = CGRect(x: tr, y: 0, width: max(0, rect.width - 2 * tr), height: rect.height)
+        path.addPath(UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: br,
+                                            bottomTrailingRadius: br, topTrailingRadius: 0,
+                                            style: .continuous).path(in: body))
 
-        // Bottom edge → bottom-right
-        path.addLine(to: CGPoint(x: rect.width - tr - br, y: rect.height))
-        path.addCurve(
-            to: CGPoint(x: rect.width - tr, y: rect.height - br),
-            control1: CGPoint(x: rect.width - tr - br * 0.45, y: rect.height),
-            control2: CGPoint(x: rect.width - tr, y: rect.height - br * 0.45)
-        )
-
-        // Right edge → top-right inverted corner (mirror of top-left)
+        // Top-right inverted corner (mirror of top-left)
+        path.move(to: CGPoint(x: rect.width - tr, y: 0))
         path.addLine(to: CGPoint(x: rect.width - tr, y: tr))
         path.addCurve(
             to: CGPoint(x: rect.width, y: 0),
@@ -61,14 +61,49 @@ struct NotchTeleprompterView: View {
     private var viewModel: TeleprompterViewModel { manager.viewModel }
     @AppStorage(ReadingFont.key) private var readingFont: ReadingFont = .system
     @AppStorage(LetterSpacing.key) private var letterSpacing: LetterSpacing = .normal
+    @AppStorage(AppConstants.lyricsStyleKey) private var lyricsStyleEnabled = true
+    /// Vertical scrolling: 0 left (the default, easiest to read), 1 centered.
+    @AppStorage(AppConstants.notchAlignmentKey) private var verticalAlignment = 0
     @State private var scrollOffset: CGFloat = 0
     @State private var contentSize: CGFloat = 0
     @State private var viewportSize: CGFloat = 260
 
     private let ticker = Timer.publish(every: 1.0 / 60.0, on: .main, in: .common).autoconnect()
-    private var menuBarH: CGFloat { NSStatusBar.system.thickness }
+    private var menuBarH: CGFloat { FloatingTeleprompterManager.notchStripHeight }
     private var textBandH: CGFloat { manager.notchTextBandHeight() }
     private var isVertical: Bool { manager.notchScrollVertical }
+    private var showsCamera: Bool { manager.notchShowsCamera }
+
+    /// The same rule as the floating window: lyrics style is Pro, Voice needs it to show the
+    /// word being read, and the sample script lets everyone try it.
+    private var usesWordStyle: Bool {
+        guard let words = viewModel.scriptWords, !words.isEmpty, !words.isRightToLeft else { return false }
+        if viewModel.voiceScrollEnabled { return true }
+        return lyricsStyleEnabled && (manager.isPremium || manager.currentScript?.id == AppConstants.welcomeScriptID)
+    }
+
+    private var horizontalInset: CGFloat { FloatingTeleprompterManager.notchTopRadius + 8 }
+
+    /// Vertical: lines fade out as they reach the bottom of the band. Horizontal: words fade
+    /// in at the right edge and out at the left one.
+    @ViewBuilder
+    private var textFade: some View {
+        if isVertical {
+            VStack(spacing: 0) {
+                Rectangle()
+                LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                    .frame(height: min(26, textBandH * 0.3))
+            }
+        } else {
+            HStack(spacing: 0) {
+                LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: horizontalInset + 22)
+                Rectangle()
+                LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: horizontalInset + 22)
+            }
+        }
+    }
 
     private var text: String {
         let content = manager.currentScript?.content ?? ""
@@ -83,11 +118,40 @@ struct NotchTeleprompterView: View {
         VStack(spacing: 0) {
             Color.black
                 .frame(height: menuBarH)
+                .overlay(alignment: .leading) {
+                    // Beside the camera, where the reader is looking.
+                    if manager.capture.isRecording, let start = manager.capture.recordingStartDate {
+                        RecordingBadge(start: start, compact: true)
+                            .padding(.leading, FloatingTeleprompterManager.notchTopRadius + 12)
+                    }
+                }
 
             GeometryReader { geo in
                 ZStack(alignment: isVertical ? .top : .leading) {
                     Color.black
-                    scrollingText(in: geo)
+                    Group {
+                    if viewModel.isWordMode, let words = viewModel.scriptWords {
+                        WordTeleprompterView(
+                            viewModel: viewModel,
+                            words: words,
+                            fontSize: manager.notchFontSize,
+                            lineHeightMultiple: 1.15,
+                            textColor: .white,
+                            alignment: isVertical ? verticalAlignment : 0,
+                            horizontalPadding: horizontalInset,
+                            topInset: isVertical ? 4 : 0,
+                            anchor: 0,
+                            upcomingOpacity: 0.5,
+                            pastOpacity: 0.3,
+                            singleLine: !isVertical
+                        )
+                    } else {
+                        scrollingText(in: geo)
+                    }
+                    }
+                    // The text itself fades out at the band's edges, so whatever is below
+                    // (the camera, or the notch's own edge) stays fully visible.
+                    .mask(textFade)
                 }
                 .clipped()
                 .onAppear { resetScroll(viewport: primaryAxis(of: geo.size)) }
@@ -99,12 +163,39 @@ struct NotchTeleprompterView: View {
                 }
             }
             .frame(height: textBandH)
+
+            // The camera's room under the text. Only its height changes; the black and the
+            // rounded outline belong to the whole notch, so the shape never looks square.
+            GeometryReader { room in
+                let inset = FloatingTeleprompterManager.notchCameraInset
+                // Kept, attached to the camera, for as long as the camera runs, even with no room:
+                // it's ready the moment the notch opens, and on the way out it shrinks and fades
+                // with the notch rather than leaving at full size and being cut off.
+                if let session = manager.capture.captureSession, manager.notchMode {
+                    // Under the text, so the eyes stay by the lens while checking the framing.
+                    // It takes the room's animated height, so it grows and shrinks with the
+                    // notch with its corners rounded all the way, instead of being cut off.
+                    let radius = FloatingTeleprompterManager.notchCameraBottomRadius - inset
+                    CameraPreviewLayerView(session: session, mirrored: manager.mirrorsCamera)
+                        .frame(height: max(0, room.size.height - inset))
+                        .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+                        .padding(.horizontal, FloatingTeleprompterManager.notchTopRadius + inset)
+                        .opacity(showsCamera ? 1 : 0)
+                }
+            }
+            .frame(height: showsCamera ? FloatingTeleprompterManager.notchCameraHeight : 0, alignment: .top)
+            .clipped()
         }
-        .frame(height: menuBarH + textBandH)
+        .frame(height: menuBarH + textBandH + (showsCamera ? FloatingTeleprompterManager.notchCameraHeight : 0),
+               alignment: .top)
+        .background(Color.black)
         .clipShape(
             NotchShape(
                 topRadius: FloatingTeleprompterManager.notchTopRadius,
-                bottomRadius: FloatingTeleprompterManager.notchBottomRadius
+                bottomRadius: showsCamera
+                    ? FloatingTeleprompterManager.notchCameraBottomRadius
+                    : (isVertical ? FloatingTeleprompterManager.notchBottomRadius
+                                  : FloatingTeleprompterManager.notchTickerBottomRadius)
             )
         )
         .compositingGroup()
@@ -114,6 +205,9 @@ struct NotchTeleprompterView: View {
             anchor: .top
         )
         .opacity(manager.notchPresented ? 1 : 0)
+        // Text size and the camera grow and shrink the notch smoothly, text and black together.
+        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: manager.notchFontSize)
+        .animation(.spring(response: 0.5, dampingFraction: 0.84), value: showsCamera)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onReceive(ticker) { _ in tickScroll() }
         .onReceive(viewModel.notchSeekRequest) { fraction in
@@ -125,6 +219,7 @@ struct NotchTeleprompterView: View {
         .onReceive(manager.notchScrollDelta) { delta in
             scrollOffset += delta
         }
+        .onChange(of: usesWordStyle, initial: true) { _, usesWords in viewModel.setWordMode(usesWords) }
         .onChange(of: text) { _, _ in resetScroll(viewport: viewportSize) }
         .onChange(of: isVertical) { _, _ in resetScroll(viewport: viewportSize) }
         .onReceive(viewModel.resetPublisher) {
@@ -145,10 +240,10 @@ struct NotchTeleprompterView: View {
                 .font(readingFont.resolved(for: text).font(size: manager.notchFontSize, weight: .semibold))
                 .tracking(letterSpacing.tracking(for: manager.notchFontSize, in: text))
                 .foregroundStyle(.white)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(verticalAlignment == 1 ? .center : .leading)
                 .lineSpacing(3)
-                .padding(.horizontal, FloatingTeleprompterManager.notchTopRadius + 6)
-                .frame(width: geo.size.width, alignment: .top)
+                .padding(.horizontal, horizontalInset)
+                .frame(width: geo.size.width, alignment: verticalAlignment == 1 ? .top : .topLeading)
                 .fixedSize(horizontal: false, vertical: true)
                 .background(contentSizeReader(viewport: geo.size.height))
                 .offset(y: scrollOffset)
@@ -192,7 +287,8 @@ struct NotchTeleprompterView: View {
     }
 
     private func tickScroll() {
-        guard viewModel.isPlaying else { return }
+        // Lyrics style runs on the view model's word clock instead.
+        guard viewModel.isPlaying, !viewModel.isWordMode else { return }
         if viewModel.voiceScrollEnabled {
             if let heard = viewModel.voiceTrackedFraction, contentSize > 0 {
                 // Ease towards the words heard so far.

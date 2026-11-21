@@ -430,3 +430,28 @@
 "Paused" = "Gepauzeerd";
 "Back to the top" = "Terug naar het begin";
 "Recording stopped" = "Opname gestopt";
+
+/* Mac recording */
+"Record" = "Neem op";
+"Camera Access Required" = "Toegang tot camera vereist";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Om jezelf op te nemen terwijl je leest, geef yPrompt toegang tot de camera en microfoon in Systeeminstellingen › Privacy en beveiliging.";
+"Show Camera Preview" = "Toon cameravoorvertoning";
+"Hide Camera Preview" = "Verberg cameravoorvertoning";
+"Recording" = "Neemt op";
+"Read this script with the camera on, ready to record" = "Lees dit script met de camera aan, klaar om op te nemen";
+"Click a piece to edit it" = "Klik op een deel om het te bewerken";
+"Saved" = "Bewaard";
+"Save…" = "Bewaar…";
+"It hasn't been saved. This can't be undone." = "Deze is niet bewaard. Dit kan niet ongedaan worden gemaakt.";
+"Files you saved stay. This can't be undone." = "Bestanden die je hebt bewaard blijven staan. Dit kan niet ongedaan worden gemaakt.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Opnamen gebruiken %@ op deze Mac. Er wordt geen reservekopie van gemaakt, dus bewaar de opnamen die je wilt houden.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Open een script en klik op Neem op, of kies Camera of Audio onder Neem op in de menubalk. Elke opname komt hier terecht, klaar om te bewerken.";
+"No Recording Selected" = "Geen opname geselecteerd";
+"Pick a recording in the sidebar to watch and edit it." = "Kies een opname in de navigatiekolom om hem te bekijken en te bewerken.";
+"Show" = "Toon";
+"Display" = "Weergave";
+"Scrolling" = "Scrollen";
+"Text Size" = "Tekstgrootte";
+"For vertical scrolling" = "Voor verticaal scrollen";
+"Mirror Camera" = "Spiegel camera";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Toont de voorvertoning als een spiegel. Opnamen worden nooit gespiegeld.";

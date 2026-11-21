@@ -473,3 +473,27 @@
 "Paused" = "Pausiert";
 "Back to the top" = "Zurück zum Anfang";
 "Recording stopped" = "Aufnahme gestoppt";
+
+/* Mac recording */
+"Camera Access Required" = "Kamerazugriff erforderlich";
+"To record yourself reading, allow yPrompt to use the camera and microphone in System Settings › Privacy & Security." = "Damit du dich beim Lesen aufnehmen kannst, erlaube yPrompt in den Systemeinstellungen › Datenschutz & Sicherheit den Zugriff auf Kamera und Mikrofon.";
+"Show Camera Preview" = "Kameravorschau zeigen";
+"Hide Camera Preview" = "Kameravorschau ausblenden";
+"Recording" = "Aufnahme läuft";
+"Read this script with the camera on, ready to record" = "Dieses Skript mit eingeschalteter Kamera lesen, bereit zur Aufnahme";
+"Click a piece to edit it" = "Klicke auf ein Stück, um es zu bearbeiten";
+"Saved" = "Gesichert";
+"Save…" = "Sichern …";
+"It hasn't been saved. This can't be undone." = "Sie wurde noch nicht gesichert. Das kann nicht widerrufen werden.";
+"Files you saved stay. This can't be undone." = "Gesicherte Dateien bleiben erhalten. Das kann nicht widerrufen werden.";
+"Recordings use %@ on this Mac. They aren't backed up, so save the ones you want to keep." = "Aufnahmen belegen %@ auf diesem Mac. Sie werden nicht gesichert, also speichere die, die du behalten willst.";
+"Open a script and click Record, or choose Camera or Audio under Record in the menu bar. Every take lands here, ready to edit." = "Öffne ein Skript und klicke auf „Aufnehmen“ oder wähle in der Menüleiste unter „Aufnehmen“ Kamera oder Audio. Jede Aufnahme landet hier, bereit zum Bearbeiten.";
+"No Recording Selected" = "Keine Aufnahme ausgewählt";
+"Pick a recording in the sidebar to watch and edit it." = "Wähle links eine Aufnahme, um sie anzusehen und zu bearbeiten.";
+"Show" = "Anzeigen";
+"Display" = "Anzeige";
+"Scrolling" = "Scrollen";
+"Text Size" = "Textgröße";
+"For vertical scrolling" = "Für vertikales Scrollen";
+"Mirror Camera" = "Kamera spiegeln";
+"Shows the preview like a mirror. Recordings are never mirrored." = "Zeigt die Vorschau wie einen Spiegel. Aufnahmen werden nie gespiegelt.";

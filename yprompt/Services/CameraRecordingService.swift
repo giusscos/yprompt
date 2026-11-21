@@ -601,14 +601,8 @@ extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
-        // Some errors still leave a complete movie, e.g. when the disk fills up.
-        let completed = error == nil
-            || ((error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool ?? false)
-        // Read from the file written next to the movie, so the piece is kept even if the
-        // reading screen has already closed.
-        let pending = (try? Data(contentsOf: outputFileURL.appendingPathExtension("pending.json")))
-            .flatMap { try? JSONDecoder().decode(PendingPiece.self, from: $0) }
         let file = outputFileURL.lastPathComponent
+        let sendableError = error.map { $0 as NSError }
         Task { @MainActor [weak self] in
             self?.isRecording = false
             self?.recordingStartDate = nil
@@ -616,16 +610,10 @@ extension CameraRecordingService: AVCaptureFileOutputRecordingDelegate {
             if let self, let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture {
                 applyCaptureRotation(angle)
             }
-            let progress = self?.endProgress.removeValue(forKey: file) ?? pending?.startProgress ?? 0
-            guard let pending else { return }
-            guard completed else {
-                try? FileManager.default.removeItem(at: pending.url)
-                try? FileManager.default.removeItem(at: pending.infoURL)
-                return
-            }
-            guard let (recording, piece) = await RecordingStore.finishPiece(pending, endProgress: progress) else { return }
-            RecordingLibrary.shared.refresh()
-            self?.finished = RecordingSelection(recordingID: recording.id, pieceID: piece.id)
+            let progress = self?.endProgress.removeValue(forKey: file)
+            guard let selection = await RecordingStore.completePiece(at: outputFileURL, error: sendableError,
+                                                                     endProgress: progress) else { return }
+            self?.finished = selection
         }
     }
 }

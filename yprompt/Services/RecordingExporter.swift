@@ -3,9 +3,11 @@
 //  yprompt
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 import AVFoundation
+#if os(iOS)
 import Photos
+#endif
 
 /// Turns a recording into the file people keep: a video, or for audio an .m4a.
 enum RecordingExporter {
@@ -110,6 +112,24 @@ enum RecordingExporter {
         return written
     }
 
+    #if os(macOS)
+    /// Copies a finished file to where the person chose, with its subtitles and transcript
+    /// beside it under the same name.
+    static func saveToFile(_ url: URL, to destination: URL, with textFiles: [URL]) throws {
+        let fileManager = FileManager.default
+        func replace(_ target: URL, with source: URL) throws {
+            if fileManager.fileExists(atPath: target.path) { try fileManager.removeItem(at: target) }
+            try fileManager.copyItem(at: source, to: target)
+        }
+        try replace(destination, with: url)
+        let base = destination.deletingPathExtension()
+        for file in textFiles {
+            try? replace(base.appendingPathExtension(file.pathExtension), with: file)
+        }
+    }
+    #endif
+
+    #if os(iOS)
     static func saveToPhotos(_ url: URL) async throws {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else { throw ExportError.photosNotAllowed }
@@ -120,11 +140,12 @@ enum RecordingExporter {
     nonisolated private static func changes(addingVideoAt url: URL) -> @Sendable () -> Void {
         { _ = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url) }
     }
+    #endif
 
     private static func run(
         _ session: AVAssetExportSession, to url: URL, as type: AVFileType, progress: @escaping (Double) -> Void
     ) async throws {
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macOS 15.0, *) {
             // Polled rather than read from `states(updateInterval:)`, whose iterator traps when an
             // export finishes before it takes its first look, as short audio exports do.
             let watcher = Task {

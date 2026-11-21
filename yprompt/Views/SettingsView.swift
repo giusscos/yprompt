@@ -14,6 +14,9 @@ struct SettingsView: View {
     @Query private var settingsArray: [AppSettings]
 
     @AppStorage("sliderRequiresLongPress") private var sliderRequiresLongPress: Bool = true
+    #if os(macOS)
+    @AppStorage(AppConstants.notchAlignmentKey) private var notchAlignment = 0
+    #endif
     @State private var showingOnboarding = false
     @State private var showingResetConfirm = false
     @State private var showingPaywall = false
@@ -104,6 +107,7 @@ struct SettingsView: View {
                         displayModeCard(settings)
                         floatingWindowCard(settings)
                         notchModeCard(settings)
+                        cameraCard
                         playbackCard(settings)
                     }
                     accessibilityCard
@@ -207,7 +211,12 @@ struct SettingsView: View {
                         }
                         settings.displayModeRaw = newMode.rawValue
                         try? modelContext.save()
-                        FloatingTeleprompterManager.shared.notchMode = newMode == .notch
+                        let manager = FloatingTeleprompterManager.shared
+                        let notch = newMode == .notch
+                        guard manager.notchMode != notch else { return }
+                        manager.notchMode = notch
+                        // An open teleprompter switches over too, as from the menu bar.
+                        manager.applyVisibleModeChange()
                     }
                 )) {
                     Label("Floating", systemImage: "rectangle.on.rectangle").tag(DisplayMode.floatingWindow)
@@ -284,6 +293,41 @@ struct SettingsView: View {
                         try? modelContext.save()
                         FloatingTeleprompterManager.shared.setNotchScrollVertical(v)
                     }
+                ))
+                .labelsHidden()
+            }
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Alignment")
+                    Text("For vertical scrolling")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("Alignment", selection: $notchAlignment) {
+                    Text("Left").tag(0)
+                    Text("Center").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+            }
+        }
+    }
+
+    private var cameraCard: some View {
+        macCard {
+            Text("Camera").font(.headline)
+            Divider()
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Mirror Camera")
+                    Text("Shows the preview like a mirror. Recordings are never mirrored.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Toggle("Mirror Camera", isOn: Binding(
+                    get: { FloatingTeleprompterManager.shared.mirrorsCamera },
+                    set: { FloatingTeleprompterManager.shared.mirrorsCamera = $0 }
                 ))
                 .labelsHidden()
             }
