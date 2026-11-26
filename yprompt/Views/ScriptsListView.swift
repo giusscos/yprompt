@@ -191,6 +191,16 @@ struct ScriptsListView: View {
             }
         }
         #endif
+        .onChange(of: AppRouter.shared.wantsWriteScript, initial: true) { _, wants in
+            guard wants else { return }
+            AppRouter.shared.wantsWriteScript = false
+            Task {
+                // A sheet asked for while the app is still launching is dropped.
+                try? await Task.sleep(for: .seconds(1))
+                if !ScriptWriter.isAvailable { return }
+                if canCreateScript { showingDraft = true } else { showingPaywall = true }
+            }
+        }
         .sheet(isPresented: $showingDraft) {
             DraftScriptView { script in
                 #if os(macOS)

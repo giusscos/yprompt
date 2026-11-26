@@ -19,6 +19,14 @@ final class AppRouter {
     }
 
     var pending: Destination?
+    /// Set by a `yprompt://write` link (the In-App Event opens it): show Write Script.
+    var wantsWriteScript = false
+
+    /// `yprompt://write` opens Write Script; any other yprompt:// link just opens the app.
+    func handle(_ url: URL) {
+        guard url.scheme == "yprompt" else { return }
+        if url.host() == "write" { wantsWriteScript = true }
+    }
 
     func open(_ destination: Destination) {
         pending = destination

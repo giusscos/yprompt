@@ -66,6 +66,14 @@ struct ContentView: View {
         }
         .onChange(of: scripts) { _, scripts in removeSyncedWelcomeCopies(in: scripts) }
         .task { await prepareOnboarding() }
+        .onOpenURL { url in
+            #if os(macOS)
+            if url.host() == "write" { sidebarMode = .scripts }
+            #else
+            if url.host() == "write" { selectedTab = 0 }
+            #endif
+            AppRouter.shared.handle(url)
+        }
         .onChange(of: storeKit.isPremium, initial: true) { _, premium in TipState.isPro = premium }
         .onChange(of: scripts.count, initial: true) { _, _ in donateFirstOwnScriptIfNeeded() }
     }
