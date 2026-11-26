@@ -516,7 +516,6 @@
 "Script is empty" = "原稿が空です";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "読みながら録画";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "ノッチやフローティングプロンプターから動画や音声を録画。カメラプレビューは移動やサイズ変更ができます。";
 "Edit Your Takes" = "テイクを編集";
 "Trim, split and caption your recordings, then save them as video files or share them." = "録画をトリミング、分割し、字幕を付けて、動画ファイルとして保存したり共有したりできます。";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "トピックを入力し、長さとトーンを選ぶと、iPhone上で最初の原稿が書き上がります。";
 "Record from Apple Watch" = "Apple Watchから録画";
 "Start and stop a take from your wrist while the camera is ready." = "カメラの準備ができたら、手首からテイクを開始・停止できます。";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "すべてのPro機能が使えるようになります。今日は支払いなし。";
+"Day %lld" = "%lld日目";
+"We send you a reminder that your trial is ending." = "トライアル終了前にお知らせを送ります。";
+"Your plan starts at %@/year, unless you cancel before." = "途中で解約しない限り、%@/年のプランが始まります。";
+"Your Pro trial ends soon" = "Proのトライアルがまもなく終了します";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "無料トライアルは%@に終了します。Proを続けるか、Appleアカウントの設定からいつでも解約できます。";
+"Your Pro Trial Has Started" = "Proのトライアルが始まりました";
+"Try these first to see what Pro can do." = "まずはこちらを試して、Proでできることを確かめましょう。";
+"Keep your script over the Camera app or a video call." = "カメラAppやビデオ通話の上に台本を表示できます。";
+"Cancel anytime in your Apple account settings." = "Appleアカウントの設定からいつでも解約できます。";
+"Start Using Pro" = "Proを使い始める";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "最初の台本を追加しましょう";
+"Type or paste your text, or import a file. Then press play." = "テキストを入力するか貼り付け、またはファイルを読み込みます。あとは再生するだけ。";
+"Let Your Voice Lead" = "声で進めましょう";
+"Choose Voice: the script follows your words and waits when you pause." = "「音声」を選ぶと、話す言葉に合わせて台本が進み、止まると待ちます。";
+"Try Voice Scroll" = "音声スクロールを試す";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "「音声」では台本が話す言葉についてきます。Proの機能で、無料で試せます。";
+"Read Over Any App" = "どのAppの上でも読める";
+"Add Captions in One Tap" = "ワンタップで字幕";
+"Lyrics or Clean: captions are spelled exactly like your script." = "「歌詞」か「シンプル」：字幕は台本どおりの表記になります。";
+"Tighten Your Take" = "テイクを引き締める";
+"Remove Pauses cuts the silences between your sentences." = "「間を削除」で文と文の間の無音をカットします。";
+"Save Without the Mark" = "マークなしで保存";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Proなら yPromptのマークなしで動画を保存できます。無料で試せます。";
+"Read Right Under Your Camera" = "カメラのすぐ下で読む";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "「プレゼン」で台本がカメラ横のノッチに表示されます。ノッチかフローティングウインドウかは設定で選べます。";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "「プレゼン」で台本がカメラのすぐ下のフローティングウインドウに表示され、レンズを見たまま読めます。";
+"Camera, Audio or Color" = "カメラ、オーディオ、カラー";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "レンズのすぐ下に台本を表示して撮影、声だけを録音、または単色の背景で読めます。";
+"Make It Easy to Read" = "読みやすく調整";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "文字の大きさ、フォント、間隔を目や距離に合わせて変更できます。";

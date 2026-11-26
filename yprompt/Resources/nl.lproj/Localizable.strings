@@ -516,7 +516,6 @@
 "Script is empty" = "Script is leeg";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Opnemen terwijl je leest";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Neem video of audio op vanuit de notch of de zwevende prompter, met een cameravoorvertoning die je kunt verplaatsen en vergroten.";
 "Edit Your Takes" = "Bewerk je opnames";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Knip, splits en ondertitel je opnames en bewaar ze als videobestand of deel ze.";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Beschrijf je onderwerp, kies een lengte en toon, en krijg een eerste versie geschreven op je iPhone.";
 "Record from Apple Watch" = "Opnemen vanaf je Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Start en stop een opname vanaf je pols zodra de camera klaar is.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Alle Pro-functies worden ontgrendeld. Vandaag betaal je niets.";
+"Day %lld" = "Dag %lld";
+"We send you a reminder that your trial is ending." = "We sturen je een herinnering dat je proefperiode afloopt.";
+"Your plan starts at %@/year, unless you cancel before." = "Je abonnement start voor %@/jaar, tenzij je eerder opzegt.";
+"Your Pro trial ends soon" = "Je Pro-proefperiode loopt bijna af";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Je gratis proefperiode loopt af op %@. Houd Pro, of zeg altijd op in de instellingen van je Apple-account.";
+"Your Pro Trial Has Started" = "Je Pro-proefperiode is begonnen";
+"Try these first to see what Pro can do." = "Probeer dit eerst om te zien wat Pro kan.";
+"Keep your script over the Camera app or a video call." = "Houd je script boven de Camera-app of een videogesprek.";
+"Cancel anytime in your Apple account settings." = "Altijd opzegbaar in de instellingen van je Apple-account.";
+"Start Using Pro" = "Begin met Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Voeg je eerste script toe";
+"Type or paste your text, or import a file. Then press play." = "Typ of plak je tekst, of importeer een bestand. Druk daarna op afspelen.";
+"Let Your Voice Lead" = "Laat je stem leiden";
+"Choose Voice: the script follows your words and waits when you pause." = "Kies Stem: het script volgt je woorden en wacht als je pauzeert.";
+"Try Voice Scroll" = "Probeer scrollen met je stem";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Met Stem volgt het script je woorden. Het hoort bij Pro en je kunt het gratis proberen.";
+"Read Over Any App" = "Lees boven elke app";
+"Add Captions in One Tap" = "Ondertitels met één tik";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Songtekst of Strak: ondertitels zijn precies gespeld zoals je script.";
+"Tighten Your Take" = "Maak je take strakker";
+"Remove Pauses cuts the silences between your sentences." = "Verwijder pauzes knipt de stiltes tussen je zinnen weg.";
+"Save Without the Mark" = "Bewaar zonder het merkteken";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro bewaart je video's zonder het yPrompt-merkteken. Je kunt het gratis proberen.";
+"Read Right Under Your Camera" = "Lees vlak onder je camera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Presenteer opent je script in de notch, naast de camera. Kies de notch of een zwevend venster in Instellingen.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Presenteer opent je script in een zwevend venster vlak onder je camera, zodat je in de lens kijkt.";
+"Camera, Audio or Color" = "Camera, audio of kleur";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film jezelf met het script onder de lens, neem alleen je stem op of lees op een effen kleur.";
+"Make It Easy to Read" = "Lees met gemak";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Pas tekstgrootte, lettertype en spatiëring aan op je ogen en je afstand.";

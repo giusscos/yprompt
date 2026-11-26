@@ -558,7 +558,6 @@
 "Script is empty" = "Script is empty";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Record While You Read";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize.";
 "Edit Your Takes" = "Edit Your Takes";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Trim, split and caption your recordings, then save them as video files or share them.";
@@ -571,3 +570,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone.";
 "Record from Apple Watch" = "Record from Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Start and stop a take from your wrist while the camera is ready.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Every Pro tool unlocks. Nothing to pay now.";
+"Day %lld" = "Day %lld";
+"We send you a reminder that your trial is ending." = "We send you a reminder that your trial is ending.";
+"Your plan starts at %@/year, unless you cancel before." = "Your plan starts at %@/year, unless you cancel before.";
+"Your Pro trial ends soon" = "Your Pro trial ends soon";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings.";
+"Your Pro Trial Has Started" = "Your Pro Trial Has Started";
+"Try these first to see what Pro can do." = "Try these first to see what Pro can do.";
+"Keep your script over the Camera app or a video call." = "Keep your script over the Camera app or a video call.";
+"Cancel anytime in your Apple account settings." = "Cancel anytime in your Apple account settings.";
+"Start Using Pro" = "Start Using Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Add Your First Script";
+"Type or paste your text, or import a file. Then press play." = "Type or paste your text, or import a file. Then press play.";
+"Let Your Voice Lead" = "Let Your Voice Lead";
+"Choose Voice: the script follows your words and waits when you pause." = "Choose Voice: the script follows your words and waits when you pause.";
+"Try Voice Scroll" = "Try Voice Scroll";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "With Voice, the script follows your words. It's part of Pro, and you can try it free.";
+"Read Over Any App" = "Read Over Any App";
+"Add Captions in One Tap" = "Add Captions in One Tap";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Lyrics or Clean: captions are spelled exactly like your script.";
+"Tighten Your Take" = "Tighten Your Take";
+"Remove Pauses cuts the silences between your sentences." = "Remove Pauses cuts the silences between your sentences.";
+"Save Without the Mark" = "Save Without the Mark";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro saves your videos without the yPrompt mark. You can try it free.";
+"Read Right Under Your Camera" = "Read Right Under Your Camera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Present opens your script in a floating window just below your camera, so you look into the lens.";
+"Camera, Audio or Color" = "Camera, Audio or Color";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film yourself with the script under the lens, record just your voice, or read on a plain color.";
+"Make It Easy to Read" = "Make It Easy to Read";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Change the text size, font and spacing to suit your eyes and how far you sit.";

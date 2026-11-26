@@ -9,7 +9,7 @@ import StoreKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.requestReview) private var requestReview
+    @Environment(\.openURL) private var openURL
     @Environment(StoreKitService.self) private var storeKit
     @Query private var settingsArray: [AppSettings]
 
@@ -378,7 +378,7 @@ struct SettingsView: View {
             }
             Divider()
             HStack {
-                Button("Rate yPrompt") { requestReview() }
+                Button("Rate yPrompt") { openURL(RatingService.writeReviewURL) }
                 Spacer()
             }
             Divider()
@@ -626,7 +626,7 @@ struct SettingsView: View {
                 Spacer()
                 Text("\(appVersion) (\(buildNumber))").foregroundStyle(.secondary)
             }
-            Button("Rate yPrompt") { requestReview() }
+            Button("Rate yPrompt") { openURL(RatingService.writeReviewURL) }
             Button("Send Feedback") { sendFeedback() }
             Button("Show App Tour") { showingOnboarding = true }
         }

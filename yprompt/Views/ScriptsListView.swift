@@ -4,12 +4,14 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 struct ScriptsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(StoreKitService.self) private var storeKit
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
+    private let newScriptTip = NewScriptTip()
     @Query private var settingsArray: [AppSettings]
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
@@ -120,6 +122,7 @@ struct ScriptsListView: View {
                 Button(action: requestCreateScript) {
                     Label("New Script", systemImage: "plus")
                 }
+                .popoverTip(newScriptTip)
                 #endif
             }
             if ScriptWriter.isAvailable {
@@ -362,6 +365,12 @@ struct ScriptsListView: View {
     private var listContent: some View {
         #if os(iOS) || os(visionOS)
         List(selection: $selectedIDs) {
+            // On iPhone and iPad the tip sits in the list: a popover from a toolbar button
+            // doesn't reliably appear there.
+            TipView(newScriptTip)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                .listRowSeparator(.hidden)
             listRows
         }
         .listStyle(.insetGrouped)

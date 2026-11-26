@@ -516,7 +516,6 @@
 "Script is empty" = "대본이 비어 있습니다";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "읽으면서 녹화";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "노치나 떠 있는 프롬프터에서 비디오나 오디오를 녹화하세요. 카메라 미리보기는 옮기고 크기를 조절할 수 있습니다.";
 "Edit Your Takes" = "테이크 편집";
 "Trim, split and caption your recordings, then save them as video files or share them." = "녹화를 자르고 나누고 자막을 넣은 뒤 비디오 파일로 저장하거나 공유하세요.";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "주제를 설명하고 길이와 어조를 고르면 iPhone에서 첫 초안이 작성됩니다.";
 "Record from Apple Watch" = "Apple Watch로 녹화";
 "Start and stop a take from your wrist while the camera is ready." = "카메라가 준비되면 손목에서 테이크를 시작하고 멈추세요.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "모든 Pro 도구가 열립니다. 오늘은 결제하지 않습니다.";
+"Day %lld" = "%lld일차";
+"We send you a reminder that your trial is ending." = "체험이 끝나기 전에 알림을 보내 드립니다.";
+"Your plan starts at %@/year, unless you cancel before." = "미리 취소하지 않으면 연 %@ 요금제가 시작됩니다.";
+"Your Pro trial ends soon" = "Pro 체험이 곧 끝납니다";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "무료 체험이 %@에 끝납니다. Pro를 계속 쓰거나 Apple 계정 설정에서 언제든지 취소하세요.";
+"Your Pro Trial Has Started" = "Pro 체험이 시작되었습니다";
+"Try these first to see what Pro can do." = "먼저 이 기능들을 써 보고 Pro로 무엇을 할 수 있는지 확인하세요.";
+"Keep your script over the Camera app or a video call." = "카메라 앱이나 영상 통화 위에 대본을 띄워 두세요.";
+"Cancel anytime in your Apple account settings." = "Apple 계정 설정에서 언제든지 취소할 수 있습니다.";
+"Start Using Pro" = "Pro 사용 시작";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "첫 대본을 추가하세요";
+"Type or paste your text, or import a file. Then press play." = "텍스트를 입력하거나 붙여넣거나 파일을 가져오세요. 그다음 재생을 누르세요.";
+"Let Your Voice Lead" = "목소리로 이끌어 보세요";
+"Choose Voice: the script follows your words and waits when you pause." = "음성을 선택하면 대본이 말을 따라오고 멈추면 기다립니다.";
+"Try Voice Scroll" = "음성 스크롤을 써 보세요";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "음성 모드에서는 대본이 말을 따라옵니다. Pro 기능이며 무료로 체험할 수 있습니다.";
+"Read Over Any App" = "어떤 앱 위에서든 읽기";
+"Add Captions in One Tap" = "탭 한 번으로 자막";
+"Lyrics or Clean: captions are spelled exactly like your script." = "가사 또는 심플: 자막이 대본과 똑같은 표기로 들어갑니다.";
+"Tighten Your Take" = "테이크를 깔끔하게";
+"Remove Pauses cuts the silences between your sentences." = "쉬는 구간 제거로 문장 사이의 침묵을 잘라냅니다.";
+"Save Without the Mark" = "표시 없이 저장";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro는 yPrompt 표시 없이 동영상을 저장합니다. 무료로 체험할 수 있습니다.";
+"Read Right Under Your Camera" = "카메라 바로 아래에서 읽기";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "발표를 누르면 대본이 카메라 옆 노치에 열립니다. 노치나 떠 있는 창은 설정에서 고르세요.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "발표를 누르면 대본이 카메라 바로 아래 떠 있는 창에 열려 렌즈를 보며 읽을 수 있습니다.";
+"Camera, Audio or Color" = "카메라, 오디오 또는 색상";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "렌즈 아래에 대본을 두고 촬영하거나, 목소리만 녹음하거나, 단색 배경에서 읽을 수 있습니다.";
+"Make It Easy to Read" = "편하게 읽기";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "눈과 거리에 맞게 글자 크기, 글꼴, 간격을 바꿔 보세요.";

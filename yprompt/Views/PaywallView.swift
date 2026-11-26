@@ -23,19 +23,24 @@ struct PaywallView: View {
 
     @State private var selectedPlanID = AppConstants.yearlySubscriptionID
     @State private var errorMessage: String?
+    @State private var showingTrialWelcome = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    headerSection
-                    if storeKit.isLoading {
-                        ProgressView("Loading products…").padding()
+                    if showingTrialWelcome {
+                        ProTrialWelcomeView { dismiss() }
                     } else {
-                        productsSection
+                        headerSection
+                        if storeKit.isLoading {
+                            ProgressView("Loading products…").padding()
+                        } else {
+                            productsSection
+                        }
+                        featuresSection
+                        legalSection
                     }
-                    featuresSection
-                    legalSection
                 }
                 .padding()
             }
@@ -49,7 +54,13 @@ struct PaywallView: View {
                 }
             }
             .onChange(of: storeKit.isPremium) { _, isPremium in
-                if isPremium { dismiss() }
+                guard isPremium else { return }
+                if storeKit.trialJustStarted {
+                    storeKit.trialJustStarted = false
+                    withAnimation { showingTrialWelcome = true }
+                } else {
+                    dismiss()
+                }
             }
             .alert("Purchase Error", isPresented: Binding(
                 get: { errorMessage != nil },
@@ -112,6 +123,7 @@ struct PaywallView: View {
     private var productsSection: some View {
         VStack(spacing: 16) {
             PlanPicker(selectedID: $selectedPlanID)
+            TrialTimeline(selectedID: selectedPlanID)
             if storeKit.products.isEmpty {
                 Text("Products unavailable. Check your connection.")
                     .font(.caption)

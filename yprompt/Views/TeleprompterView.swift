@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 import StoreKit
 #if os(iOS)
@@ -159,8 +160,12 @@ struct TeleprompterView: View {
     @State private var showingPaywall = false
     #if os(iOS)
     @StateObject private var pip = TeleprompterPiP()
+    private let voiceScrollProTip = VoiceScrollProTip()
+    private let voiceScrollFreeTip = VoiceScrollFreeTip()
+    private let backgroundModesTip = BackgroundModesTip()
+    private let textDisplayTip = TextDisplayTip()
+    private let pictureInPictureTip = PictureInPictureTip()
     #endif
-    @Environment(\.requestReview) private var requestReview
 #endif
 #if os(iOS)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -334,10 +339,7 @@ struct TeleprompterView: View {
                 currentScript.lastProgress = 1.0
                 try? modelContext.save()
                 RatingService.shared.recordSessionCompleted()
-                if RatingService.shared.shouldRequestReview {
-                    RatingService.shared.markReviewRequested()
-                    requestReview()
-                }
+                RatingService.shared.requestIfAppropriate()
             }
 #if !os(iOS)
             .onChange(of: viewModel.contentHeight) { _, newHeight in
@@ -668,6 +670,7 @@ struct TeleprompterView: View {
         .background(NavigationInteractivePopGestureDisabler(disabled: true))
         .toolbarColorScheme(isBackgroundDark ? .dark : .light, for: .navigationBar)
         .toolbar { iOSToolbar }
+        .overlay(alignment: .topTrailing) { toolbarTipAnchors }
         .toolbar(controlsVisible ? .visible : .hidden, for: .navigationBar)
         .onChange(of: verticalSizeClass) {
             // Rotating changes the toolbar's height, so show it to measure the new space.
@@ -765,9 +768,8 @@ struct TeleprompterView: View {
             } else if !storeKit.isPremium && RatingService.shared.claimFirstReadPaywall() {
                 paywallContext = .firstRead
                 showingPaywall = true
-            } else if RatingService.shared.shouldRequestReview {
-                RatingService.shared.markReviewRequested()
-                requestReview()
+            } else {
+                RatingService.shared.requestIfAppropriate()
             }
         }
         .onChange(of: liveFontSize) { _, newSize in
@@ -1115,6 +1117,21 @@ struct TeleprompterView: View {
         }
     }
 
+    /// iOS doesn't present tips from toolbar buttons, so these sit just under the toolbar,
+    /// below the button each tip is about: Background (then Picture in Picture, then Display).
+    private var toolbarTipAnchors: some View {
+        HStack(spacing: 0) {
+            Color.clear.frame(width: 56, height: 1).popoverTip(backgroundModesTip, arrowEdge: .top)
+            if TeleprompterPiP.isSupported {
+                Color.clear.frame(width: 56, height: 1).popoverTip(pictureInPictureTip, arrowEdge: .top)
+            }
+            Color.clear.frame(width: 56, height: 1).popoverTip(textDisplayTip, arrowEdge: .top)
+        }
+        .padding(.trailing, 16)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
     private var modeStrip: some View {
         ReadingModeStrip(
             selection: teleprompterMode,
@@ -1122,6 +1139,8 @@ struct TeleprompterView: View {
             isLocked: { !storeKit.isPremium && ($0 == .voice || $0 == .timed) },
             onSelect: selectMode
         )
+        .popoverTip(voiceScrollProTip)
+        .background { Color.clear.popoverTip(voiceScrollFreeTip) }
     }
 
     /// The one setting that matters for the current mode.

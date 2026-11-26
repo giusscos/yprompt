@@ -178,11 +178,14 @@ final class FloatingTeleprompterManager {
     private init() {
         viewModel.onFinished = { [weak self] in
             guard let self else { return }
+            RatingService.shared.recordSessionCompleted()
             if self.nextInQueue != nil {
                 self.showQueueBanner = true
                 self.startQueueCountdown()
             } else if !self.isPremium && RatingService.shared.claimFirstReadPaywall() {
                 self.showPaywall(context: .firstRead)
+            } else {
+                Task { @MainActor in RatingService.shared.requestIfAppropriate() }
             }
         }
         setupRemoteControlCallbacks()

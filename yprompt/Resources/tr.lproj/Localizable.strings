@@ -516,7 +516,6 @@
 "Script is empty" = "Metin boş";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Okurken kaydedin";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Çentikten ya da yüzen metin okuyucudan video veya ses kaydedin; kamera önizlemesini taşıyabilir ve boyutlandırabilirsiniz.";
 "Edit Your Takes" = "Çekimlerinizi düzenleyin";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Kayıtlarınızı kırpın, bölün ve altyazı ekleyin; ardından video dosyası olarak kaydedin ya da paylaşın.";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Konunuzu anlatın, uzunluk ve ton seçin, ilk taslak iPhone’unuzda yazılsın.";
 "Record from Apple Watch" = "Apple Watch’tan kaydedin";
 "Start and stop a take from your wrist while the camera is ready." = "Kamera hazır olduğunda çekimi bileğinizden başlatıp durdurun.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Tüm Pro araçlarının kilidi açılır. Bugün bir şey ödemezsiniz.";
+"Day %lld" = "%lld. Gün";
+"We send you a reminder that your trial is ending." = "Deneme süreniz bitmeden size bir hatırlatma göndeririz.";
+"Your plan starts at %@/year, unless you cancel before." = "Daha önce iptal etmezseniz planınız yıllık %@ ile başlar.";
+"Your Pro trial ends soon" = "Pro denemeniz yakında bitiyor";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Ücretsiz denemeniz %@ tarihinde bitiyor. Pro'yu koruyun veya Apple hesabı ayarlarınızdan istediğiniz zaman iptal edin.";
+"Your Pro Trial Has Started" = "Pro denemeniz başladı";
+"Try these first to see what Pro can do." = "Pro'nun neler yapabildiğini görmek için önce bunları deneyin.";
+"Keep your script over the Camera app or a video call." = "Metniniz Kamera uygulamasının veya görüntülü aramanın üzerinde kalsın.";
+"Cancel anytime in your Apple account settings." = "Apple hesabı ayarlarınızdan istediğiniz zaman iptal edin.";
+"Start Using Pro" = "Pro'yu Kullanmaya Başla";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "İlk Metninizi Ekleyin";
+"Type or paste your text, or import a file. Then press play." = "Metninizi yazın veya yapıştırın ya da bir dosya içe aktarın. Sonra oynat'a dokunun.";
+"Let Your Voice Lead" = "Sesiniz Yönetsin";
+"Choose Voice: the script follows your words and waits when you pause." = "Ses'i seçin: metin sözlerinizi takip eder, durduğunuzda bekler.";
+"Try Voice Scroll" = "Sesle Kaydırmayı Deneyin";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Ses modunda metin sözlerinizi takip eder. Pro'nun bir parçasıdır ve ücretsiz deneyebilirsiniz.";
+"Read Over Any App" = "Her Uygulamanın Üzerinde Okuyun";
+"Add Captions in One Tap" = "Tek Dokunuşla Altyazı";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Şarkı Sözü veya Sade: altyazılar metninizle birebir aynı yazılır.";
+"Tighten Your Take" = "Çekiminizi Toparlayın";
+"Remove Pauses cuts the silences between your sentences." = "Duraklamaları Kaldır, cümleleriniz arasındaki sessizlikleri keser.";
+"Save Without the Mark" = "İşaret Olmadan Kaydedin";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro, videolarınızı yPrompt işareti olmadan kaydeder. Ücretsiz deneyebilirsiniz.";
+"Read Right Under Your Camera" = "Kameranızın Hemen Altında Okuyun";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Sun, metninizi kameranın yanındaki çentikte açar. Çentiği veya yüzen pencereyi Ayarlar'dan seçin.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Sun, metninizi kameranın hemen altındaki yüzen bir pencerede açar; böylece objektife bakarsınız.";
+"Camera, Audio or Color" = "Kamera, Ses veya Renk";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Metin objektifin altındayken kendinizi çekin, yalnızca sesinizi kaydedin veya düz bir renk üzerinde okuyun.";
+"Make It Easy to Read" = "Rahat Okuyun";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Metin boyutunu, yazı tipini ve aralığı gözlerinize ve mesafenize göre değiştirin.";

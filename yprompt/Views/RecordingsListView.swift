@@ -111,6 +111,9 @@ struct RecordingsListView: View {
                     ForEach(section.recordings) { recording in
                         row(recording)
                             .tag(recording.id)
+                            .swipeActions {
+                                Button("Delete", systemImage: "trash", role: .destructive) { deleting = recording }
+                            }
                             .contextMenu {
                                 Button("Delete", systemImage: "trash", role: .destructive) { deleting = recording }
                             }

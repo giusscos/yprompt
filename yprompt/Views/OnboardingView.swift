@@ -35,8 +35,12 @@ struct OnboardingView: View {
         .ypScrollEdgeEffect()
         .presentationBackground(.ultraThinMaterial)
         .interactiveDismissDisabled(!isOnDemand)
-        .onChange(of: storeKit.isPremium) { _, isPremium in
-            if isPremium { close() }
+        // Only a purchase made here ends the tour. Pro can also switch on by itself a moment
+        // after launch (a subscription found on this Apple ID), and that mustn't close it.
+        .onChange(of: storeKit.lastPurchaseDate) { _, date in
+            guard date != nil else { return }
+            storeKit.trialJustStarted = false
+            close()
         }
         .alert("Purchase Error", isPresented: Binding(
             get: { purchaseError != nil },
@@ -74,14 +78,14 @@ struct OnboardingView: View {
 
     private var proBottomBar: some View {
         VStack(spacing: 12) {
-            if !storeKit.products.isEmpty {
+            if !storeKit.products.isEmpty && !storeKit.isPremium {
                 PlanPurchaseButton(selectedID: selectedPlanID) { purchaseError = $0.localizedDescription }
             }
 
             Button {
                 close()
             } label: {
-                Text("Get Started for Free")
+                Text(storeKit.isPremium ? "Continue" : "Get Started for Free")
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
             }
@@ -534,6 +538,8 @@ struct OnboardingView: View {
     private var inlinePricingCards: some View {
         VStack(spacing: 10) {
             PlanPicker(selectedID: $selectedPlanID)
+            TrialTimeline(selectedID: selectedPlanID)
+                .padding(.top, 6)
             if storeKit.products.isEmpty {
                 Text("Products unavailable — check your connection.")
                     .font(.caption)

@@ -516,7 +516,6 @@
 "Script is empty" = "Skrip kosong";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Rakam sambil membaca";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Rakam video atau audio dari takuk atau prompter terapung, dengan pratonton kamera yang boleh dialih dan diubah saiz.";
 "Edit Your Takes" = "Sunting rakaman anda";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Potong, pisah dan tambah sari kata pada rakaman, kemudian simpan sebagai fail video atau kongsi.";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Huraikan topik, pilih tempoh dan nada, dan dapatkan draf pertama yang ditulis pada iPhone anda.";
 "Record from Apple Watch" = "Rakam dari Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Mula dan henti rakaman dari pergelangan tangan apabila kamera sedia.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Semua alat Pro dibuka. Tiada bayaran hari ini.";
+"Day %lld" = "Hari %lld";
+"We send you a reminder that your trial is ending." = "Kami hantar peringatan bahawa percubaan anda hampir tamat.";
+"Your plan starts at %@/year, unless you cancel before." = "Pelan anda bermula pada %@/tahun, melainkan anda batal sebelum itu.";
+"Your Pro trial ends soon" = "Percubaan Pro anda akan tamat tidak lama lagi";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Percubaan percuma anda tamat pada %@. Kekalkan Pro, atau batal bila-bila masa dalam tetapan akaun Apple anda.";
+"Your Pro Trial Has Started" = "Percubaan Pro Anda Telah Bermula";
+"Try these first to see what Pro can do." = "Cuba yang ini dahulu untuk melihat apa yang Pro boleh lakukan.";
+"Keep your script over the Camera app or a video call." = "Kekalkan skrip di atas app Kamera atau panggilan video.";
+"Cancel anytime in your Apple account settings." = "Batal bila-bila masa dalam tetapan akaun Apple anda.";
+"Start Using Pro" = "Mula Guna Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Tambah Skrip Pertama Anda";
+"Type or paste your text, or import a file. Then press play." = "Taip atau tampal teks anda, atau import fail. Kemudian tekan main.";
+"Let Your Voice Lead" = "Biar Suara Anda Memimpin";
+"Choose Voice: the script follows your words and waits when you pause." = "Pilih Suara: skrip mengikut kata-kata anda dan menunggu apabila anda berhenti.";
+"Try Voice Scroll" = "Cuba Tatal dengan Suara";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Dengan Suara, skrip mengikut kata-kata anda. Ia sebahagian daripada Pro, dan anda boleh mencubanya secara percuma.";
+"Read Over Any App" = "Baca di Atas Mana-mana App";
+"Add Captions in One Tap" = "Kapsyen dengan Satu Ketikan";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Lirik atau Ringkas: kapsyen dieja tepat seperti skrip anda.";
+"Tighten Your Take" = "Kemaskan Rakaman Anda";
+"Remove Pauses cuts the silences between your sentences." = "Buang Jeda memotong kesenyapan antara ayat anda.";
+"Save Without the Mark" = "Simpan Tanpa Tanda";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro menyimpan video anda tanpa tanda yPrompt. Anda boleh mencubanya secara percuma.";
+"Read Right Under Your Camera" = "Baca Betul-betul di Bawah Kamera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Bentang membuka skrip di notch, di sebelah kamera. Pilih notch atau tetingkap terapung dalam Seting.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Bentang membuka skrip dalam tetingkap terapung betul-betul di bawah kamera, supaya anda memandang lensa.";
+"Camera, Audio or Color" = "Kamera, Audio atau Warna";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rakam diri anda dengan skrip di bawah lensa, rakam suara sahaja, atau baca pada warna polos.";
+"Make It Easy to Read" = "Baca dengan Selesa";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Tukar saiz, fon dan jarak teks mengikut mata dan jarak anda.";

@@ -516,7 +516,6 @@
 "Script is empty" = "講稿是空的";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "邊讀邊錄";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "從瀏海或浮動提詞器錄製影片或音訊，相機預覽可以移動和調整大小。";
 "Edit Your Takes" = "編輯你的片段";
 "Trim, split and caption your recordings, then save them as video files or share them." = "修剪、分割錄製內容並加上字幕，然後儲存為影片檔或分享。";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "描述主題，選擇長度和語氣，即可在你的 iPhone 上寫出第一版講稿。";
 "Record from Apple Watch" = "用 Apple Watch 錄製";
 "Start and stop a take from your wrist while the camera is ready." = "相機準備好後，在手腕上開始和停止錄製。";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "解鎖全部 Pro 工具。今天無需付費。";
+"Day %lld" = "第 %lld 天";
+"We send you a reminder that your trial is ending." = "我們會在試用即將結束時提醒你。";
+"Your plan starts at %@/year, unless you cancel before." = "除非你提前取消，否則將以每年 %@ 開始訂閱。";
+"Your Pro trial ends soon" = "你的 Pro 試用即將結束";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "你的免費試用將於 %@ 結束。繼續使用 Pro，或隨時在 Apple 帳號設定中取消。";
+"Your Pro Trial Has Started" = "你的 Pro 試用已開始";
+"Try these first to see what Pro can do." = "先試試這些功能，看看 Pro 能做什麼。";
+"Keep your script over the Camera app or a video call." = "讓腳本浮在相機 App 或視訊通話之上。";
+"Cancel anytime in your Apple account settings." = "可隨時在 Apple 帳號設定中取消。";
+"Start Using Pro" = "開始使用 Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "加入你的第一個腳本";
+"Type or paste your text, or import a file. Then press play." = "輸入或貼上文字，或匯入檔案。然後點一下播放。";
+"Let Your Voice Lead" = "讓聲音帶領節奏";
+"Choose Voice: the script follows your words and waits when you pause." = "選擇「語音」：腳本跟著你的話語，你停頓時它也會等待。";
+"Try Voice Scroll" = "試試語音捲動";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "在「語音」模式下，腳本會跟著你的話語。這是 Pro 功能，可免費試用。";
+"Read Over Any App" = "在任何 App 上方閱讀";
+"Add Captions in One Tap" = "點一下就加上字幕";
+"Lyrics or Clean: captions are spelled exactly like your script." = "選擇「歌詞」或「簡潔」：字幕與腳本的寫法完全一致。";
+"Tighten Your Take" = "讓鏡頭更緊湊";
+"Remove Pauses cuts the silences between your sentences." = "「移除停頓」會剪掉句子之間的靜音。";
+"Save Without the Mark" = "儲存時不帶標記";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro 儲存的影片不帶 yPrompt 標記。可免費試用。";
+"Read Right Under Your Camera" = "就在相機下方閱讀";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "「簡報」會在瀏海區域打開腳本，緊鄰相機。可在設定中選擇瀏海或浮動視窗。";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "「簡報」會在相機正下方的浮動視窗中打開腳本，讓你看著鏡頭閱讀。";
+"Camera, Audio or Color" = "相機、音訊或純色";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "在鏡頭下方顯示腳本拍攝自己、只錄製聲音，或在純色背景上閱讀。";
+"Make It Easy to Read" = "讀得更輕鬆";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "依照你的視力和距離調整文字大小、字體和間距。";

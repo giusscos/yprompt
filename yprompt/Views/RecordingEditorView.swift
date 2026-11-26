@@ -7,6 +7,7 @@
 import AVFoundation
 import StoreKit
 import SwiftUI
+import TipKit
 #if canImport(UIKit)
 import UIKit
 #else
@@ -19,7 +20,6 @@ struct RecordingEditorView: View {
     @State private var model: RecordingEditorModel?
     @Environment(StoreKitService.self) private var storeKit
     @Environment(\.openURL) private var openURL
-    @Environment(\.requestReview) private var requestReview
     @State private var confirmingDeleteRecording = false
     @State private var showingPaywall = false
     /// Set by each save to Photos; the rating request waits on it.
@@ -57,6 +57,7 @@ struct RecordingEditorView: View {
             self.model = model
         }
         .task(id: model == nil) { await model?.load() }
+        .task { await TipState.editorOpened.donate() }
         #if os(macOS)
         // Another recording was picked in the list, or the window closed.
         .onDisappear { model?.close() }
@@ -73,10 +74,7 @@ struct RecordingEditorView: View {
             reviewAfterSave = nil
             guard let model, !showingPaywall, !confirmingDeleteRecording, model.shareItems == nil else { return }
             guard model.renderState == .saved || model.renderState == .idle else { return }
-            if RatingService.shared.shouldRequestReview {
-                RatingService.shared.markReviewRequested()
-                requestReview()
-            }
+            RatingService.shared.requestIfAppropriate(after: .zero)
         }
         .sheet(isPresented: $showingPaywall) {
             PaywallView(context: .removeMark).environment(storeKit)
@@ -96,6 +94,9 @@ struct RecordingEditorView: View {
 }
 
 private struct EditorContent: View {
+    private let captionsTip = CaptionsTip()
+    private let removePausesTip = RemovePausesTip()
+    private let saveWithoutMarkTip = SaveWithoutMarkTip()
     #if os(macOS)
     static let alwaysSideBySide = true
     #else
@@ -446,6 +447,7 @@ private struct EditorContent: View {
                 }
             }
             .tint(.accentColor)
+            .popoverTip(removePausesTip)
 
             #if os(macOS)
             // Beside the video the column can be narrow: the controls go under the label then.
@@ -489,6 +491,7 @@ private struct EditorContent: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .frame(maxWidth: 220)
+            .popoverTip(captionsTip)
             if model.recording.captionStyle != .off {
                 Menu {
                     Picker("Position", selection: Binding(get: { model.recording.captionPosition },
@@ -602,6 +605,7 @@ private struct EditorContent: View {
                 .ypGlassProminentButtonStyle()
                 .disabled(!model.hasItem)
                 .keyboardShortcut("s", modifiers: .command)
+                .popoverTip(saveWithoutMarkTip)
                 #else
                 if model.isVideo {
                     Button { model.save() } label: {
@@ -613,6 +617,7 @@ private struct EditorContent: View {
                     }
                     .ypGlassProminentButtonStyle()
                     .disabled(!model.hasItem)
+                    .popoverTip(saveWithoutMarkTip)
                 } else {
                     Button { model.share() } label: {
                         Label("Share Audio", systemImage: "square.and.arrow.up")

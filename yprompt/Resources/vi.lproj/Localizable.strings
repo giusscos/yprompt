@@ -516,7 +516,6 @@
 "Script is empty" = "Kịch bản trống";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Ghi hình khi đọc";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Ghi video hoặc âm thanh từ phần tai thỏ hoặc trình nhắc chữ nổi, với bản xem trước camera có thể di chuyển và đổi kích thước.";
 "Edit Your Takes" = "Chỉnh sửa các đoạn quay";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Cắt, tách và thêm phụ đề cho bản ghi, rồi lưu thành tệp video hoặc chia sẻ.";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Mô tả chủ đề, chọn độ dài và giọng điệu, rồi nhận bản nháp đầu tiên được viết trên iPhone.";
 "Record from Apple Watch" = "Ghi hình từ Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Bắt đầu và dừng một đoạn quay từ cổ tay khi camera đã sẵn sàng.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Mở khóa mọi công cụ Pro. Hôm nay chưa phải trả gì.";
+"Day %lld" = "Ngày %lld";
+"We send you a reminder that your trial is ending." = "Chúng tôi gửi lời nhắc khi thời gian dùng thử sắp kết thúc.";
+"Your plan starts at %@/year, unless you cancel before." = "Gói của bạn bắt đầu với giá %@/năm, trừ khi bạn hủy trước.";
+"Your Pro trial ends soon" = "Thời gian dùng thử Pro sắp kết thúc";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Thời gian dùng thử miễn phí kết thúc vào %@. Giữ Pro, hoặc hủy bất cứ lúc nào trong cài đặt tài khoản Apple.";
+"Your Pro Trial Has Started" = "Bạn đã bắt đầu dùng thử Pro";
+"Try these first to see what Pro can do." = "Hãy thử những tính năng này trước để thấy Pro làm được gì.";
+"Keep your script over the Camera app or a video call." = "Giữ kịch bản nổi trên ứng dụng Camera hoặc cuộc gọi video.";
+"Cancel anytime in your Apple account settings." = "Hủy bất cứ lúc nào trong cài đặt tài khoản Apple.";
+"Start Using Pro" = "Bắt đầu dùng Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Thêm kịch bản đầu tiên";
+"Type or paste your text, or import a file. Then press play." = "Nhập hoặc dán văn bản, hoặc nhập một tệp. Sau đó nhấn phát.";
+"Let Your Voice Lead" = "Để giọng nói dẫn dắt";
+"Choose Voice: the script follows your words and waits when you pause." = "Chọn Giọng nói: kịch bản theo lời bạn nói và chờ khi bạn ngừng.";
+"Try Voice Scroll" = "Thử cuộn bằng giọng nói";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Với Giọng nói, kịch bản theo lời bạn nói. Tính năng thuộc Pro và bạn có thể dùng thử miễn phí.";
+"Read Over Any App" = "Đọc trên mọi ứng dụng";
+"Add Captions in One Tap" = "Phụ đề chỉ với một chạm";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Lời bài hát hoặc Đơn giản: phụ đề viết đúng như kịch bản của bạn.";
+"Tighten Your Take" = "Làm gọn bản quay";
+"Remove Pauses cuts the silences between your sentences." = "Bỏ khoảng lặng cắt những khoảng im lặng giữa các câu.";
+"Save Without the Mark" = "Lưu không có dấu";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro lưu video không có dấu yPrompt. Bạn có thể dùng thử miễn phí.";
+"Read Right Under Your Camera" = "Đọc ngay dưới camera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Trình bày mở kịch bản ở tai thỏ, cạnh camera. Chọn tai thỏ hoặc cửa sổ nổi trong Cài đặt.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Trình bày mở kịch bản trong cửa sổ nổi ngay dưới camera, để bạn nhìn vào ống kính.";
+"Camera, Audio or Color" = "Camera, âm thanh hoặc màu";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Quay chính bạn với kịch bản dưới ống kính, chỉ ghi giọng nói, hoặc đọc trên nền màu trơn.";
+"Make It Easy to Read" = "Đọc dễ dàng hơn";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Đổi cỡ chữ, phông chữ và khoảng cách cho hợp với mắt và khoảng cách của bạn.";

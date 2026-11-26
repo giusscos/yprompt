@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 import UniformTypeIdentifiers
 import PDFKit
@@ -28,6 +29,7 @@ private struct RichTextFile: FileDocument {
 // MARK: - EditorView
 
 struct EditorView: View {
+    private let presentTip = PresentTip()
     @Environment(\.modelContext) private var modelContext
     @Environment(StoreKitService.self) private var storeKit
     @Bindable var script: Script
@@ -148,8 +150,14 @@ struct EditorView: View {
                 Text("Type or paste your script here…")
                     .font(.body)
                     .foregroundStyle(.tertiary)
+                    // Where the first typed character lands: the Mac text view has a smaller inset.
+                    #if os(macOS)
+                    .padding(.leading, 4)
+                    .padding(.top, 2)
+                    #else
                     .padding(.horizontal, 5)
                     .padding(.vertical, 8)
+                    #endif
                     .allowsHitTesting(false)
             }
         }
@@ -199,6 +207,7 @@ struct EditorView: View {
                 Label("Present", systemImage: "play.fill")
             }
             .buttonStyle(.borderedProminent)
+            .popoverTip(presentTip)
             .disabled(script.content.isEmpty)
 
             Button {
@@ -254,6 +263,7 @@ struct EditorView: View {
                 Label("Present", systemImage: "play.fill")
             }
             .buttonStyle(.borderedProminent)
+            .popoverTip(presentTip)
             .disabled(script.content.isEmpty)
         }
 

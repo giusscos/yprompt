@@ -516,7 +516,6 @@
 "Script is empty" = "สคริปต์ว่างเปล่า";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "บันทึกขณะอ่าน";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "บันทึกวิดีโอหรือเสียงจากรอยบากหรือพรอมต์เตอร์แบบลอย พร้อมภาพตัวอย่างกล้องที่ย้ายและปรับขนาดได้";
 "Edit Your Takes" = "แก้ไขเทคของคุณ";
 "Trim, split and caption your recordings, then save them as video files or share them." = "ตัด แยก และใส่คำบรรยายให้การบันทึก แล้วบันทึกเป็นไฟล์วิดีโอหรือแชร์";
@@ -529,3 +528,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "อธิบายหัวข้อ เลือกความยาวและน้ำเสียง แล้วรับร่างแรกที่เขียนบน iPhone ของคุณ";
 "Record from Apple Watch" = "บันทึกจาก Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "เริ่มและหยุดเทคจากข้อมือเมื่อกล้องพร้อม";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "ปลดล็อกเครื่องมือ Pro ทั้งหมด วันนี้ยังไม่ต้องจ่าย";
+"Day %lld" = "วันที่ %lld";
+"We send you a reminder that your trial is ending." = "เราจะส่งการแจ้งเตือนก่อนช่วงทดลองใช้สิ้นสุด";
+"Your plan starts at %@/year, unless you cancel before." = "แผนของคุณเริ่มที่ %@/ปี เว้นแต่คุณจะยกเลิกก่อน";
+"Your Pro trial ends soon" = "ช่วงทดลองใช้ Pro ใกล้สิ้นสุดแล้ว";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "ช่วงทดลองใช้ฟรีของคุณสิ้นสุดวันที่ %@ ใช้ Pro ต่อ หรือยกเลิกได้ทุกเมื่อในการตั้งค่าบัญชี Apple";
+"Your Pro Trial Has Started" = "เริ่มทดลองใช้ Pro แล้ว";
+"Try these first to see what Pro can do." = "ลองสิ่งเหล่านี้ก่อนเพื่อดูว่า Pro ทำอะไรได้บ้าง";
+"Keep your script over the Camera app or a video call." = "ให้สคริปต์ลอยอยู่เหนือแอปกล้องหรือวิดีโอคอล";
+"Cancel anytime in your Apple account settings." = "ยกเลิกได้ทุกเมื่อในการตั้งค่าบัญชี Apple";
+"Start Using Pro" = "เริ่มใช้ Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "เพิ่มสคริปต์แรกของคุณ";
+"Type or paste your text, or import a file. Then press play." = "พิมพ์หรือวางข้อความ หรือนำเข้าไฟล์ แล้วกดเล่น";
+"Let Your Voice Lead" = "ให้เสียงของคุณนำ";
+"Choose Voice: the script follows your words and waits when you pause." = "เลือก เสียง: สคริปต์จะตามคำพูดของคุณและรอเมื่อคุณหยุด";
+"Try Voice Scroll" = "ลองเลื่อนด้วยเสียง";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "ในโหมด เสียง สคริปต์จะตามคำพูดของคุณ เป็นส่วนหนึ่งของ Pro และทดลองใช้ได้ฟรี";
+"Read Over Any App" = "อ่านได้บนทุกแอป";
+"Add Captions in One Tap" = "ใส่คำบรรยายในแตะเดียว";
+"Lyrics or Clean: captions are spelled exactly like your script." = "เนื้อเพลง หรือ เรียบง่าย: คำบรรยายสะกดตรงกับสคริปต์ทุกคำ";
+"Tighten Your Take" = "เทคให้กระชับ";
+"Remove Pauses cuts the silences between your sentences." = "ตัดช่วงหยุด จะตัดช่วงเงียบระหว่างประโยค";
+"Save Without the Mark" = "บันทึกโดยไม่มีเครื่องหมาย";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro บันทึกวิดีโอโดยไม่มีเครื่องหมาย yPrompt ทดลองใช้ได้ฟรี";
+"Read Right Under Your Camera" = "อ่านใต้กล้องพอดี";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "นำเสนอ จะเปิดสคริปต์ในรอยบาก ข้างกล้อง เลือกรอยบากหรือหน้าต่างลอยได้ในการตั้งค่า";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "นำเสนอ จะเปิดสคริปต์ในหน้าต่างลอยใต้กล้องพอดี เพื่อให้คุณมองเข้าเลนส์";
+"Camera, Audio or Color" = "กล้อง เสียง หรือสี";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "อัดตัวเองโดยมีสคริปต์อยู่ใต้เลนส์ อัดเฉพาะเสียง หรืออ่านบนพื้นสีเรียบ";
+"Make It Easy to Read" = "อ่านได้สบายตา";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "ปรับขนาด ฟอนต์ และระยะห่างของข้อความให้เหมาะกับสายตาและระยะที่คุณนั่ง";

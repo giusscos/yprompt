@@ -558,7 +558,6 @@
 "Script is empty" = "Lo script è vuoto";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Registra mentre leggi";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Registra video o audio dal notch o dal gobbo fluttuante, con un'anteprima della fotocamera che puoi spostare e ridimensionare.";
 "Edit Your Takes" = "Modifica le tue riprese";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Taglia, dividi e sottotitola le registrazioni, poi salvale come file video o condividile.";
@@ -571,3 +570,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Descrivi l'argomento, scegli durata e tono e ottieni una prima bozza scritta sul tuo iPhone.";
 "Record from Apple Watch" = "Registra da Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Avvia e ferma una ripresa dal polso quando la fotocamera è pronta.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Tutti gli strumenti Pro si sbloccano. Oggi non paghi nulla.";
+"Day %lld" = "Giorno %lld";
+"We send you a reminder that your trial is ending." = "Ti mandiamo un promemoria che la prova sta per finire.";
+"Your plan starts at %@/year, unless you cancel before." = "Il piano parte a %@/anno, a meno che tu non annulli prima.";
+"Your Pro trial ends soon" = "La tua prova Pro sta per finire";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "La tua prova gratuita finisce il %@. Tieni Pro, oppure annulla quando vuoi nelle impostazioni del tuo account Apple.";
+"Your Pro Trial Has Started" = "La tua prova Pro è iniziata";
+"Try these first to see what Pro can do." = "Prova subito questi per vedere cosa sa fare Pro.";
+"Keep your script over the Camera app or a video call." = "Tieni il copione sopra l'app Fotocamera o una videochiamata.";
+"Cancel anytime in your Apple account settings." = "Annulla quando vuoi nelle impostazioni del tuo account Apple.";
+"Start Using Pro" = "Inizia a usare Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Aggiungi il tuo primo copione";
+"Type or paste your text, or import a file. Then press play." = "Scrivi o incolla il testo, oppure importa un file. Poi premi play.";
+"Let Your Voice Lead" = "Lascia guidare la tua voce";
+"Choose Voice: the script follows your words and waits when you pause." = "Scegli Voce: il copione segue le tue parole e aspetta quando fai una pausa.";
+"Try Voice Scroll" = "Prova lo scorrimento vocale";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Con Voce, il copione segue le tue parole. Fa parte di Pro e puoi provarlo gratis.";
+"Read Over Any App" = "Leggi sopra ogni app";
+"Add Captions in One Tap" = "Sottotitoli con un tocco";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Testi o Semplice: i sottotitoli sono scritti esattamente come il tuo copione.";
+"Tighten Your Take" = "Rendi la ripresa più fluida";
+"Remove Pauses cuts the silences between your sentences." = "Togli le pause elimina i silenzi tra una frase e l'altra.";
+"Save Without the Mark" = "Salva senza il marchio";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro salva i tuoi video senza il marchio yPrompt. Puoi provarlo gratis.";
+"Read Right Under Your Camera" = "Leggi proprio sotto la fotocamera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Presenta apre il copione nel notch, accanto alla fotocamera. Scegli il notch o una finestra mobile in Impostazioni.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Presenta apre il copione in una finestra mobile appena sotto la fotocamera, così guardi nell'obiettivo.";
+"Camera, Audio or Color" = "Fotocamera, audio o colore";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Riprenditi con il copione sotto l'obiettivo, registra solo la voce o leggi su un colore pieno.";
+"Make It Easy to Read" = "Rendi la lettura più comoda";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Cambia dimensione, font e spaziatura del testo in base ai tuoi occhi e alla distanza.";

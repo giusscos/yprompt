@@ -179,3 +179,58 @@ struct PlanPurchaseButton: View {
         }
     }
 }
+
+/// What happens during the free trial, day by day, so starting it feels safe.
+/// Shown under the plans while the yearly plan (the one with the trial) is selected.
+struct TrialTimeline: View {
+    let selectedID: String
+
+    @Environment(StoreKitService.self) private var storeKit
+
+    var body: some View {
+        if selectedID == AppConstants.yearlySubscriptionID,
+           let days = storeKit.yearlyTrialDays,
+           let product = storeKit.yearlyProduct {
+            VStack(alignment: .leading, spacing: 0) {
+                step("lock.open.fill", .green, Text("Today"),
+                     Text("Every Pro tool unlocks. Nothing to pay now."), last: false)
+                step("bell.fill", .orange, Text("Day \(TrialReminder.reminderDay(forTrialDays: days))"),
+                     Text("We send you a reminder that your trial is ending."), last: false)
+                step("star.fill", .accentColor, Text("Day \(days)"),
+                     Text("Your plan starts at \(product.displayPrice)/year, unless you cancel before."), last: true)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .ypGlassEffect(cornerRadius: 16)
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func step(_ icon: String, _ color: Color, _ title: Text, _ detail: Text, last: Bool) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(color, in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                title.font(.subheadline.bold())
+                detail.font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.bottom, last ? 0 : 14)
+        // The line to the next step: drawn behind, so it never changes the step's height.
+        .background(alignment: .topLeading) {
+            if !last {
+                Capsule()
+                    .fill(color.opacity(0.35))
+                    .frame(width: 3)
+                    .padding(.top, 30)
+                    .padding(.bottom, 2)
+                    .padding(.leading, 11.5)
+            }
+        }
+    }
+}

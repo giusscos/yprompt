@@ -558,7 +558,6 @@
 "Script is empty" = "Naskah kosong";
 
 /* What's New 1.0.8 */
-"Record While You Read" = "Rekam sambil membaca";
 "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize." = "Rekam video atau audio dari notch atau prompter mengambang, dengan pratinjau kamera yang bisa dipindah dan diubah ukurannya.";
 "Edit Your Takes" = "Edit rekaman Anda";
 "Trim, split and caption your recordings, then save them as video files or share them." = "Pangkas, pisah, dan beri teks pada rekaman, lalu simpan sebagai file video atau bagikan.";
@@ -571,3 +570,38 @@
 "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone." = "Jelaskan topik, pilih durasi dan nada, lalu dapatkan draf pertama yang ditulis di iPhone Anda.";
 "Record from Apple Watch" = "Rekam dari Apple Watch";
 "Start and stop a take from your wrist while the camera is ready." = "Mulai dan hentikan rekaman dari pergelangan tangan saat kamera siap.";
+
+/* Free trial timeline, reminder and welcome (1.0.9) */
+"Every Pro tool unlocks. Nothing to pay now." = "Semua fitur Pro terbuka. Tidak ada yang dibayar hari ini.";
+"Day %lld" = "Hari ke-%lld";
+"We send you a reminder that your trial is ending." = "Kami kirim pengingat bahwa masa uji coba akan berakhir.";
+"Your plan starts at %@/year, unless you cancel before." = "Paket dimulai %@/tahun, kecuali kamu membatalkan sebelumnya.";
+"Your Pro trial ends soon" = "Uji coba Pro-mu segera berakhir";
+"Your free trial ends on %@. Keep Pro, or cancel anytime in your Apple account settings." = "Uji coba gratismu berakhir pada %@. Tetap pakai Pro, atau batalkan kapan saja di pengaturan akun Apple-mu.";
+"Your Pro Trial Has Started" = "Uji Coba Pro-mu Sudah Dimulai";
+"Try these first to see what Pro can do." = "Coba ini dulu untuk melihat apa yang bisa dilakukan Pro.";
+"Keep your script over the Camera app or a video call." = "Tampilkan naskah di atas app Kamera atau panggilan video.";
+"Cancel anytime in your Apple account settings." = "Batalkan kapan saja di pengaturan akun Apple-mu.";
+"Start Using Pro" = "Mulai Pakai Pro";
+
+/* Tips (1.0.9) */
+"Add Your First Script" = "Tambahkan Naskah Pertamamu";
+"Type or paste your text, or import a file. Then press play." = "Ketik atau tempel teksmu, atau impor file. Lalu tekan putar.";
+"Let Your Voice Lead" = "Biarkan Suaramu Memandu";
+"Choose Voice: the script follows your words and waits when you pause." = "Pilih Suara: naskah mengikuti ucapanmu dan menunggu saat kamu jeda.";
+"Try Voice Scroll" = "Coba Gulir dengan Suara";
+"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Dengan Suara, naskah mengikuti ucapanmu. Fitur ini bagian dari Pro, dan bisa dicoba gratis.";
+"Read Over Any App" = "Baca di Atas App Apa Pun";
+"Add Captions in One Tap" = "Teks dengan Satu Ketukan";
+"Lyrics or Clean: captions are spelled exactly like your script." = "Lirik atau Polos: teks ditulis persis seperti naskahmu.";
+"Tighten Your Take" = "Rapikan Rekamanmu";
+"Remove Pauses cuts the silences between your sentences." = "Hapus Jeda memotong keheningan di antara kalimatmu.";
+"Save Without the Mark" = "Simpan Tanpa Tanda";
+"Pro saves your videos without the yPrompt mark. You can try it free." = "Pro menyimpan videomu tanpa tanda yPrompt. Bisa dicoba gratis.";
+"Read Right Under Your Camera" = "Baca Tepat di Bawah Kamera";
+"Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Tampilkan membuka naskah di notch, di samping kamera. Pilih notch atau jendela mengambang di Pengaturan.";
+"Present opens your script in a floating window just below your camera, so you look into the lens." = "Tampilkan membuka naskah di jendela mengambang tepat di bawah kamera, jadi kamu menatap lensa.";
+"Camera, Audio or Color" = "Kamera, Audio, atau Warna";
+"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rekam dirimu dengan naskah di bawah lensa, rekam suaramu saja, atau baca di atas warna polos.";
+"Make It Easy to Read" = "Baca dengan Nyaman";
+"Change the text size, font and spacing to suit your eyes and how far you sit." = "Ubah ukuran, font, dan jarak teks sesuai mata dan jarakmu.";

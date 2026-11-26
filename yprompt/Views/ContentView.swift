@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 struct ContentView: View {
@@ -26,12 +27,14 @@ struct ContentView: View {
     }
     #endif
     @State private var selectedTab = 0
+    /// The first-run tour waits for the Pro check, so it doesn't appear and then vanish for Pro users.
+    @State private var onboardingReady = false
 
     var body: some View {
         Group {
             #if os(macOS)
             macOSContent
-                .sheet(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
+                .sheet(isPresented: Binding(get: { onboardingReady && !hasSeenOnboarding }, set: { _ in })) {
                     OnboardingView()
                         .environment(storeKit)
                         .frame(width: 520, height: 700)
@@ -45,7 +48,7 @@ struct ContentView: View {
             watchOSContent
             #else
             iOSContent
-                .fullScreenCover(isPresented: Binding(get: { !hasSeenOnboarding }, set: { _ in })) {
+                .fullScreenCover(isPresented: Binding(get: { onboardingReady && !hasSeenOnboarding }, set: { _ in })) {
                     OnboardingView()
                         .environment(storeKit)
                 }
@@ -62,6 +65,9 @@ struct ContentView: View {
             ScriptIndex.rebuild()
         }
         .onChange(of: scripts) { _, scripts in removeSyncedWelcomeCopies(in: scripts) }
+        .task { await prepareOnboarding() }
+        .onChange(of: storeKit.isPremium, initial: true) { _, premium in TipState.isPro = premium }
+        .onChange(of: scripts.count, initial: true) { _, _ in donateFirstOwnScriptIfNeeded() }
     }
 
     private var isWhatsNewPresented: Binding<Bool> {
@@ -83,12 +89,38 @@ struct ContentView: View {
         )
     }
 
+    // MARK: - Tips
+
+    /// The New Script tip goes away once there's a script besides the sample one.
+    private func donateFirstOwnScriptIfNeeded() {
+        let key = "yprompt.tips.ownScriptDonated"
+        guard !UserDefaults.standard.bool(forKey: key),
+              scripts.contains(where: { $0.id != AppConstants.welcomeScriptID }) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        Task { await TipState.scriptCreated.donate() }
+    }
+
+    // MARK: - Onboarding
+
+    /// Waits (up to three seconds) for the first Pro check. Someone who already has Pro skips
+    /// the tour, which ends on a sales page, instead of seeing it open and close by itself.
+    private func prepareOnboarding() async {
+        guard !hasSeenOnboarding else { onboardingReady = true; return }
+        for _ in 0..<30 where !storeKit.hasCheckedEntitlements {
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        if storeKit.isPremium { hasSeenOnboarding = true }
+        onboardingReady = true
+    }
+
     // MARK: - Welcome Script
 
     private func seedStartingScripts() {
         #if DEBUG
-        // Sample scripts for development and App Store screenshots; `-ypFirstRun` starts like a new install.
-        guard ProcessInfo.processInfo.arguments.contains("-ypFirstRun") else {
+        // Sample scripts for App Store screenshots, only in the in-memory library `-ypDemoStore`
+        // opens. A debug build on a real device behaves like the App Store app, so it never
+        // adds them to someone's own library (and iCloud).
+        if ProcessInfo.processInfo.arguments.contains("-ypDemoStore") {
             seedDemoScriptsIfNeeded()
             return
         }
@@ -99,7 +131,10 @@ struct ContentView: View {
     /// New installs start with a short script that shows how reading feels, ready to play.
     private func seedWelcomeScriptIfNeeded() {
         let seededKey = "hasSeededWelcomeScript"
-        guard !hasSeenOnboarding, scripts.isEmpty, !UserDefaults.standard.bool(forKey: seededKey) else { return }
+        guard !hasSeenOnboarding, !UserDefaults.standard.bool(forKey: seededKey) else { return }
+        // Ask the store itself: the list on screen can still be loading at launch.
+        guard AppDataStore.script(id: AppConstants.welcomeScriptID) == nil,
+              AppDataStore.allScripts().isEmpty else { return }
         UserDefaults.standard.set(true, forKey: seededKey)
         let script = Script(
             title: String(localized: "Welcome to yPrompt"),
@@ -123,7 +158,8 @@ struct ContentView: View {
     #if DEBUG
 
     private func seedDemoScriptsIfNeeded() {
-        guard scripts.isEmpty else { return }
+        // Titles already in the library, read from the store rather than the list on screen.
+        let existingTitles = Set(AppDataStore.allScripts().map(\.title))
 
         struct DemoScript {
             let title: String
@@ -211,7 +247,7 @@ struct ContentView: View {
             )
         ]
 
-        for demo in demos {
+        for demo in demos where !existingTitles.contains(demo.title) {
             let script = Script(title: demo.title, content: demo.content)
             script.tags = demo.tags
             script.isFavorite = demo.isFavorite

@@ -17,6 +17,12 @@ class StoreKitService {
     var errorMessage: String?
     /// Length of the yearly plan's free trial, when this Apple ID is still eligible for it.
     var yearlyTrialDays: Int?
+    /// Set when a purchase started a free trial; the paywall shows its welcome, then clears it.
+    var trialJustStarted = false
+    /// False until the first entitlement check of this launch has finished.
+    var hasCheckedEntitlements = false
+    /// Changes on every completed purchase made in this app session.
+    var lastPurchaseDate: Date?
 
     @ObservationIgnored nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
 
@@ -91,10 +97,21 @@ class StoreKitService {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             log.info("Purchased \(Self.describe(transaction), privacy: .public)")
+            let startedTrial = transaction.offerType == .introductory
+            // Before Pro unlocks: the paywall reads it when isPremium changes.
+            if startedTrial { trialJustStarted = true }
             if transaction.revocationDate == nil {
                 purchasedProductIDs.insert(transaction.productID)
             }
             await transaction.finish()
+            lastPurchaseDate = .now
+            if startedTrial {
+                RatingService.shared.recordPositiveMoment()
+                let end = transaction.expirationDate
+                Task { await TrialReminder.schedule(trialEndsAt: end) }
+            } else {
+                RatingService.shared.purchaseCompleted()
+            }
         case .pending:
             // Ask to Buy or extra payment confirmation; the entitlement arrives later via Transaction.updates.
             throw StoreKitServiceError.pending
@@ -170,6 +187,7 @@ class StoreKitService {
 
         log.info("Entitlements: \(purchased.sorted(), privacy: .public)")
         purchasedProductIDs = purchased
+        hasCheckedEntitlements = true
     }
 
     private static let ownedProductIDs = [

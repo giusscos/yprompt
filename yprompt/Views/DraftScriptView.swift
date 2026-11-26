@@ -231,6 +231,7 @@ struct DraftScriptView: View {
                 let script = try await AppDataStore.makeScript(title: title, text: text)
                 dismiss()
                 onCreated(script)
+                RatingService.shared.recordPositiveMoment()
             } catch {
                 stage = .failed(error.localizedDescription)
             }
