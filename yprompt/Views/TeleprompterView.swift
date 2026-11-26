@@ -160,6 +160,8 @@ struct TeleprompterView: View {
     @State private var showingPaywall = false
     #if os(iOS)
     @StateObject private var pip = TeleprompterPiP()
+    /// Which reading tip's turn it is, mirrored from `TipState.readingStep` so the anchors update.
+    @State private var readingTipStep = TipState.readingStep
     private let voiceScrollProTip = VoiceScrollProTip()
     private let voiceScrollFreeTip = VoiceScrollFreeTip()
     private let backgroundModesTip = BackgroundModesTip()
@@ -672,6 +674,11 @@ struct TeleprompterView: View {
         .toolbar { iOSToolbar }
         .overlay(alignment: .topTrailing) { toolbarTipAnchors }
         .task { await TipState.playerOpened.donate() }
+        // One tip at a time: each closed tip lets the next one in.
+        .task { await advance(after: voiceScrollProTip, to: 1) }
+        .task { await advance(after: voiceScrollFreeTip, to: 1) }
+        .task { await advance(after: backgroundModesTip, to: 2) }
+        .task { await advance(after: textDisplayTip, to: 3) }
         .toolbar(controlsVisible ? .visible : .hidden, for: .navigationBar)
         .onChange(of: verticalSizeClass) {
             // Rotating changes the toolbar's height, so show it to measure the new space.
@@ -840,6 +847,7 @@ struct TeleprompterView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 showDisplayAdjustments.toggle()
+                textDisplayTip.invalidate(reason: .actionPerformed)
             } label: {
                 Image(systemName: "textformat.size")
             }
@@ -1122,15 +1130,33 @@ struct TeleprompterView: View {
     /// below the button each tip is about: Background (then Picture in Picture, then Display).
     private var toolbarTipAnchors: some View {
         HStack(spacing: 0) {
-            Color.clear.frame(width: 56, height: 1).popoverTip(backgroundModesTip, arrowEdge: .top)
+            // Each anchor joins only on its tip's turn: a fresh anchor presents reliably,
+            // where a popover on an anchor that's been there all along may not.
+            tipAnchor(step: 1) { $0.popoverTip(backgroundModesTip, arrowEdge: .top) }
             if TeleprompterPiP.isSupported {
-                Color.clear.frame(width: 56, height: 1).popoverTip(pictureInPictureTip, arrowEdge: .top)
+                tipAnchor(step: 3) { $0.popoverTip(pictureInPictureTip, arrowEdge: .top) }
             }
-            Color.clear.frame(width: 56, height: 1).popoverTip(textDisplayTip, arrowEdge: .top)
+            tipAnchor(step: 2) { $0.popoverTip(textDisplayTip, arrowEdge: .top) }
         }
         .padding(.trailing, 16)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    private func advance(after tip: some Tip, to step: Int) async {
+        await TipState.advanceReadingTips(after: tip, to: step)
+        // Let the closing popover finish before the next anchor appears.
+        try? await Task.sleep(for: .milliseconds(400))
+        readingTipStep = TipState.readingStep
+    }
+
+    @ViewBuilder
+    private func tipAnchor(step: Int, @ViewBuilder tip: (Color) -> some View) -> some View {
+        if readingTipStep == step {
+            tip(Color.clear).frame(width: 56, height: 1).id(step)
+        } else {
+            Color.clear.frame(width: 56, height: 1)
+        }
     }
 
     private var modeStrip: some View {
@@ -1535,6 +1561,7 @@ struct TeleprompterView: View {
 
     /// Floats the script over other apps: Camera, Instagram, a FaceTime or Zoom call. Pro.
     private func togglePictureInPicture() {
+        pictureInPictureTip.invalidate(reason: .actionPerformed)
         guard storeKit.isPremium else {
             showingPaywall = true
             return
@@ -1754,6 +1781,10 @@ struct TeleprompterView: View {
     // MARK: - Modes
 
     private func selectMode(_ mode: TeleprompterMode) {
+        if mode == .voice {
+            voiceScrollProTip.invalidate(reason: .actionPerformed)
+            voiceScrollFreeTip.invalidate(reason: .actionPerformed)
+        }
         guard mode != teleprompterMode else { return }
         if (mode == .voice || mode == .timed) && !storeKit.isPremium {
             showingPaywall = true
@@ -1868,6 +1899,7 @@ struct TeleprompterView: View {
     // MARK: - Background
 
     private func selectBackground(_ mode: BackgroundMode) {
+        backgroundModesTip.invalidate(reason: .actionPerformed)
         if viewModel.isPlaying { viewModel.showControlsTemporarily() }
         guard mode != backgroundMode, !cameraService.isRecording else { return }
         // A video can't take an audio piece, nor an audio recording a video one.

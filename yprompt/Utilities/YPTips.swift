@@ -12,6 +12,20 @@ enum TipState {
     /// with a gentle word about the trial where a Pro tool is the next step.
     @Parameter static var isPro: Bool = false
 
+    /// The reading screen's tips come one after another: each appears once the one before
+    /// it is closed. 0 = reading modes, 1 = background, 2 = text display, 3 = Picture in Picture.
+    @Parameter static var readingStep: Int = 0
+
+    /// Moves the reading tips on once `tip` has been closed (or otherwise invalidated).
+    static func advanceReadingTips(after tip: some Tip, to step: Int) async {
+        for await status in tip.statusUpdates {
+            if case .invalidated = status {
+                if readingStep < step { readingStep = step }
+                return
+            }
+        }
+    }
+
     static let scriptCreated = Tips.Event(id: "yp.scriptCreated")
     static let readFinished = Tips.Event(id: "yp.readFinished")
     /// The reading screen opened. Most people stop before the end of a script, so the
@@ -44,55 +58,56 @@ struct NewScriptTip: Tip {
 
 // MARK: - Reading (iPhone and iPad)
 
-/// Pro, first read: Voice is what Pro is about.
+/// Pro, first in the reading screen: Voice is what Pro is about.
 struct VoiceScrollProTip: Tip {
     var title: Text { Text("Let Your Voice Lead") }
     var message: Text? { Text("Choose Voice: the script follows your words and waits when you pause.") }
     var image: Image? { Image(systemName: "mic.fill") }
     var rules: [Rule] {
         #Rule(TipState.$isPro) { $0 == true }
+        #Rule(TipState.$readingStep) { $0 == 0 }
     }
 }
 
-/// Free, from the fourth time in the reading screen: by then reading on its own is familiar.
+/// Free, first in the reading screen: the reading modes, and that Voice comes with Pro.
 struct VoiceScrollFreeTip: Tip {
     var title: Text { Text("Try Voice Scroll") }
     var message: Text? { Text("With Voice, the script follows your words. It's part of Pro, and you can try it free.") }
     var image: Image? { Image(systemName: "mic.fill") }
     var rules: [Rule] {
         #Rule(TipState.$isPro) { $0 == false }
-        #Rule(TipState.playerOpened) { $0.donations.count >= 4 }
+        #Rule(TipState.$readingStep) { $0 == 0 }
     }
 }
 
-/// Everyone, from the second time in the reading screen: on the Background button. Recording is free.
+/// Everyone, after the reading-modes tip: on the Background button. Recording is free.
 struct BackgroundModesTip: Tip {
     var title: Text { Text("Camera, Audio or Color") }
     var message: Text? { Text("Film yourself with the script under the lens, record just your voice, or read on a plain color.") }
     var image: Image? { Image(systemName: "camera.fill") }
     var rules: [Rule] {
-        #Rule(TipState.playerOpened) { $0.donations.count >= 2 }
+        #Rule(TipState.$readingStep) { $0 == 1 }
     }
 }
 
-/// Everyone, from the third time in the reading screen: on the text display button.
+/// Everyone, after the background tip: on the text display button.
 struct TextDisplayTip: Tip {
     var title: Text { Text("Make It Easy to Read") }
     var message: Text? { Text("Change the text size, font and spacing to suit your eyes and how far you sit.") }
     var image: Image? { Image(systemName: "textformat.size") }
     var rules: [Rule] {
-        #Rule(TipState.playerOpened) { $0.donations.count >= 3 }
+        #Rule(TipState.$readingStep) { $0 == 2 }
     }
 }
 
-/// Pro, from the fourth time in the reading screen.
+/// Pro, after the text display tip.
 struct PictureInPictureTip: Tip {
     var title: Text { Text("Read Over Any App") }
     var message: Text? { Text("Keep your script over the Camera app or a video call.") }
     var image: Image? { Image(systemName: "pip.enter") }
     var rules: [Rule] {
         #Rule(TipState.$isPro) { $0 == true }
-        #Rule(TipState.playerOpened) { $0.donations.count >= 4 }
+        #Rule(TipState.$readingStep) { $0 == 3 }
     }
 }
 
