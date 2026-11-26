@@ -272,6 +272,9 @@ struct ContentView: View {
                     RecordingsListView(selection: recordingSelection)
                 }
             }
+            // An empty list shows a message that doesn't fill the column; without this the
+            // Scripts/Recordings switch would follow it to the middle.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .safeAreaInset(edge: .top) {
                 Picker("Show", selection: $sidebarMode) {
                     Text("Scripts").tag(SidebarMode.scripts)

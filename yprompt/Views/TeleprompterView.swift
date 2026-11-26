@@ -671,6 +671,7 @@ struct TeleprompterView: View {
         .toolbarColorScheme(isBackgroundDark ? .dark : .light, for: .navigationBar)
         .toolbar { iOSToolbar }
         .overlay(alignment: .topTrailing) { toolbarTipAnchors }
+        .task { await TipState.playerOpened.donate() }
         .toolbar(controlsVisible ? .visible : .hidden, for: .navigationBar)
         .onChange(of: verticalSizeClass) {
             // Rotating changes the toolbar's height, so show it to measure the new space.

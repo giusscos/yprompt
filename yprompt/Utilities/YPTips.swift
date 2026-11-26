@@ -14,6 +14,9 @@ enum TipState {
 
     static let scriptCreated = Tips.Event(id: "yp.scriptCreated")
     static let readFinished = Tips.Event(id: "yp.readFinished")
+    /// The reading screen opened. Most people stop before the end of a script, so the
+    /// reading tips step forward on opens rather than on finished reads.
+    static let playerOpened = Tips.Event(id: "yp.playerOpened")
     static let editorOpened = Tips.Event(id: "yp.editorOpened")
 
     static func configure() {
@@ -51,45 +54,45 @@ struct VoiceScrollProTip: Tip {
     }
 }
 
-/// Free, from the third read: by then reading on its own is familiar.
+/// Free, from the fourth time in the reading screen: by then reading on its own is familiar.
 struct VoiceScrollFreeTip: Tip {
     var title: Text { Text("Try Voice Scroll") }
     var message: Text? { Text("With Voice, the script follows your words. It's part of Pro, and you can try it free.") }
     var image: Image? { Image(systemName: "mic.fill") }
     var rules: [Rule] {
         #Rule(TipState.$isPro) { $0 == false }
-        #Rule(TipState.readFinished) { $0.donations.count >= 2 }
+        #Rule(TipState.playerOpened) { $0.donations.count >= 4 }
     }
 }
 
-/// Everyone, after the first finished read: on the Background button. Recording is free.
+/// Everyone, from the second time in the reading screen: on the Background button. Recording is free.
 struct BackgroundModesTip: Tip {
     var title: Text { Text("Camera, Audio or Color") }
     var message: Text? { Text("Film yourself with the script under the lens, record just your voice, or read on a plain color.") }
     var image: Image? { Image(systemName: "camera.fill") }
     var rules: [Rule] {
-        #Rule(TipState.readFinished) { $0.donations.count >= 1 }
+        #Rule(TipState.playerOpened) { $0.donations.count >= 2 }
     }
 }
 
-/// Everyone, after three finished reads: on the text display button.
+/// Everyone, from the third time in the reading screen: on the text display button.
 struct TextDisplayTip: Tip {
     var title: Text { Text("Make It Easy to Read") }
     var message: Text? { Text("Change the text size, font and spacing to suit your eyes and how far you sit.") }
     var image: Image? { Image(systemName: "textformat.size") }
     var rules: [Rule] {
-        #Rule(TipState.readFinished) { $0.donations.count >= 3 }
+        #Rule(TipState.playerOpened) { $0.donations.count >= 3 }
     }
 }
 
-/// Pro, after two finished reads.
+/// Pro, from the fourth time in the reading screen.
 struct PictureInPictureTip: Tip {
     var title: Text { Text("Read Over Any App") }
     var message: Text? { Text("Keep your script over the Camera app or a video call.") }
     var image: Image? { Image(systemName: "pip.enter") }
     var rules: [Rule] {
         #Rule(TipState.$isPro) { $0 == true }
-        #Rule(TipState.readFinished) { $0.donations.count >= 2 }
+        #Rule(TipState.playerOpened) { $0.donations.count >= 4 }
     }
 }
 
