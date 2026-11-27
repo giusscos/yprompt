@@ -605,3 +605,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Grábate con el guion bajo el objetivo, graba solo tu voz o lee sobre un color liso.";
 "Make It Easy to Read" = "Lee con comodidad";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Cambia el tamaño, la fuente y el espaciado del texto según tu vista y tu distancia.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Redondeada";
+"Classic" = "Clásica";
+"Serif" = "Serif";
+"Mono" = "Mono";
+"Small" = "Pequeño";
+"Medium" = "Mediano";
+"Large" = "Grande";
+"None" = "Ninguno";
+"Outline" = "Contorno";
+"Box" = "Recuadro";
+"Caption Style" = "Estilo de subtítulos";
+"Font" = "Tipo de letra";
+"Size" = "Tamaño";
+"Highlight" = "Resaltado";
+"The word being said." = "La palabra que estás diciendo.";
+"Box Color" = "Color del recuadro";
+"Outline Color" = "Color del contorno";
+"All Caps" = "Todo en mayúsculas";
+"Reset Style" = "Restablecer estilo";
+"This is how your captions will look" = "Así se verán tus subtítulos";
+"Add from Photos" = "Agregar desde Fotos";
+"Add from Files" = "Agregar desde Archivos";
+"Adding the clip…" = "Agregando el clip…";
+"Couldn't Add the Clip" = "No se pudo agregar el clip";
+"This file can't be played." = "Este archivo no se puede reproducir.";
+"This file has no video. Video recordings can only add videos." = "Este archivo no tiene vídeo. A las grabaciones de vídeo solo se pueden agregar vídeos.";
+"This file has no sound." = "Este archivo no tiene sonido.";
+"Zoom In" = "Acercar";
+"Zoom Out" = "Alejar";

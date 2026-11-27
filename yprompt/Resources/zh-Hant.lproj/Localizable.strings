@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "在鏡頭下方顯示腳本拍攝自己、只錄製聲音，或在純色背景上閱讀。";
 "Make It Easy to Read" = "讀得更輕鬆";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "依照你的視力和距離調整文字大小、字體和間距。";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "圓體";
+"Classic" = "經典";
+"Serif" = "襯線";
+"Mono" = "等寬";
+"Small" = "小";
+"Medium" = "中";
+"Large" = "大";
+"None" = "無";
+"Outline" = "描邊";
+"Box" = "底框";
+"Caption Style" = "字幕樣式";
+"Font" = "字體";
+"Size" = "大小";
+"Highlight" = "強調顯示";
+"The word being said." = "正在說的字詞。";
+"Box Color" = "底框顏色";
+"Outline Color" = "描邊顏色";
+"All Caps" = "全部大寫";
+"Reset Style" = "重置樣式";
+"This is how your captions will look" = "字幕會像這樣顯示";
+"Add from Photos" = "從「照片」加入";
+"Add from Files" = "從「檔案」加入";
+"Adding the clip…" = "正在加入素材…";
+"Couldn't Add the Clip" = "無法加入素材";
+"This file can't be played." = "此檔案無法播放。";
+"This file has no video. Video recordings can only add videos." = "此檔案沒有影片。影片錄製只能加入影片。";
+"This file has no sound." = "此檔案沒有聲音。";
+"Zoom In" = "放大";
+"Zoom Out" = "縮小";

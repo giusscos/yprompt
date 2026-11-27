@@ -605,3 +605,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rekam dirimu dengan naskah di bawah lensa, rekam suaramu saja, atau baca di atas warna polos.";
 "Make It Easy to Read" = "Baca dengan Nyaman";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Ubah ukuran, font, dan jarak teks sesuai mata dan jarakmu.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Bulat";
+"Classic" = "Klasik";
+"Serif" = "Serif";
+"Mono" = "Mono";
+"Small" = "Kecil";
+"Medium" = "Sedang";
+"Large" = "Besar";
+"None" = "Tidak Ada";
+"Outline" = "Garis Tepi";
+"Box" = "Kotak";
+"Caption Style" = "Gaya Subtitel";
+"Font" = "Font";
+"Size" = "Ukuran";
+"Highlight" = "Sorotan";
+"The word being said." = "Kata yang sedang diucapkan.";
+"Box Color" = "Warna Kotak";
+"Outline Color" = "Warna Garis Tepi";
+"All Caps" = "Huruf Kapital Semua";
+"Reset Style" = "Atur Ulang Gaya";
+"This is how your captions will look" = "Seperti inilah tampilan subtitel Anda";
+"Add from Photos" = "Tambah dari Foto";
+"Add from Files" = "Tambah dari File";
+"Adding the clip…" = "Menambahkan klip…";
+"Couldn't Add the Clip" = "Tidak Dapat Menambahkan Klip";
+"This file can't be played." = "File ini tidak dapat diputar.";
+"This file has no video. Video recordings can only add videos." = "File ini tidak memiliki video. Rekaman video hanya dapat ditambah video.";
+"This file has no sound." = "File ini tidak memiliki suara.";
+"Zoom In" = "Perbesar";
+"Zoom Out" = "Perkecil";

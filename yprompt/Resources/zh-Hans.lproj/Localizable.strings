@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "在镜头下方显示脚本拍摄自己、只录制声音，或在纯色背景上阅读。";
 "Make It Easy to Read" = "读得更轻松";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "根据你的视力和距离调整文字大小、字体和间距。";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "圆体";
+"Classic" = "经典";
+"Serif" = "衬线";
+"Mono" = "等宽";
+"Small" = "小";
+"Medium" = "中";
+"Large" = "大";
+"None" = "无";
+"Outline" = "描边";
+"Box" = "底框";
+"Caption Style" = "字幕样式";
+"Font" = "字体";
+"Size" = "大小";
+"Highlight" = "高亮";
+"The word being said." = "正在说的词。";
+"Box Color" = "底框颜色";
+"Outline Color" = "描边颜色";
+"All Caps" = "全部大写";
+"Reset Style" = "重置样式";
+"This is how your captions will look" = "字幕会是这个样子";
+"Add from Photos" = "从“照片”添加";
+"Add from Files" = "从“文件”添加";
+"Adding the clip…" = "正在添加素材…";
+"Couldn't Add the Clip" = "无法添加素材";
+"This file can't be played." = "此文件无法播放。";
+"This file has no video. Video recordings can only add videos." = "此文件没有视频。视频录制只能添加视频。";
+"This file has no sound." = "此文件没有声音。";
+"Zoom In" = "放大";
+"Zoom Out" = "缩小";

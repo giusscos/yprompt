@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Metin objektifin altındayken kendinizi çekin, yalnızca sesinizi kaydedin veya düz bir renk üzerinde okuyun.";
 "Make It Easy to Read" = "Rahat Okuyun";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Metin boyutunu, yazı tipini ve aralığı gözlerinize ve mesafenize göre değiştirin.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Yuvarlak";
+"Classic" = "Klasik";
+"Serif" = "Serif";
+"Mono" = "Mono";
+"Small" = "Küçük";
+"Medium" = "Orta";
+"Large" = "Büyük";
+"None" = "Yok";
+"Outline" = "Kontur";
+"Box" = "Kutu";
+"Caption Style" = "Altyazı Stili";
+"Font" = "Font";
+"Size" = "Boyut";
+"Highlight" = "Vurgu";
+"The word being said." = "O an söylenen sözcük.";
+"Box Color" = "Kutu Rengi";
+"Outline Color" = "Kontur Rengi";
+"All Caps" = "Tümü Büyük Harf";
+"Reset Style" = "Stili Sıfırla";
+"This is how your captions will look" = "Altyazıların böyle görünecek";
+"Add from Photos" = "Fotoğraflar’dan Ekle";
+"Add from Files" = "Dosyalar’dan Ekle";
+"Adding the clip…" = "Klip ekleniyor…";
+"Couldn't Add the Clip" = "Klip Eklenemedi";
+"This file can't be played." = "Bu dosya oynatılamıyor.";
+"This file has no video. Video recordings can only add videos." = "Bu dosyada video yok. Video kayıtlarına yalnızca video eklenebilir.";
+"This file has no sound." = "Bu dosyada ses yok.";
+"Zoom In" = "Yakınlaştır";
+"Zoom Out" = "Uzaklaştır";

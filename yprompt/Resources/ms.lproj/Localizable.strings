@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rakam diri anda dengan skrip di bawah lensa, rakam suara sahaja, atau baca pada warna polos.";
 "Make It Easy to Read" = "Baca dengan Selesa";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Tukar saiz, fon dan jarak teks mengikut mata dan jarak anda.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Bulat";
+"Classic" = "Klasik";
+"Serif" = "Serif";
+"Mono" = "Mono";
+"Small" = "Kecil";
+"Medium" = "Sederhana";
+"Large" = "Besar";
+"None" = "Tiada";
+"Outline" = "Garis Luar";
+"Box" = "Kotak";
+"Caption Style" = "Gaya Kapsyen";
+"Font" = "Fon";
+"Size" = "Saiz";
+"Highlight" = "Serlahan";
+"The word being said." = "Perkataan yang sedang disebut.";
+"Box Color" = "Warna Kotak";
+"Outline Color" = "Warna Garis Luar";
+"All Caps" = "Semua Huruf Besar";
+"Reset Style" = "Set Semula Gaya";
+"This is how your captions will look" = "Beginilah rupa kapsyen anda";
+"Add from Photos" = "Tambah daripada Foto";
+"Add from Files" = "Tambah daripada Fail";
+"Adding the clip…" = "Menambah klip…";
+"Couldn't Add the Clip" = "Tidak Dapat Menambah Klip";
+"This file can't be played." = "Fail ini tidak dapat dimainkan.";
+"This file has no video. Video recordings can only add videos." = "Fail ini tiada video. Rakaman video hanya boleh ditambah video.";
+"This file has no sound." = "Fail ini tiada bunyi.";
+"Zoom In" = "Zum Masuk";
+"Zoom Out" = "Zum Keluar";

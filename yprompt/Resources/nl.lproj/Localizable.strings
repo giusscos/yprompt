@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film jezelf met het script onder de lens, neem alleen je stem op of lees op een effen kleur.";
 "Make It Easy to Read" = "Lees met gemak";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Pas tekstgrootte, lettertype en spatiëring aan op je ogen en je afstand.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Afgerond";
+"Classic" = "Klassiek";
+"Serif" = "Schreef";
+"Mono" = "Mono";
+"Small" = "Klein";
+"Medium" = "Middel";
+"Large" = "Groot";
+"None" = "Geen";
+"Outline" = "Omtrek";
+"Box" = "Kader";
+"Caption Style" = "Ondertitelstijl";
+"Font" = "Lettertype";
+"Size" = "Grootte";
+"Highlight" = "Markering";
+"The word being said." = "Het woord dat nu wordt uitgesproken.";
+"Box Color" = "Kaderkleur";
+"Outline Color" = "Omtrekkleur";
+"All Caps" = "Alles in hoofdletters";
+"Reset Style" = "Herstel stijl";
+"This is how your captions will look" = "Zo zien je ondertitels eruit";
+"Add from Photos" = "Voeg toe uit Foto's";
+"Add from Files" = "Voeg toe uit Bestanden";
+"Adding the clip…" = "Clip toevoegen…";
+"Couldn't Add the Clip" = "Kan clip niet toevoegen";
+"This file can't be played." = "Dit bestand kan niet worden afgespeeld.";
+"This file has no video. Video recordings can only add videos." = "Dit bestand bevat geen video. Aan video-opnamen kunnen alleen video's worden toegevoegd.";
+"This file has no sound." = "Dit bestand heeft geen geluid.";
+"Zoom In" = "Zoom in";
+"Zoom Out" = "Zoom uit";

@@ -19,6 +19,7 @@ enum ReadingPreferences {
     static let takeTrimKey = "takes.trim"
     nonisolated static let takeCaptionStyleKey = "takes.captionStyle"
     nonisolated static let takeCaptionPositionKey = "takes.captionPosition"
+    nonisolated static let takeCaptionLookKey = "takes.captionLook"
 
     static let cameraBackground = "camera"
     static let audioBackground = "audio"
@@ -51,7 +52,7 @@ enum ReadingPreferences {
     static func reset() {
         for key in [modeKey, backgroundKey, speedKey, fontSizeKey, marginsKey,
                     timedSecondsKey, cameraPositionKey, newScriptStyleKey,
-                    takeTrimKey, takeCaptionStyleKey, takeCaptionPositionKey,
+                    takeTrimKey, takeCaptionStyleKey, takeCaptionPositionKey, takeCaptionLookKey,
                     ReadingFont.key, LetterSpacing.key] {
             defaults.removeObject(forKey: key)
         }

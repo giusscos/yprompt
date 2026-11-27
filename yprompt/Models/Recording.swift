@@ -22,8 +22,12 @@ nonisolated struct Piece: Identifiable, Hashable, Codable, Sendable {
     var endProgress: Double
     /// Set once the ends have been cut to the first and last word. The trim handles can undo it.
     var trimmedToSpeech = false
+    /// A clip added from Photos or Files rather than recorded here. Optional so recordings
+    /// saved before clips could be added still open.
+    var imported: Bool?
 
     var length: Double { max(0, end - start) }
+    var isImported: Bool { imported == true }
 }
 
 /// Everything recorded for one script in one go, plus pickups added later, with its edits.
@@ -43,6 +47,9 @@ nonisolated struct Recording: Identifiable, Hashable, Codable, Sendable {
     var removePauses = false
     var captionStyle: CaptionStyle = .lyrics
     var captionPosition: CaptionPosition = .bottom
+    /// Font, colors and background of the captions; nil is the original look. Optional so
+    /// recordings saved before it existed still open.
+    var captionLook: CaptionLook?
     /// Quarter turns clockwise, for takes that came out sideways.
     var quarterTurns = 0
     var savedAt: Date?
@@ -52,6 +59,11 @@ nonisolated struct Recording: Identifiable, Hashable, Codable, Sendable {
 
     /// Length before Remove Pauses.
     var length: Double { pieces.reduce(0) { $0 + $1.length } }
+
+    var look: CaptionLook {
+        get { captionLook ?? CaptionLook() }
+        set { captionLook = newValue }
+    }
 }
 
 /// What the camera or microphone is about to record into.
@@ -152,11 +164,14 @@ nonisolated enum RecordingStore {
         try? FileManager.default.removeItem(at: recording.folder)
     }
 
+    /// Kinds of source file a recording keeps: its own takes, and clips added from elsewhere.
+    static let mediaExtensions: Set<String> = ["mov", "mp4", "m4v", "m4a", "mp3", "wav", "aif", "aiff", "aifc", "caf"]
+
     /// Source files no piece uses any more, with their cached analysis.
     static func removeUnusedFiles(of recording: Recording) {
         let used = Set(recording.pieces.map(\.file))
         let files = (try? FileManager.default.contentsOfDirectory(at: recording.folder, includingPropertiesForKeys: nil)) ?? []
-        for file in files where file.pathExtension == "mov" && !used.contains(file.lastPathComponent) {
+        for file in files where mediaExtensions.contains(file.pathExtension.lowercased()) && !used.contains(file.lastPathComponent) {
             // A piece still being recorded has its pending info next to it.
             guard !FileManager.default.fileExists(atPath: file.appendingPathExtension("pending.json").path) else { continue }
             try? FileManager.default.removeItem(at: file)
@@ -220,7 +235,8 @@ nonisolated enum RecordingStore {
             id: pending.recordingID, scriptID: pending.scriptID, title: pending.title, kind: pending.kind,
             createdAt: pending.createdAt,
             captionStyle: CaptionStyle(rawValue: defaults.string(forKey: ReadingPreferences.takeCaptionStyleKey) ?? "") ?? .lyrics,
-            captionPosition: CaptionPosition(rawValue: defaults.string(forKey: ReadingPreferences.takeCaptionPositionKey) ?? "") ?? .bottom
+            captionPosition: CaptionPosition(rawValue: defaults.string(forKey: ReadingPreferences.takeCaptionPositionKey) ?? "") ?? .bottom,
+            captionLook: CaptionLook.lastUsed
         )
         let piece = Piece(file: pending.file, start: 0, end: duration,
                           startProgress: pending.startProgress, endProgress: endProgress)
@@ -294,6 +310,51 @@ nonisolated enum RecordingStore {
         try? FileManager.default.removeItem(at: takes)
     }
 
+    enum ClipImportError: LocalizedError {
+        case unreadable, noPicture, noSound
+
+        var errorDescription: String? {
+            switch self {
+            case .unreadable: String(localized: "This file can't be played.")
+            case .noPicture: String(localized: "This file has no video. Video recordings can only add videos.")
+            case .noSound: String(localized: "This file has no sound.")
+            }
+        }
+    }
+
+    /// Copies a clip from Photos or Files into the recording's folder, or moves it there when
+    /// it's already a temporary copy. Returns the new file's name and its length.
+    static func importClip(from source: URL, into recording: Recording, moving: Bool) async throws -> (file: String, duration: Double) {
+        let scoped = source.startAccessingSecurityScopedResource()
+        defer { if scoped { source.stopAccessingSecurityScopedResource() } }
+        let ext = source.pathExtension.lowercased()
+        let file = UUID().uuidString + "." + (mediaExtensions.contains(ext) ? ext : "mov")
+        let folder = recording.folder
+        let destination = folder.appendingPathComponent(file)
+        // Videos can be large: copied away from the main thread.
+        try await Task.detached {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            if moving {
+                try FileManager.default.moveItem(at: source, to: destination)
+            } else {
+                try FileManager.default.copyItem(at: source, to: destination)
+            }
+        }.value
+        do {
+            let asset = AVURLAsset(url: destination)
+            let (playable, duration) = try await asset.load(.isPlayable, .duration)
+            guard playable, duration.seconds.isFinite, duration.seconds > 0.3 else { throw ClipImportError.unreadable }
+            let hasVideo = try await !asset.loadTracks(withMediaType: .video).isEmpty
+            let hasAudio = try await !asset.loadTracks(withMediaType: .audio).isEmpty
+            if recording.kind == .video && !hasVideo { throw ClipImportError.noPicture }
+            if recording.kind == .audio && !hasAudio { throw ClipImportError.noSound }
+            return (file, duration.seconds)
+        } catch {
+            try? FileManager.default.removeItem(at: destination)
+            throw error is ClipImportError ? error : ClipImportError.unreadable
+        }
+    }
+
     private static func playableDuration(of url: URL) async -> Double? {
         let asset = AVURLAsset(url: url)
         guard let (playable, duration) = try? await asset.load(.isPlayable, .duration),
@@ -338,17 +399,25 @@ final class RecordingLibrary {
         recordings.first { $0.id == id } ?? RecordingStore.load(id)
     }
 
-    func save(_ recording: Recording) {
+    /// - Parameter keepingFiles: leaves files no piece uses in place, so the editor's Undo can
+    ///   bring a deleted piece back. The editor tidies up with `removeUnusedFiles` when it closes.
+    func save(_ recording: Recording, keepingFiles: Bool = false) {
         var recording = recording
         recording.modifiedAt = Date()
         RecordingStore.save(recording)
-        RecordingStore.removeUnusedFiles(of: recording)
+        if !keepingFiles { RecordingStore.removeUnusedFiles(of: recording) }
         if let index = recordings.firstIndex(where: { $0.id == recording.id }) {
             recordings[index] = recording
             usedBytes = RecordingStore.usedBytes()
         } else {
             refresh()
         }
+    }
+
+    /// Removes the files the recording no longer uses, once the editor is done with them.
+    func removeUnusedFiles(of recording: Recording) {
+        RecordingStore.removeUnusedFiles(of: recording)
+        usedBytes = RecordingStore.usedBytes()
     }
 
     func delete(_ recording: Recording) {

@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "レンズのすぐ下に台本を表示して撮影、声だけを録音、または単色の背景で読めます。";
 "Make It Easy to Read" = "読みやすく調整";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "文字の大きさ、フォント、間隔を目や距離に合わせて変更できます。";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "丸み";
+"Classic" = "クラシック";
+"Serif" = "セリフ";
+"Mono" = "等幅";
+"Small" = "小";
+"Medium" = "中";
+"Large" = "大";
+"None" = "なし";
+"Outline" = "縁取り";
+"Box" = "ボックス";
+"Caption Style" = "字幕のスタイル";
+"Font" = "フォント";
+"Size" = "サイズ";
+"Highlight" = "ハイライト";
+"The word being said." = "いま話している単語。";
+"Box Color" = "ボックスの色";
+"Outline Color" = "縁取りの色";
+"All Caps" = "すべて大文字";
+"Reset Style" = "スタイルをリセット";
+"This is how your captions will look" = "字幕はこのように表示されます";
+"Add from Photos" = "写真から追加";
+"Add from Files" = "ファイルから追加";
+"Adding the clip…" = "クリップを追加中…";
+"Couldn't Add the Clip" = "クリップを追加できませんでした";
+"This file can't be played." = "このファイルは再生できません。";
+"This file has no video. Video recordings can only add videos." = "このファイルにはビデオがありません。ビデオ収録に追加できるのはビデオだけです。";
+"This file has no sound." = "このファイルには音声がありません。";
+"Zoom In" = "拡大";
+"Zoom Out" = "縮小";

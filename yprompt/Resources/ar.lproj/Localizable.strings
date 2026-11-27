@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "صوّر نفسك والنص أسفل العدسة، أو سجّل صوتك فقط، أو اقرأ على لون ثابت.";
 "Make It Easy to Read" = "قراءة مريحة";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "غيّر حجم النص وخطه وتباعده بما يناسب عينيك ومسافتك.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "مستدير";
+"Classic" = "كلاسيكي";
+"Serif" = "مذيّل";
+"Mono" = "أحادي المسافة";
+"Small" = "صغير";
+"Medium" = "متوسط";
+"Large" = "كبير";
+"None" = "بلا";
+"Outline" = "حدود";
+"Box" = "مربع";
+"Caption Style" = "نمط الترجمة المكتوبة";
+"Font" = "الخط";
+"Size" = "الحجم";
+"Highlight" = "التمييز";
+"The word being said." = "الكلمة التي تُقال الآن.";
+"Box Color" = "لون المربع";
+"Outline Color" = "لون الحدود";
+"All Caps" = "أحرف كبيرة فقط";
+"Reset Style" = "إعادة تعيين النمط";
+"This is how your captions will look" = "هكذا ستبدو الترجمة المكتوبة";
+"Add from Photos" = "إضافة من الصور";
+"Add from Files" = "إضافة من الملفات";
+"Adding the clip…" = "جارٍ إضافة المقطع…";
+"Couldn't Add the Clip" = "تعذرت إضافة المقطع";
+"This file can't be played." = "لا يمكن تشغيل هذا الملف.";
+"This file has no video. Video recordings can only add videos." = "لا يحتوي هذا الملف على فيديو. يمكن إضافة مقاطع الفيديو فقط إلى تسجيلات الفيديو.";
+"This file has no sound." = "لا يحتوي هذا الملف على صوت.";
+"Zoom In" = "تكبير";
+"Zoom Out" = "تصغير";

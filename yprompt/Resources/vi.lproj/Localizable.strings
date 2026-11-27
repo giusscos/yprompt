@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Quay chính bạn với kịch bản dưới ống kính, chỉ ghi giọng nói, hoặc đọc trên nền màu trơn.";
 "Make It Easy to Read" = "Đọc dễ dàng hơn";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Đổi cỡ chữ, phông chữ và khoảng cách cho hợp với mắt và khoảng cách của bạn.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Bo tròn";
+"Classic" = "Cổ điển";
+"Serif" = "Có chân";
+"Mono" = "Đơn cách";
+"Small" = "Nhỏ";
+"Medium" = "Vừa";
+"Large" = "Lớn";
+"None" = "Không";
+"Outline" = "Viền chữ";
+"Box" = "Hộp";
+"Caption Style" = "Kiểu phụ đề";
+"Font" = "Phông chữ";
+"Size" = "Kích cỡ";
+"Highlight" = "Tô sáng";
+"The word being said." = "Từ đang được nói.";
+"Box Color" = "Màu hộp";
+"Outline Color" = "Màu viền";
+"All Caps" = "Viết hoa toàn bộ";
+"Reset Style" = "Đặt lại kiểu";
+"This is how your captions will look" = "Phụ đề của bạn sẽ trông như thế này";
+"Add from Photos" = "Thêm từ Ảnh";
+"Add from Files" = "Thêm từ Tệp";
+"Adding the clip…" = "Đang thêm clip…";
+"Couldn't Add the Clip" = "Không thể thêm clip";
+"This file can't be played." = "Không thể phát tệp này.";
+"This file has no video. Video recordings can only add videos." = "Tệp này không có video. Bản ghi video chỉ có thể thêm video.";
+"This file has no sound." = "Tệp này không có âm thanh.";
+"Zoom In" = "Phóng to";
+"Zoom Out" = "Thu nhỏ";

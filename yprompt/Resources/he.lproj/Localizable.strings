@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "צלמו את עצמכם עם התסריט מתחת לעדשה, הקליטו רק את הקול, או קראו על רקע צבע אחיד.";
 "Make It Easy to Read" = "קריאה נוחה";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "שנו את גודל הטקסט, הגופן והריווח כך שיתאימו לעיניים ולמרחק שלכם.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "מעוגל";
+"Classic" = "קלאסי";
+"Serif" = "סריף";
+"Mono" = "רוחב קבוע";
+"Small" = "קטן";
+"Medium" = "בינוני";
+"Large" = "גדול";
+"None" = "ללא";
+"Outline" = "קו מתאר";
+"Box" = "תיבה";
+"Caption Style" = "סגנון כתוביות";
+"Font" = "גופן";
+"Size" = "גודל";
+"Highlight" = "הדגשה";
+"The word being said." = "המילה שנאמרת עכשיו.";
+"Box Color" = "צבע התיבה";
+"Outline Color" = "צבע קו המתאר";
+"All Caps" = "אותיות רישיות בלבד";
+"Reset Style" = "איפוס סגנון";
+"This is how your captions will look" = "כך ייראו הכתוביות";
+"Add from Photos" = "הוספה מ״תמונות״";
+"Add from Files" = "הוספה מ״קבצים״";
+"Adding the clip…" = "מוסיף את הקליפ…";
+"Couldn't Add the Clip" = "לא ניתן להוסיף את הקליפ";
+"This file can't be played." = "לא ניתן להפעיל את הקובץ הזה.";
+"This file has no video. Video recordings can only add videos." = "אין וידאו בקובץ הזה. להקלטות וידאו אפשר להוסיף רק סרטונים.";
+"This file has no sound." = "אין צליל בקובץ הזה.";
+"Zoom In" = "הגדלה";
+"Zoom Out" = "הקטנה";

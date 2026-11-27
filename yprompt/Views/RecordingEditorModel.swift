@@ -5,10 +5,12 @@
 
 #if os(iOS) || os(macOS)
 import AVFoundation
+import CoreTransferable
+import PhotosUI
 import SwiftUI
+import UniformTypeIdentifiers
 #if os(macOS)
 import AppKit
-import UniformTypeIdentifiers
 #endif
 import os
 
@@ -34,6 +36,31 @@ final class RecordingEditorModel {
         let urls: [URL]
     }
 
+    /// Frames from one source file, every `interval` seconds, for the timeline's filmstrip.
+    struct Filmstrip {
+        let interval: Double
+        var frames: [CGImage?]
+        /// Width over height of the frames, upright.
+        var aspect: CGFloat
+
+        /// The frame showing a moment of the source, or the nearest one loaded so far.
+        func frame(at seconds: Double) -> CGImage? {
+            guard !frames.isEmpty else { return nil }
+            let index = min(max(0, Int(seconds / interval)), frames.count - 1)
+            if let frame = frames[index] { return frame }
+            for distance in 1..<max(frames.count, 2) {
+                if index - distance >= 0, let frame = frames[index - distance] { return frame }
+                if index + distance < frames.count, let frame = frames[index + distance] { return frame }
+            }
+            return nil
+        }
+    }
+
+    /// Where the playhead goes once an edit is in place.
+    enum Focus {
+        case start(UUID), end(UUID)
+    }
+
     private(set) var recording: Recording
     /// The script words the captions are spelled from; empty when the script was deleted.
     let script: ScriptWords
@@ -50,7 +77,7 @@ final class RecordingEditorModel {
     private(set) var hasItem = false
     private(set) var currentTime: Double = 0
     private(set) var isPlaying = false
-    private(set) var thumbnails: [String: CGImage] = [:]
+    private(set) var filmstrips: [String: Filmstrip] = [:]
     private(set) var renderState: RenderState = .idle
     private(set) var canUndo = false
     /// Preview speed only; the saved recording always plays at normal speed.
@@ -58,6 +85,11 @@ final class RecordingEditorModel {
     static let playbackRates: [Float] = [0.5, 1, 1.25, 1.5, 2]
     var selectedPieceID: UUID?
     var shareItems: ShareItems?
+    /// How far the timeline is zoomed in: 1 shows about twelve seconds across it.
+    var timelineZoom: Double = 1
+    static let maxTimelineZoom: Double = 8
+    private(set) var isAddingClip = false
+    var clipError: String?
     /// Free users' videos carry the mark; Pro removes it.
     var showsMark = true {
         didSet { if showsMark != oldValue { refreshOverlays() } }
@@ -80,6 +112,7 @@ final class RecordingEditorModel {
     @ObservationIgnored private var resumeAfterScrub = false
     @ObservationIgnored private var isSeeking = false
     @ObservationIgnored private var pendingSeek: Double?
+    @ObservationIgnored private var loadingFilmstrips: Set<String> = []
 
     init(recording: Recording, script: ScriptWords, selectedPieceID: UUID?) {
         self.recording = recording
@@ -96,6 +129,20 @@ final class RecordingEditorModel {
     // MARK: State
 
     var isVideo: Bool { recording.kind == .video }
+
+    /// From the whole recording across the timeline, to eight times closer than zoom 1.
+    var timelineZoomRange: ClosedRange<Double> {
+        let fit = 12 / max(length, 0.5)
+        return fit...max(fit, Self.maxTimelineZoom)
+    }
+
+    func zoomTimeline(by factor: Double) {
+        let range = timelineZoomRange
+        let zoom = min(max(timelineZoom, range.lowerBound), range.upperBound) * factor
+        withAnimation(.snappy(duration: 0.25)) {
+            timelineZoom = min(max(zoom, range.lowerBound), range.upperBound)
+        }
+    }
 
     var length: Double { editList.length }
 
@@ -123,7 +170,7 @@ final class RecordingEditorModel {
     }
 
     func thumbnail(for piece: Piece) -> CGImage? {
-        thumbnails[thumbnailKey(piece)]
+        filmstrips[piece.file]?.frame(at: piece.start)
     }
 
     // MARK: Loading
@@ -203,20 +250,31 @@ final class RecordingEditorModel {
             recording.pieces[index].start = range.lowerBound
             recording.pieces[index].end = range.upperBound
         }
-        if changed { RecordingLibrary.shared.save(recording) }
+        if changed { RecordingLibrary.shared.save(recording, keepingFiles: true) }
     }
 
     // MARK: Building the preview
 
-    private func rebuild(keepTime: Bool) async {
+    private func rebuild(keepTime: Bool, focus: Focus? = nil) async {
         rebuildTask?.cancel()
-        let time = keepTime ? currentTime : 0
+        var time = keepTime ? currentTime : 0
         let wasPlaying = keepTime ? isPlaying : true
-        editList = EditList(recording: recording, analyses: analyses)
+        let newEditList = EditList(recording: recording, analyses: analyses)
+        if let focus, let focusTime = Self.time(of: focus, in: newEditList) {
+            time = focusTime
+            // The timeline glides to the new spot instead of jumping.
+            withAnimation(.snappy(duration: 0.35)) {
+                editList = newEditList
+                currentTime = focusTime
+            }
+        } else {
+            editList = newEditList
+        }
         captionLines = editList.captionLines(for: recording, analyses: analyses, script: script)
         let signature = Self.signature(of: recording, editList: editList)
         if composed != nil, signature == composedSignature {
             refreshOverlays()
+            if focus != nil { seek(to: time) }
             return
         }
         let recording = recording
@@ -245,7 +303,7 @@ final class RecordingEditorModel {
             currentTime = target
             player.defaultRate = playbackRate
             if wasPlaying && !isRendering && shareItems == nil { player.play() }
-            await loadThumbnails()
+            await loadFilmstrips()
         }
         rebuildTask = task
         await task.value
@@ -300,26 +358,54 @@ final class RecordingEditorModel {
     private func refreshOverlays() {
         let style = recording.captionStyle
         captionRenderer = isVideo && style != .off && !captionLines.isEmpty && renderSize.width > 0
-            ? CaptionRenderer(lines: captionLines, style: style, position: recording.captionPosition, size: renderSize)
+            ? CaptionRenderer(lines: captionLines, style: style, position: recording.captionPosition,
+                              look: recording.look, size: renderSize)
             : nil
         mark = isVideo && showsMark && renderSize.width > 0 ? Watermark.make(for: renderSize) : nil
         lastRender = nil
     }
 
-    private func thumbnailKey(_ piece: Piece) -> String {
-        "\(piece.file)@\(Int(piece.start * 10))"
+    /// Frames along each source, for the timeline. One file at a time, shown as they come.
+    private func loadFilmstrips() async {
+        guard isVideo else { return }
+        for file in Set(recording.pieces.map(\.file)) where filmstrips[file] == nil && !loadingFilmstrips.contains(file) {
+            loadingFilmstrips.insert(file)
+            await loadFilmstrip(file)
+            loadingFilmstrips.remove(file)
+        }
     }
 
-    private func loadThumbnails() async {
-        guard isVideo else { return }
-        for piece in recording.pieces where thumbnails[thumbnailKey(piece)] == nil {
-            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: recording.url(of: piece)))
-            generator.appliesPreferredTrackTransform = true
-            generator.maximumSize = CGSize(width: 240, height: 240)
-            if let image = try? await generator.image(at: CMTime(seconds: piece.start + 0.05, preferredTimescale: 600)).image {
-                thumbnails[thumbnailKey(piece)] = image
+    private func loadFilmstrip(_ file: String) async {
+        let asset = AVURLAsset(url: recording.folder.appendingPathComponent(file))
+        guard let duration = try? await asset.load(.duration).seconds, duration.isFinite, duration > 0 else { return }
+        // At most about a hundred frames a file, however long it is.
+        let interval = max(0.5, duration / 100)
+        let count = max(1, Int((duration / interval).rounded(.up)))
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 200, height: 200)
+        let tolerance = CMTime(seconds: interval / 2, preferredTimescale: 600)
+        generator.requestedTimeToleranceBefore = tolerance
+        generator.requestedTimeToleranceAfter = tolerance
+        var strip = Filmstrip(interval: interval, frames: Array(repeating: nil, count: count), aspect: 9.0 / 16.0)
+        let times = (0..<count).map { CMTime(seconds: min(max(0, duration - 0.05), (Double($0) + 0.5) * interval),
+                                              preferredTimescale: 600) }
+        var unpublished = 0
+        for await result in generator.images(for: times) {
+            guard let image = try? result.image else { continue }
+            let index = min(max(0, Int(result.requestedTime.seconds / interval)), count - 1)
+            if !strip.frames.contains(where: { $0 != nil }), image.height > 0 {
+                strip.aspect = CGFloat(image.width) / CGFloat(image.height)
+            }
+            strip.frames[index] = image
+            unpublished += 1
+            // The first frame straight away, then in batches so the timeline isn't redrawn a hundred times.
+            if unpublished >= 10 || filmstrips[file] == nil {
+                filmstrips[file] = strip
+                unpublished = 0
             }
         }
+        filmstrips[file] = strip
     }
 
     // MARK: Playback
@@ -345,6 +431,7 @@ final class RecordingEditorModel {
     func beginScrub() {
         resumeAfterScrub = player.timeControlStatus != .paused
         player.pause()
+        isPlaying = false
     }
 
     /// Follows the finger: one seek at a time, always heading for the latest position.
@@ -393,13 +480,33 @@ final class RecordingEditorModel {
 
     // MARK: Edits
 
-    private func edit(_ change: (inout Recording) -> Void) {
+    private func edit(focus: Focus? = nil, _ change: (inout Recording) -> Void) {
+        applyEdit(change)
+        if let focus {
+            // Laid out straight away, in the same update as the gesture that made the edit
+            // ending, so the timeline never shows the old layout for a frame.
+            let newEditList = EditList(recording: recording, analyses: analyses)
+            editList = newEditList
+            currentTime = Self.time(of: focus, in: newEditList) ?? currentTime
+        }
+        Task { await rebuild(keepTime: true, focus: focus) }
+    }
+
+    private static func time(of focus: Focus, in editList: EditList) -> Double? {
+        let time: Double? = switch focus {
+        case .start(let id): editList.span(of: id)?.start
+        case .end(let id): editList.span(of: id).map { max($0.start, $0.end - 0.05) }
+        }
+        return time.map { min($0, max(0, editList.length - 0.05)) }
+    }
+
+    /// Changes the recording and saves it, keeping what it was for Undo.
+    private func applyEdit(_ change: (inout Recording) -> Void) {
         undoSnapshot = recording
         canUndo = true
         change(&recording)
         lastRender = nil
-        RecordingLibrary.shared.save(recording)
-        Task { await rebuild(keepTime: true) }
+        RecordingLibrary.shared.save(recording, keepingFiles: true)
     }
 
     func undo() {
@@ -411,7 +518,7 @@ final class RecordingEditorModel {
         if let selectedPieceID, !recording.pieces.contains(where: { $0.id == selectedPieceID }) {
             self.selectedPieceID = nil
         }
-        RecordingLibrary.shared.save(recording)
+        RecordingLibrary.shared.save(recording, keepingFiles: true)
         Task { await rebuild(keepTime: true) }
     }
 
@@ -454,16 +561,20 @@ final class RecordingEditorModel {
         if newEnd - newStart < 0.3 {
             if start != recording.pieces[index].start { newStart = newEnd - 0.3 } else { newEnd = newStart + 0.3 }
         }
-        guard abs(newStart - recording.pieces[index].start) > 0.01 || abs(newEnd - recording.pieces[index].end) > 0.01 else { return }
-        edit {
+        let movedStart = abs(newStart - recording.pieces[index].start) > 0.01
+        guard movedStart || abs(newEnd - recording.pieces[index].end) > 0.01 else { return }
+        // The playhead goes to the edge that moved, to show where the piece now starts or ends.
+        edit(focus: movedStart ? .start(id) : .end(id)) {
             $0.pieces[index].start = max(0, newStart)
             $0.pieces[index].end = min(sourceLength, newEnd)
         }
     }
 
+    /// The moved piece ends up selected, with the playhead at its start, to show where it landed.
     func move(_ id: UUID, to destination: Int) {
         guard let index = recording.pieces.firstIndex(where: { $0.id == id }), index != destination else { return }
-        edit {
+        selectedPieceID = id
+        edit(focus: .start(id)) {
             let piece = $0.pieces.remove(at: index)
             $0.pieces.insert(piece, at: min(max(0, destination), $0.pieces.count))
         }
@@ -484,6 +595,59 @@ final class RecordingEditorModel {
         guard position != recording.captionPosition else { return }
         UserDefaults.standard.set(position.rawValue, forKey: ReadingPreferences.takeCaptionPositionKey)
         edit { $0.captionPosition = position }
+    }
+
+    /// Also becomes the look new recordings start with.
+    func setCaptionLook(_ look: CaptionLook) {
+        guard look != recording.look else { return }
+        CaptionLook.lastUsed = look
+        edit { $0.captionLook = look }
+    }
+
+    // MARK: Adding clips
+
+    /// A video picked in Photos: copied out of the library first, which can take a while for
+    /// one kept in iCloud.
+    func addClip(_ item: PhotosPickerItem, at index: Int) async {
+        guard !isAddingClip else { return }
+        isAddingClip = true
+        defer { isAddingClip = false }
+        do {
+            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else {
+                throw RecordingStore.ClipImportError.unreadable
+            }
+            try await insertClip(from: movie.url, at: index, moving: true)
+        } catch {
+            clipError = error.localizedDescription
+        }
+    }
+
+    /// A video or sound picked in Files.
+    func addClip(from url: URL, at index: Int) async {
+        guard !isAddingClip else { return }
+        isAddingClip = true
+        defer { isAddingClip = false }
+        do {
+            try await insertClip(from: url, at: index, moving: false)
+        } catch {
+            clipError = error.localizedDescription
+        }
+    }
+
+    /// The clip goes in as a piece of its own, selected, with the playhead at its start. It
+    /// carries on in the script from the piece before, so recording more after it still works.
+    private func insertClip(from url: URL, at index: Int, moving: Bool) async throws {
+        let (file, duration) = try await RecordingStore.importClip(from: url, into: recording, moving: moving)
+        let position = min(max(0, index), recording.pieces.count)
+        let progress = position > 0
+            ? recording.pieces[position - 1].endProgress
+            : recording.pieces.first?.startProgress ?? 0
+        let piece = Piece(file: file, start: 0, end: duration, startProgress: progress, endProgress: progress,
+                          trimmedToSpeech: true, imported: true)
+        applyEdit { $0.pieces.insert(piece, at: position) }
+        selectedPieceID = piece.id
+        await rebuild(keepTime: true, focus: .start(piece.id))
+        analyzeMissing()
     }
 
     func rotate() {
@@ -574,7 +738,7 @@ final class RecordingEditorModel {
                     try await RecordingExporter.saveToPhotos(url)
                     #endif
                     recording.savedAt = Date()
-                    RecordingLibrary.shared.save(recording)
+                    RecordingLibrary.shared.save(recording, keepingFiles: true)
                     RatingService.shared.recordRecordingSaved()
                     renderState = .saved
                     try? await Task.sleep(for: .seconds(1.5))
@@ -627,6 +791,24 @@ final class RecordingEditorModel {
         statusObservation = nil
         player.replaceCurrentItem(with: nil)
         try? FileManager.default.removeItem(at: RecordingExporter.rendersFolder)
+        // Files kept for Undo, and clips added then undone, go now.
+        RecordingLibrary.shared.removeUnusedFiles(of: recording)
+    }
+}
+
+/// A video from Photos, copied to a temporary file the editor then moves into the recording.
+nonisolated struct PickedMovie: Transferable {
+    let url: URL
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(importedContentType: .movie) { received in
+            let ext = received.file.pathExtension.isEmpty ? "mov" : received.file.pathExtension
+            let copy = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension(ext)
+            try FileManager.default.copyItem(at: received.file, to: copy)
+            return PickedMovie(url: copy)
+        }
     }
 }
 #endif

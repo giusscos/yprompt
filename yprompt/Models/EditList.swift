@@ -126,7 +126,8 @@ struct EditList: Equatable {
     // MARK: Pauses
 
     /// The parts of a piece where something is said, from the words, or from loudness when
-    /// there are none. A piece with nothing found is kept whole rather than dropped.
+    /// there are none (for takes recorded here). A piece with nothing found is kept whole
+    /// rather than dropped.
     static func spokenRuns(of piece: Piece, analysis: TakeAnalysis?) -> [ClosedRange<Double>] {
         var runs: [ClosedRange<Double>] = []
         func add(_ range: ClosedRange<Double>) {
@@ -139,7 +140,9 @@ struct EditList: Equatable {
         let words = (analysis?.words ?? []).filter { $0.end > piece.start && $0.start < piece.end }
         if !words.isEmpty {
             words.forEach { add($0.start...max($0.start, $0.end)) }
-        } else if let envelope = analysis?.envelope, envelope.count > 10 {
+        } else if !piece.isImported, let envelope = analysis?.envelope, envelope.count > 10 {
+            // Not for an added clip: without words it's likely footage or music, and loudness
+            // would chop it up.
             let threshold = envelope.sorted()[envelope.count / 10] + 12
             let step = TakeAnalysis.envelopeInterval
             for (index, level) in envelope.enumerated() where level > threshold {

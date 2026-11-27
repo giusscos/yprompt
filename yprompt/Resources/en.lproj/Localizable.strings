@@ -605,3 +605,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film yourself with the script under the lens, record just your voice, or read on a plain color.";
 "Make It Easy to Read" = "Make It Easy to Read";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Change the text size, font and spacing to suit your eyes and how far you sit.";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "Rounded";
+"Classic" = "Classic";
+"Serif" = "Serif";
+"Mono" = "Mono";
+"Small" = "Small";
+"Medium" = "Medium";
+"Large" = "Large";
+"None" = "None";
+"Outline" = "Outline";
+"Box" = "Box";
+"Caption Style" = "Caption Style";
+"Font" = "Font";
+"Size" = "Size";
+"Highlight" = "Highlight";
+"The word being said." = "The word being said.";
+"Box Color" = "Box Color";
+"Outline Color" = "Outline Color";
+"All Caps" = "All Caps";
+"Reset Style" = "Reset Style";
+"This is how your captions will look" = "This is how your captions will look";
+"Add from Photos" = "Add from Photos";
+"Add from Files" = "Add from Files";
+"Adding the clip…" = "Adding the clip…";
+"Couldn't Add the Clip" = "Couldn't Add the Clip";
+"This file can't be played." = "This file can't be played.";
+"This file has no video. Video recordings can only add videos." = "This file has no video. Video recordings can only add videos.";
+"This file has no sound." = "This file has no sound.";
+"Zoom In" = "Zoom In";
+"Zoom Out" = "Zoom Out";

@@ -5,9 +5,11 @@
 
 #if os(iOS) || os(macOS)
 import AVFoundation
+import PhotosUI
 import StoreKit
 import SwiftUI
 import TipKit
+import UniformTypeIdentifiers
 #if canImport(UIKit)
 import UIKit
 #else
@@ -15,7 +17,8 @@ import AppKit
 #endif
 
 /// Opens after every take and from the Recordings tab: watch the recording, cut it into
-/// pieces, trim, reorder, remove pauses, caption it, and record more where it left off.
+/// pieces, trim, reorder, add clips, remove pauses, caption and style it, and record more
+/// where it left off.
 struct RecordingEditorView: View {
     @State private var model: RecordingEditorModel?
     @Environment(StoreKitService.self) private var storeKit
@@ -110,6 +113,12 @@ private struct EditorContent: View {
     let onRemoveMark: () -> Void
     let onClose: () -> Void
     @Environment(\.openURL) private var openURL
+    @State private var showingCaptionStyle = false
+    /// Where an added clip goes, chosen before Photos or Files opens.
+    @State private var clipIndex = 0
+    @State private var showingPhotoPicker = false
+    @State private var showingFileImporter = false
+    @State private var photoItem: PhotosPickerItem?
 
     var body: some View {
         GeometryReader { geometry in
@@ -169,11 +178,59 @@ private struct EditorContent: View {
         } message: {
             if case .failed(let message) = model.renderState { Text(message) }
         }
+        .photosPicker(isPresented: $showingPhotoPicker, selection: $photoItem, matching: .videos,
+                      preferredItemEncoding: .current)
+        .onChange(of: photoItem) { _, item in
+            guard let item else { return }
+            photoItem = nil
+            let index = clipIndex
+            Task { await model.addClip(item, at: index) }
+        }
+        .fileImporter(isPresented: $showingFileImporter,
+                      allowedContentTypes: model.isVideo ? [.movie] : [.audio, .movie]) { result in
+            guard case .success(let url) = result else { return }
+            let index = clipIndex
+            Task { await model.addClip(from: url, at: index) }
+        }
     }
 
     private var strip: some View {
-        PieceStripView(model: model)
-            .frame(height: 76)
+        TimelineStripView(model: model) {
+            addMenuItems(at: model.recording.pieces.count)
+        }
+        .frame(height: TimelineStripView<EmptyView>.height)
+        .disabled(model.isRendering)
+        .alert("Couldn't Add the Clip", isPresented: Binding(
+            get: { model.clipError != nil },
+            set: { if !$0 { model.clipError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(model.clipError ?? "")
+        }
+    }
+
+    /// Record more, or add a video (or, to an audio recording, a sound) from Photos or Files,
+    /// placed at `index` among the pieces.
+    @ViewBuilder
+    private func addMenuItems(at index: Int) -> some View {
+        if canRecordMore {
+            Button { onRecordMore(model.pickup(after: index - 1)) } label: {
+                Label("Record More", systemImage: model.isVideo ? "video.badge.plus" : "mic.badge.plus")
+            }
+        }
+        Button {
+            clipIndex = index
+            showingPhotoPicker = true
+        } label: {
+            Label("Add from Photos", systemImage: "photo.on.rectangle")
+        }
+        Button {
+            clipIndex = index
+            showingFileImporter = true
+        } label: {
+            Label("Add from Files", systemImage: "folder")
+        }
     }
 
     // MARK: Header
@@ -319,7 +376,7 @@ private struct EditorContent: View {
     // MARK: Transport
 
     /// Play from the start, play or pause, and the preview speed. Moving through the recording
-    /// happens on the strip of pieces below.
+    /// happens on the timeline below.
     private var transport: some View {
         HStack(spacing: 0) {
             Text(Duration.seconds(model.currentTime), format: .time(pattern: .minuteSecond))
@@ -396,11 +453,20 @@ private struct EditorContent: View {
                         onDeleteRecording()
                     }
                 }
-                if canRecordMore {
-                    toolButton("Add After", icon: "plus.rectangle.on.rectangle", enabled: true) {
-                        onRecordMore(model.pickup(after: index))
-                    }
+                Menu {
+                    addMenuItems(at: index + 1)
+                } label: {
+                    toolLabel("Add After", icon: "plus.rectangle.on.rectangle")
                 }
+                .buttonStyle(.plain)
+                #if os(macOS)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                #endif
+                .ypGlassEffect(cornerRadius: 16)
+                .disabled(model.isAddingClip)
+                .opacity(model.isAddingClip ? 0.4 : 1)
             } else {
                 #if os(macOS)
                 Text("Click a piece to edit it")
@@ -418,20 +484,25 @@ private struct EditorContent: View {
 
     private func toolButton(_ title: LocalizedStringKey, icon: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 3) {
-                Image(systemName: icon)
-                    .font(.body.weight(.medium))
-                Text(title)
-                    .font(.caption2.weight(.medium))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            .frame(width: 68, height: 44)
+            toolLabel(title, icon: icon)
         }
         .buttonStyle(.plain)
         .ypGlassEffect(cornerRadius: 16)
         .opacity(enabled ? 1 : 0.4)
         .disabled(!enabled)
+    }
+
+    private func toolLabel(_ title: LocalizedStringKey, icon: String) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.body.weight(.medium))
+            Text(title)
+                .font(.caption2.weight(.medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(width: 68, height: 44)
+        .contentShape(Rectangle())
     }
 
     // MARK: Options
@@ -493,25 +564,21 @@ private struct EditorContent: View {
             .frame(maxWidth: 220)
             .popoverTip(captionsTip)
             if model.recording.captionStyle != .off {
-                Menu {
-                    Picker("Position", selection: Binding(get: { model.recording.captionPosition },
-                                                          set: { model.setCaptionPosition($0) })) {
-                        ForEach(CaptionPosition.allCases) { Text($0.title).tag($0) }
-                    }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
-                } label: {
-                    Image(systemName: model.recording.captionPosition == .bottom
-                          ? "rectangle.bottomhalf.inset.filled" : "rectangle.center.inset.filled")
+                // Font, size, position, colors and background.
+                Button { showingCaptionStyle = true } label: {
+                    Image(systemName: "textformat")
                         .font(.title3)
-                        .contentTransition(.symbolEffect(.replace))
+                        .frame(width: 36, height: 32)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 #if os(macOS)
-                .menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
-                .fixedSize()
+                .help("Caption Style")
                 #endif
-                .accessibilityLabel("Position")
+                .accessibilityLabel("Caption Style")
+                .popover(isPresented: $showingCaptionStyle, arrowEdge: .bottom) {
+                    CaptionStyleView(model: model)
+                }
             }
         }
     }
@@ -657,6 +724,10 @@ private struct EditorContent: View {
                 .keyboardShortcut(.leftArrow, modifiers: [])
             Button("Forward One Second") { model.seek(to: min(model.length, model.currentTime + 1)) }
                 .keyboardShortcut(.rightArrow, modifiers: [])
+            Button("Zoom In") { model.zoomTimeline(by: 1.5) }
+                .keyboardShortcut("=", modifiers: .command)
+            Button("Zoom Out") { model.zoomTimeline(by: 1 / 1.5) }
+                .keyboardShortcut("-", modifiers: .command)
         }
         .disabled(model.isRendering || !model.hasItem)
         .opacity(0)
@@ -674,350 +745,6 @@ private struct EditorContent: View {
         }
     }
     #endif
-}
-
-// MARK: - Piece strip
-
-/// The recording's pieces side by side, each as wide as its share of the length. Drag the
-/// playhead to move through the recording, tap a piece to select it and jump there, drag a
-/// selected piece's ends to trim it, and hold and drag a piece to move it: the others make
-/// room where it would land.
-private struct PieceStripView: View {
-    @Bindable var model: RecordingEditorModel
-    @State private var trimDrag: (id: UUID, isStart: Bool, seconds: Double)?
-    @State private var scrubStart: Double?
-    /// The piece being moved and how far it has been dragged along the strip.
-    @State private var moving: (id: UUID, translation: CGFloat)?
-    /// Resets by itself if the system cancels the drag, so a piece is never left lifted.
-    @GestureState private var isHoldingPiece = false
-
-    private let spacing: CGFloat = 4
-    private let tileHeight: CGFloat = 58
-    /// Room above the tiles for the playhead's knob.
-    private let knobRoom: CGFloat = 18
-    private let moveAnimation = Animation.snappy(duration: 0.3)
-
-    /// A piece being moved: where it was, where it would land, and how far it has gone.
-    private struct Move {
-        let id: UUID
-        let from: Int
-        let to: Int
-        let translation: CGFloat
-        /// How far the other pieces step aside: the moved piece's width and a gap.
-        let gap: CGFloat
-    }
-
-    var body: some View {
-        GeometryReader { geometry in
-            let pieces = model.recording.pieces
-            let widths = tileWidths(total: geometry.size.width, pieces: pieces)
-            let move = plannedMove(widths: widths, pieces: pieces)
-            ZStack(alignment: .topLeading) {
-                HStack(spacing: spacing) {
-                    ForEach(Array(pieces.enumerated()), id: \.element.id) { index, piece in
-                        tile(piece, index: index, widths: widths, pieces: pieces, move: move)
-                            .transition(.scale(scale: 0.7).combined(with: .opacity))
-                    }
-                }
-                .padding(.top, knobRoom)
-                .animation(moveAnimation, value: pieces)
-                if trimDrag == nil && move == nil {
-                    playhead(widths: widths, pieces: pieces, totalWidth: geometry.size.width)
-                }
-            }
-            .coordinateSpace(.named("strip"))
-            .sensoryFeedback(.impact(weight: .medium), trigger: move?.id) { _, new in new != nil }
-            .sensoryFeedback(.selection, trigger: move?.to) { old, new in old != nil && new != nil }
-        }
-        .onChange(of: isHoldingPiece) { _, holding in
-            if !holding && moving != nil { withAnimation(moveAnimation) { moving = nil } }
-        }
-    }
-
-    // MARK: Layout
-
-    /// Each piece's share of the width, trimmed ends included while a handle is being dragged.
-    private func tileWidths(total: CGFloat, pieces: [Piece]) -> [CGFloat] {
-        let available = max(0, total - spacing * CGFloat(max(0, pieces.count - 1)))
-        let lengths = pieces.map { piece -> Double in
-            let length = model.editList.span(of: piece.id)?.length ?? piece.length
-            guard let drag = trimDrag, drag.id == piece.id else { return length }
-            return max(0.3, length + (drag.isStart ? -drag.seconds : drag.seconds))
-        }
-        let sum = max(lengths.reduce(0, +), 0.01)
-        let raw = lengths.map { max(28, available * CGFloat($0 / sum)) }
-        let scale = min(1, available / max(raw.reduce(0, +), 1))
-        return raw.map { $0 * scale }
-    }
-
-    /// Where each piece starts along the strip.
-    private func leftEdges(_ widths: [CGFloat]) -> [CGFloat] {
-        var x: CGFloat = 0
-        return widths.map { width in
-            defer { x += width + spacing }
-            return x
-        }
-    }
-
-    /// The piece being moved passes another once its leading edge crosses that piece's middle:
-    /// its right edge going right, its left edge going left. Its own middle wouldn't do: a
-    /// piece wider than the first or last can't get its middle past theirs, so it could never
-    /// reach either end. The middles are measured where the pieces sit before the move, so
-    /// they don't shift under the finger as the others step aside.
-    private func plannedMove(widths: [CGFloat], pieces: [Piece]) -> Move? {
-        guard let moving, let from = pieces.firstIndex(where: { $0.id == moving.id }) else { return nil }
-        let lefts = leftEdges(widths)
-        let end = (lefts.last ?? 0) + (widths.last ?? 0)
-        let translation = min(max(moving.translation, -lefts[from]), end - lefts[from] - widths[from])
-        let left = lefts[from] + translation
-        let right = left + widths[from]
-        let to = pieces.indices.filter { index in
-            guard index != from else { return false }
-            let middle = lefts[index] + widths[index] / 2
-            // Counts the pieces that end up before the moved one.
-            return index < from ? left >= middle : right > middle
-        }.count
-        return Move(id: moving.id, from: from, to: to, translation: translation, gap: widths[from] + spacing)
-    }
-
-    /// The moved piece follows the finger; those between where it was and where it would
-    /// land step aside to make room.
-    private func moveOffset(at index: Int, in move: Move?) -> CGFloat {
-        guard let move else { return 0 }
-        if index == move.from { return move.translation }
-        if move.from < index && index <= move.to { return -move.gap }
-        if move.to <= index && index < move.from { return move.gap }
-        return 0
-    }
-
-    private func finishMove(_ id: UUID, widths: [CGFloat], pieces: [Piece]) {
-        let move = plannedMove(widths: widths, pieces: pieces)
-        withAnimation(moveAnimation) {
-            if let move, move.to != move.from { model.move(id, to: move.to) }
-            moving = nil
-        }
-    }
-
-    /// Where a moment of the timeline sits along the strip.
-    private func position(of time: Double, widths: [CGFloat], pieces: [Piece]) -> CGFloat {
-        var x: CGFloat = 0
-        for (index, piece) in pieces.enumerated() {
-            guard let span = model.editList.span(of: piece.id) else { continue }
-            if time < span.end || index == pieces.count - 1 {
-                let fraction = span.length > 0 ? min(max((time - span.start) / span.length, 0), 1) : 0
-                return x + widths[index] * CGFloat(fraction)
-            }
-            x += widths[index] + spacing
-        }
-        return x
-    }
-
-    /// The moment of the timeline under a point along the strip.
-    private func time(at x: CGFloat, widths: [CGFloat], pieces: [Piece]) -> Double {
-        var left: CGFloat = 0
-        for (index, piece) in pieces.enumerated() {
-            guard let span = model.editList.span(of: piece.id) else { continue }
-            let right = left + widths[index]
-            if x <= right + spacing / 2 || index == pieces.count - 1 {
-                let fraction = Double(min(max((x - left) / max(widths[index], 1), 0), 1))
-                return span.start + span.length * fraction
-            }
-            left = right + spacing
-        }
-        return model.length
-    }
-
-    // MARK: Tiles
-
-    private func tile(_ piece: Piece, index: Int, widths: [CGFloat], pieces: [Piece], move: Move?) -> some View {
-        let width = widths[index]
-        let isSelected = model.selectedPieceID == piece.id
-        let isMoving = move?.id == piece.id
-        let offset = moveOffset(at: index, in: move)
-        let select = { (location: CGPoint) in model.select(piece.id, at: Double(location.x / max(width, 1))) }
-        return ZStack {
-            tileContent(piece)
-                .frame(width: width, height: tileHeight)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .contentShape(Rectangle())
-                // On the picture, under the trim handles, so holding a handle still trims. The tap
-                // sits with the hold: a tap further out would wait on it and never fire.
-                .onTapGesture(coordinateSpace: .local, perform: select)
-                .gesture(moveGesture(piece, widths: widths, pieces: pieces), including: pieces.count > 1 ? .all : .subviews)
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.yellow, lineWidth: 3)
-                .opacity(isSelected ? 1 : 0)
-            if isSelected {
-                HStack {
-                    handle(piece, isStart: true, width: width)
-                    Spacer(minLength: 0)
-                    handle(piece, isStart: false, width: width)
-                }
-                .transition(.opacity)
-            }
-            if let drag = trimDrag, drag.id == piece.id {
-                Text(Duration.seconds(max(0.3, piece.length + (drag.isStart ? -drag.seconds : drag.seconds))),
-                     format: .time(pattern: .minuteSecond))
-                    .font(.caption2.monospacedDigit().weight(.bold))
-                    .padding(4)
-                    .background(.black.opacity(0.6), in: Capsule())
-            }
-        }
-        .frame(width: width, height: tileHeight)
-        .animation(.easeOut(duration: 0.15), value: isSelected)
-        .scaleEffect(isMoving ? 1.08 : 1)
-        .shadow(color: .black.opacity(isMoving ? 0.5 : 0), radius: 8, y: 4)
-        .animation(.snappy(duration: 0.2), value: isMoving)
-        .offset(x: offset)
-        // The moved piece tracks the finger exactly; the others glide. On release the moved
-        // piece glides too, from under the finger into its new place.
-        .animation(isMoving ? nil : moveAnimation, value: offset)
-        .zIndex(isMoving ? 1 : 0)
-        .contentShape(Rectangle())
-        .onTapGesture(coordinateSpace: .local, perform: select)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Piece \(index + 1)"))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-        // VoiceOver: swipe up to move the piece later, down to move it earlier.
-        .accessibilityAdjustableAction { direction in
-            let to = direction == .increment ? index + 1 : index - 1
-            guard pieces.indices.contains(to) else { return }
-            withAnimation(moveAnimation) { model.move(piece.id, to: to) }
-            AccessibilityNotification.Announcement(AttributedString(localized: "Piece \(to + 1)")).post()
-        }
-    }
-
-    /// Hold a piece, then drag it along the strip. Measured in the strip's space, so the piece
-    /// moving under the finger doesn't throw off the distance.
-    private func moveGesture(_ piece: Piece, widths: [CGFloat], pieces: [Piece]) -> some Gesture {
-        LongPressGesture(minimumDuration: 0.25)
-            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .named("strip")))
-            .updating($isHoldingPiece) { value, holding, _ in
-                if case .second(true, _) = value { holding = true }
-            }
-            .onChanged { value in
-                guard case .second(true, let drag) = value else { return }
-                moving = (piece.id, drag?.translation.width ?? 0)
-            }
-            .onEnded { value in
-                guard case .second(true, _) = value else { return }
-                finishMove(piece.id, widths: widths, pieces: pieces)
-            }
-    }
-
-    @ViewBuilder
-    private func tileContent(_ piece: Piece) -> some View {
-        if model.isVideo {
-            if let image = model.thumbnail(for: piece) {
-                Image(decorative: image, scale: 1)
-                    .resizable()
-                    .scaledToFill()
-                    .transition(.opacity)
-            } else {
-                Color.white.opacity(0.12)
-            }
-        } else {
-            WaveformView(levels: levels(for: piece))
-                .background(Color.accentColor.opacity(0.25))
-        }
-    }
-
-    /// Loudness across the piece, for its waveform.
-    private func levels(for piece: Piece) -> [Float] {
-        guard let envelope = model.analyses[piece.file]?.envelope, !envelope.isEmpty else { return [] }
-        let step = TakeAnalysis.envelopeInterval
-        let first = max(0, Int(piece.start / step))
-        let last = min(envelope.count, Int(piece.end / step))
-        guard last > first else { return [] }
-        return Array(envelope[first..<last])
-    }
-
-    /// Drag outward to bring back cut material, inward to cut more. The piece resizes as you drag.
-    private func handle(_ piece: Piece, isStart: Bool, width: CGFloat) -> some View {
-        Capsule()
-            .fill(Color.yellow)
-            .frame(width: 8, height: 34)
-            .padding(.horizontal, 2)
-            .frame(width: 22, height: tileHeight)
-            .contentShape(Rectangle())
-            .highPriorityGesture(
-                DragGesture(minimumDistance: 1)
-                    .onChanged { value in
-                        let secondsPerPoint = piece.length / Double(max(width, 1))
-                        trimDrag = (piece.id, isStart, Double(value.translation.width) * secondsPerPoint)
-                    }
-                    .onEnded { value in
-                        let secondsPerPoint = piece.length / Double(max(width, 1))
-                        let delta = Double(value.translation.width) * secondsPerPoint
-                        trimDrag = nil
-                        if isStart {
-                            model.trim(piece.id, start: piece.start + delta, end: piece.end)
-                        } else {
-                            model.trim(piece.id, start: piece.start, end: piece.end + delta)
-                        }
-                    }
-            )
-            .accessibilityLabel(isStart ? "Trim start" : "Trim end")
-    }
-
-    // MARK: Playhead
-
-    /// A line through the pieces with a knob on top: drag it to move through the recording.
-    private func playhead(widths: [CGFloat], pieces: [Piece], totalWidth: CGFloat) -> some View {
-        let x = position(of: model.currentTime, widths: widths, pieces: pieces)
-        return VStack(spacing: 0) {
-            Circle()
-                .fill(.white)
-                .frame(width: 16, height: 16)
-                .shadow(radius: 2)
-            Rectangle()
-                .fill(.white)
-                .frame(width: 2, height: tileHeight + 6)
-                .shadow(radius: 2)
-        }
-        .frame(width: 44)
-        .contentShape(Rectangle())
-        .offset(x: x - 22, y: knobRoom - 16 - 2)
-        .gesture(
-            DragGesture(minimumDistance: 0, coordinateSpace: .named("strip"))
-                .onChanged { value in
-                    if scrubStart == nil {
-                        scrubStart = model.currentTime
-                        model.beginScrub()
-                    }
-                    let target = time(at: min(max(0, value.location.x), totalWidth), widths: widths, pieces: pieces)
-                    model.scrub(to: target)
-                }
-                .onEnded { _ in
-                    scrubStart = nil
-                    model.endScrub()
-                }
-        )
-        .accessibilityElement()
-        .accessibilityLabel("Playhead")
-        .accessibilityValue(Text(Duration.seconds(model.currentTime), format: .time(pattern: .minuteSecond)))
-        .accessibilityAdjustableAction { direction in
-            model.seek(to: model.currentTime + (direction == .increment ? 1 : -1))
-        }
-    }
-}
-
-private struct WaveformView: View {
-    let levels: [Float]
-
-    var body: some View {
-        Canvas { context, size in
-            guard !levels.isEmpty else { return }
-            let bars = max(1, Int(size.width / 3))
-            for bar in 0..<bars {
-                let index = min(levels.count - 1, bar * levels.count / bars)
-                let level = CGFloat(VoiceScrollService.normalize(levels[index]))
-                let height = max(2, level * size.height * 0.9)
-                let rect = CGRect(x: CGFloat(bar) * 3, y: (size.height - height) / 2, width: 2, height: height)
-                context.fill(Path(roundedRect: rect, cornerRadius: 1), with: .color(.white.opacity(0.85)))
-            }
-        }
-    }
 }
 
 // MARK: - Player and overlays

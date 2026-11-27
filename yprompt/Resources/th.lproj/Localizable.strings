@@ -563,3 +563,34 @@
 "Film yourself with the script under the lens, record just your voice, or read on a plain color." = "อัดตัวเองโดยมีสคริปต์อยู่ใต้เลนส์ อัดเฉพาะเสียง หรืออ่านบนพื้นสีเรียบ";
 "Make It Easy to Read" = "อ่านได้สบายตา";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "ปรับขนาด ฟอนต์ และระยะห่างของข้อความให้เหมาะกับสายตาและระยะที่คุณนั่ง";
+
+/* Editor: added clips, timeline and caption style */
+"Rounded" = "มน";
+"Classic" = "คลาสสิก";
+"Serif" = "มีเชิง";
+"Mono" = "ความกว้างเท่ากัน";
+"Small" = "เล็ก";
+"Medium" = "กลาง";
+"Large" = "ใหญ่";
+"None" = "ไม่มี";
+"Outline" = "เส้นขอบ";
+"Box" = "กล่อง";
+"Caption Style" = "รูปแบบคำบรรยาย";
+"Font" = "แบบอักษร";
+"Size" = "ขนาด";
+"Highlight" = "ไฮไลท์";
+"The word being said." = "คำที่กำลังพูดอยู่";
+"Box Color" = "สีกล่อง";
+"Outline Color" = "สีเส้นขอบ";
+"All Caps" = "ตัวพิมพ์ใหญ่ทั้งหมด";
+"Reset Style" = "รีเซ็ตรูปแบบ";
+"This is how your captions will look" = "คำบรรยายของคุณจะมีลักษณะแบบนี้";
+"Add from Photos" = "เพิ่มจากรูปภาพ";
+"Add from Files" = "เพิ่มจากไฟล์";
+"Adding the clip…" = "กำลังเพิ่มคลิป…";
+"Couldn't Add the Clip" = "ไม่สามารถเพิ่มคลิปได้";
+"This file can't be played." = "ไม่สามารถเล่นไฟล์นี้ได้";
+"This file has no video. Video recordings can only add videos." = "ไฟล์นี้ไม่มีวิดีโอ การบันทึกวิดีโอเพิ่มได้เฉพาะวิดีโอเท่านั้น";
+"This file has no sound." = "ไฟล์นี้ไม่มีเสียง";
+"Zoom In" = "ขยายเข้า";
+"Zoom Out" = "ย่อออก";
