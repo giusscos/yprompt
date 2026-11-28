@@ -55,6 +55,13 @@ enum CaptionTrack {
         return aligned.compactMap { $0?.isMatch == true ? $0?.scriptIndex : nil }.max()
     }
 
+    /// For each spoken word, the script word it matches, or nil when it isn't the script's:
+    /// something added, or misheard.
+    static func scriptMatches(spoken: [SpokenWord], script: ScriptWords) -> [Int?] {
+        align(spoken: spoken.map { ScriptWords.matchKey($0.text) }, script: script.words.map(\.key))
+            .map { $0?.isMatch == true ? $0?.scriptIndex : nil }
+    }
+
     /// Subtitles for the clip cut to `range`, with times counted from its start.
     static func srt(_ lines: [CaptionLine], in range: ClosedRange<Double>) -> String {
         var output = ""

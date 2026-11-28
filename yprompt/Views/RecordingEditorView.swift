@@ -24,7 +24,8 @@ struct RecordingEditorView: View {
     @Environment(StoreKitService.self) private var storeKit
     @Environment(\.openURL) private var openURL
     @State private var confirmingDeleteRecording = false
-    @State private var showingPaywall = false
+    /// The paywall, opened for a reason: the mark, or the delivery report.
+    @State private var paywallContext: PaywallView.Context?
     /// Set by each save to Photos; the rating request waits on it.
     @State private var reviewAfterSave: UUID?
 
@@ -40,7 +41,9 @@ struct RecordingEditorView: View {
                 EditorContent(model: model, canRecordMore: onRecordMore != nil && script != nil,
                               onRecordMore: { pickup in model.close(); onRecordMore?(pickup) },
                               onDeleteRecording: { confirmingDeleteRecording = true },
-                              onRemoveMark: { showingPaywall = true },
+                              onUpgrade: { context in
+                                  paywallContext = context
+                              },
                               onClose: { model.close(); onClose() })
             } else {
                 ContentUnavailableView("Recording Not Found", systemImage: "film.stack",
@@ -57,6 +60,7 @@ struct RecordingEditorView: View {
             let model = RecordingEditorModel(recording: recording, script: script ?? ScriptWords(text: ""),
                                              selectedPieceID: selection.pieceID)
             model.showsMark = !storeKit.isPremium
+            model.hasPro = storeKit.isPremium
             self.model = model
         }
         .task(id: model == nil) { await model?.load() }
@@ -65,7 +69,10 @@ struct RecordingEditorView: View {
         // Another recording was picked in the list, or the window closed.
         .onDisappear { model?.close() }
         #endif
-        .onChange(of: storeKit.isPremium) { _, premium in model?.showsMark = !premium }
+        .onChange(of: storeKit.isPremium) { _, premium in
+            model?.showsMark = !premium
+            model?.hasPro = premium
+        }
         .onChange(of: model?.renderState) { _, state in
             if state == .saved { reviewAfterSave = UUID() }
         }
@@ -75,12 +82,12 @@ struct RecordingEditorView: View {
             try? await Task.sleep(for: .seconds(1.2))
             guard !Task.isCancelled else { return }
             reviewAfterSave = nil
-            guard let model, !showingPaywall, !confirmingDeleteRecording, model.shareItems == nil else { return }
+            guard let model, paywallContext == nil, !confirmingDeleteRecording, model.shareItems == nil else { return }
             guard model.renderState == .saved || model.renderState == .idle else { return }
             RatingService.shared.requestIfAppropriate(after: .zero)
         }
-        .sheet(isPresented: $showingPaywall) {
-            PaywallView(context: .removeMark).environment(storeKit)
+        .sheet(item: $paywallContext) { context in
+            PaywallView(context: context).environment(storeKit)
         }
         .confirmationDialog("Delete this recording?", isPresented: $confirmingDeleteRecording, titleVisibility: .visible) {
             Button("Delete Recording", role: .destructive) {
@@ -110,10 +117,11 @@ private struct EditorContent: View {
     let canRecordMore: Bool
     let onRecordMore: (Pickup) -> Void
     let onDeleteRecording: () -> Void
-    let onRemoveMark: () -> Void
+    let onUpgrade: (PaywallView.Context) -> Void
     let onClose: () -> Void
     @Environment(\.openURL) private var openURL
     @State private var showingCaptionStyle = false
+    @State private var showingDelivery = false
     /// Where an added clip goes, chosen before Photos or Files opens.
     @State private var clipIndex = 0
     @State private var showingPhotoPicker = false
@@ -327,7 +335,7 @@ private struct EditorContent: View {
             Image(decorative: mark.image, scale: 1)
                 .resizable()
                 .frame(width: CGFloat(mark.image.width) * scale, height: CGFloat(mark.image.height) * scale)
-            Button("Remove", action: onRemoveMark)
+            Button("Remove") { onUpgrade(.removeMark) }
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -509,6 +517,7 @@ private struct EditorContent: View {
 
     private var options: some View {
         VStack(alignment: .leading, spacing: 10) {
+            deliveryRow
             Toggle(isOn: Binding(get: { model.recording.removePauses }, set: { model.setRemovePauses($0) })) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Remove Pauses")
@@ -545,6 +554,70 @@ private struct EditorContent: View {
         .padding(14)
         .ypGlassEffect(cornerRadius: 20)
         .disabled(model.isRendering)
+    }
+
+    /// Pace, filler words and long pauses at a glance; the full report is part of Pro.
+    @ViewBuilder
+    private var deliveryRow: some View {
+        if let report = model.deliveryReport {
+            Button {
+                if model.hasPro { showingDelivery = true } else { onUpgrade(.deliveryReport) }
+            } label: {
+                HStack(spacing: 10) {
+                    Text("Delivery")
+                        .fixedSize()
+                    Spacer(minLength: 8)
+                    // The pace's unit goes first when the row is short of room.
+                    ViewThatFits(in: .horizontal) {
+                        deliveryChips(report, showsUnit: true)
+                        deliveryChips(report, showsUnit: false)
+                    }
+                    .labelStyle(DeliveryChipLabelStyle())
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    Image(systemName: model.hasPro ? "chevron.right" : "lock.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Delivery")
+            .accessibilityValue(deliverySummary(report))
+            .accessibilityHint(model.hasPro ? "Opens the delivery report" : "Part of yPrompt Pro")
+            .popover(isPresented: $showingDelivery, arrowEdge: .bottom) {
+                DeliveryReportView(model: model)
+            }
+            .transition(.opacity)
+        }
+    }
+
+    private func deliveryChips(_ report: DeliveryReport, showsUnit: Bool) -> some View {
+        HStack(spacing: 12) {
+            if let pace = report.wordsPerMinute {
+                Label {
+                    if showsUnit {
+                        Text("\(Int(pace.rounded())) wpm")
+                    } else {
+                        Text(Int(pace.rounded()), format: .number)
+                    }
+                } icon: {
+                    Image(systemName: "speedometer")
+                }
+            }
+            Label { Text(report.fillers.count, format: .number) } icon: { Image(systemName: "text.bubble") }
+            Label { Text(report.pauses.count, format: .number) } icon: { Image(systemName: "pause.circle") }
+        }
+        .fixedSize()
+    }
+
+    private func deliverySummary(_ report: DeliveryReport) -> Text {
+        let pace = report.wordsPerMinute.map { Text("Pace: \(Int($0.rounded())) words per minute.") + Text(verbatim: " ") }
+        return (pace ?? Text(verbatim: ""))
+            + Text("Filler words: \(report.fillers.count).") + Text(verbatim: " ")
+            + Text("Long pauses: \(report.pauses.count).")
     }
 
     private var captionLabel: some View {
@@ -854,6 +927,16 @@ private struct CaptionOverlay: View {
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+/// An icon and a number, close together, for the Delivery row.
+private struct DeliveryChipLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            configuration.icon.imageScale(.small)
+            configuration.title
+        }
     }
 }
 

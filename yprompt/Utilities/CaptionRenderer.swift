@@ -116,6 +116,8 @@ nonisolated enum CaptionBackground: String, CaseIterable, Identifiable, Codable,
     case outline
     /// A rounded box behind the caption.
     case box
+    /// A rounded box behind the word being said only, moving from word to word.
+    case word
     var id: String { rawValue }
 
     var title: LocalizedStringResource {
@@ -123,6 +125,7 @@ nonisolated enum CaptionBackground: String, CaseIterable, Identifiable, Codable,
         case .none: "None"
         case .outline: "Outline"
         case .box: "Box"
+        case .word: "Word"
         }
     }
 }
@@ -136,7 +139,7 @@ nonisolated struct CaptionLook: Codable, Hashable, Sendable {
     /// The word being said, in Lyrics. The same as the text color shows no difference.
     var highlightColor: CaptionColor = .white
     var background: CaptionBackground = .none
-    /// The box, or the outline around the letters.
+    /// The box (behind the caption or the word being said), or the outline around the letters.
     var backgroundColor: CaptionColor = .black
     var allCaps = false
 
@@ -175,6 +178,7 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
         let start: Double
         /// Left end of the baseline, in the strip's coordinates (origin bottom left).
         let origin: CGPoint
+        let row: Int
     }
 
     private struct Line {
@@ -199,6 +203,8 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
 
     /// Lyrics lights the word being said in its own color, when one is chosen.
     private var highlightsWord: Bool { style == .lyrics && look.highlightColor != look.textColor }
+    /// The word box takes this long to slide from one word to the next.
+    private static let wordBoxSlide = 0.12
 
     /// - Parameter size: the video as shown (upright), in pixels.
     init(lines captionLines: [CaptionLine], style: CaptionStyle, position: CaptionPosition,
@@ -264,7 +270,7 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
                 let baseline = stripHeight - (rowTop + (rowHeight - ascent - descent) / 2 + ascent)
                 for item in row {
                     words.append(Word(line: item.line, width: item.width, start: item.start,
-                                      origin: CGPoint(x: x, y: baseline)))
+                                      origin: CGPoint(x: x, y: baseline), row: rowIndex))
                     x += item.width + item.gap
                 }
             }
@@ -282,14 +288,21 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
         let fade = min(0.08, (line.end - line.start) / 4)
         let lineAlpha = min(1, max(0, min((time - line.start) / fade, (line.end - time) / fade)))
         // The word being said: the last one to have started.
-        let current = highlightsWord ? line.words.lastIndex { $0.start <= time } : nil
+        let current = highlightsWord || look.background == .word ? line.words.lastIndex { $0.start <= time } : nil
         let states = line.words.map { wordState($0, at: time) }
+        // How far the word box has slid from the word before, 0 to 1.
+        let slide: Double = if look.background == .word, let current {
+            min(1, max(0, (time - line.words[current].start) / Self.wordBoxSlide))
+        } else {
+            1
+        }
 
         // Steps fine enough not to show, coarse enough that most frames reuse an image.
         var hasher = Hasher()
         hasher.combine(index)
         hasher.combine(Int((lineAlpha * 20).rounded()))
         hasher.combine(current)
+        hasher.combine(Int((slide * 12).rounded()))
         for state in states {
             hasher.combine(Int((state.alpha * 20).rounded()))
             hasher.combine(Int((state.scale * 200).rounded()))
@@ -319,6 +332,13 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
         case .outline:
             context.setLineJoin(.round)
             context.setLineWidth(fontSize * 0.16)
+        case .word:
+            if let current {
+                drawWordBox(at: current, in: line, slide: slide, scale: states[current].scale, context: context)
+            }
+            // The other words still need a shadow to read over the video.
+            context.setShadow(offset: CGSize(width: 0, height: -fontSize * 0.04), blur: fontSize * 0.3,
+                              color: CGColor(gray: 0, alpha: 0.6))
         }
 
         for (wordIndex, (word, state)) in zip(line.words, states).enumerated() {
@@ -339,7 +359,7 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
                 CTLineDraw(word.line, context)
                 context.setTextDrawingMode(.fill)
             }
-            let color = wordIndex == current ? look.highlightColor : look.textColor
+            let color = wordIndex == current && style == .lyrics ? look.highlightColor : look.textColor
             context.setFillColor(color.cgColor(alpha: alpha))
             context.textPosition = word.origin
             CTLineDraw(word.line, context)
@@ -351,6 +371,36 @@ nonisolated final class CaptionRenderer: @unchecked Sendable {
             cache[key] = image
         }
         return (image, line.strip.origin)
+    }
+
+    /// A rounded box hugging a word, in the strip's coordinates.
+    private func wordBox(_ word: Word) -> CGRect {
+        let padX = (fontSize * 0.16).rounded()
+        let padY = (fontSize * 0.07).rounded()
+        return CGRect(x: word.origin.x - padX, y: word.origin.y - descent - padY,
+                      width: word.width + padX * 2, height: ascent + descent + padY * 2)
+    }
+
+    /// The box behind the word being said. It slides over from the word before on the same row,
+    /// and grows with the word's pop in Lyrics.
+    private func drawWordBox(at index: Int, in line: Line, slide: Double, scale: CGFloat, context: CGContext) {
+        let word = line.words[index]
+        var rect = wordBox(word)
+        if slide < 1, index > 0, line.words[index - 1].row == word.row {
+            let from = wordBox(line.words[index - 1])
+            let t = CGFloat(1 - pow(1 - slide, 3))
+            rect = CGRect(x: from.minX + (rect.minX - from.minX) * t, y: rect.minY,
+                          width: from.width + (rect.width - from.width) * t, height: rect.height)
+        }
+        if scale != 1 {
+            let center = CGPoint(x: rect.midX, y: rect.midY)
+            rect = CGRect(x: center.x - rect.width * scale / 2, y: center.y - rect.height * scale / 2,
+                          width: rect.width * scale, height: rect.height * scale)
+        }
+        let corner = min(fontSize * 0.22, rect.height / 2)
+        context.addPath(CGPath(roundedRect: rect, cornerWidth: corner, cornerHeight: corner, transform: nil))
+        context.setFillColor(look.backgroundColor.cgColor())
+        context.fillPath()
     }
 
     /// How a word looks at a moment: Lyrics dims it until it's said, then lights it up with a

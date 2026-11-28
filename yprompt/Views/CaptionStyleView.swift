@@ -64,7 +64,7 @@ struct CaptionStyleView: View {
                         .labelsHidden()
                     }
                     if model.recording.look.background != .none {
-                        section(model.recording.look.background == .box ? "Box Color" : "Outline Color") {
+                        section(model.recording.look.background == .outline ? "Outline Color" : "Box Color") {
                             CaptionColorRow(selection: look.backgroundColor)
                         }
                         .transition(.opacity)
@@ -89,6 +89,7 @@ struct CaptionStyleView: View {
         .presentationDetents([.medium, .large])
         .presentationBackgroundInteraction(.enabled(upThrough: .medium))
         .presentationDragIndicator(.visible)
+        .presentationBackground(Color(white: 0.09))
         #endif
     }
 

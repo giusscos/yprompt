@@ -14,6 +14,7 @@ struct ProFeatureList: View {
             #if !os(macOS)
             row("sparkles.rectangle.stack.fill", .orange, "No yPrompt Mark", "Save your videos without the \"Made with yPrompt\" mark.")
             #endif
+            row("chart.bar.xaxis",   .mint,   "Delivery Report",      "Your pace, filler words, pauses and skipped lines after every take.")
             row("mic.fill",          .purple, "Voice Scroll",         "Follows your words as you speak and waits when you pause.")
             row("music.note.list",   .green,  "Lyrics Style",         "Every word lights up as you read, like song lyrics.")
             row("timer",             .teal,   "Timed Mode",           "Paces your script to finish right on time.")

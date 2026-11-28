@@ -68,6 +68,13 @@ struct EditList: Equatable {
             .map { $0.timelineStart + (source - $0.sourceStart) }
     }
 
+    /// Like `timelineTime`, but a moment that was cut lands where the piece carries on after it.
+    func nearestTimelineTime(piece: UUID, source: Double) -> Double? {
+        if let exact = timelineTime(piece: piece, source: source) { return exact }
+        let pieceSegments = segments.filter { $0.pieceID == piece }
+        return pieceSegments.first { $0.sourceStart >= source }?.timelineStart ?? pieceSegments.last?.timelineEnd
+    }
+
     /// The piece and source moment shown at a time on the timeline.
     func location(at time: Double) -> (pieceID: UUID, source: Double)? {
         guard let segment = segments.first(where: { time < $0.timelineEnd }) ?? segments.last else { return nil }

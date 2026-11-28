@@ -176,22 +176,34 @@ final class SpeechWordTracker {
 
     // MARK: - Language
 
+    /// The language the script is written in. The device's language only settles a short or
+    /// mixed script: given as a hint up front it outweighs the text itself, so a plainly English
+    /// script on an Italian iPhone would be taken for Italian.
+    nonisolated static func language(ofScript text: String) -> String? {
+        let sample = String(text.prefix(2000))
+        let detector = NLLanguageRecognizer()
+        detector.processString(sample)
+        if let (language, confidence) = detector.languageHypotheses(withMaximum: 1).first, confidence >= 0.75 {
+            return language.rawValue
+        }
+        let currentLanguage = Locale.current.language.languageCode?.identifier
+        let hinted = NLLanguageRecognizer()
+        if let currentLanguage {
+            hinted.languageHints = [NLLanguage(currentLanguage): 0.6]
+        }
+        hinted.processString(sample)
+        return hinted.dominantLanguage?.rawValue ?? currentLanguage
+    }
+
     /// Picks a recognizer for the language the script is written in, using the user's own
     /// region when it applies. Short scripts lean towards the device language.
     static func recognizer(forScript text: String) -> SFSpeechRecognizer? {
         let current = Locale.current
-        let currentLanguage = current.language.languageCode?.identifier
-
-        let detector = NLLanguageRecognizer()
-        if let currentLanguage {
-            detector.languageHints = [NLLanguage(currentLanguage): 0.6]
-        }
-        detector.processString(String(text.prefix(2000)))
-        let language = detector.dominantLanguage?.rawValue ?? currentLanguage
+        let scriptLanguage = language(ofScript: text) ?? current.language.languageCode?.identifier
 
         let supported = SFSpeechRecognizer.supportedLocales()
         let matching = supported
-            .filter { $0.language.languageCode?.identifier == language }
+            .filter { $0.language.languageCode?.identifier == scriptLanguage }
             .sorted { $0.identifier < $1.identifier }
         let chosen = matching.first { $0.region == current.region }
             ?? matching.first { SFSpeechRecognizer(locale: $0)?.supportsOnDeviceRecognition == true }

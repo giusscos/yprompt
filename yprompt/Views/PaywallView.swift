@@ -14,6 +14,8 @@ struct PaywallView: View {
         case firstRead
         /// From the "Remove" chip on the mark in a recording.
         case removeMark
+        /// From the Delivery row in the recording editor.
+        case deliveryReport
     }
 
     var context: Context = .upgrade
@@ -99,6 +101,7 @@ struct PaywallView: View {
         case .upgrade: "Unlock yPrompt Pro"
         case .firstRead: "Nicely Read!"
         case .removeMark: "Your Videos, Without the Mark"
+        case .deliveryReport: "See How You Spoke"
         }
     }
 
@@ -107,6 +110,7 @@ struct PaywallView: View {
         case .upgrade: "Professional tools for every presenter."
         case .firstRead: "Keep every script moving at your pace, with your voice in control."
         case .removeMark: "Pro saves your videos without the \"Made with yPrompt\" mark, and unlocks every Pro tool."
+        case .deliveryReport: "Pro shows your pace, filler words, long pauses and skipped lines after every take, and plays each one back."
         }
     }
 
@@ -165,4 +169,8 @@ struct PaywallView: View {
         }
         .padding(.bottom, 8)
     }
+}
+
+extension PaywallView.Context: Identifiable {
+    var id: Self { self }
 }

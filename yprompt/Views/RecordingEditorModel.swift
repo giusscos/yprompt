@@ -70,6 +70,8 @@ final class RecordingEditorModel {
     private(set) var isAnalyzing = false
     private(set) var editList: EditList
     private(set) var captionLines: [CaptionLine] = []
+    /// How the takes were spoken; nil until there are words to go on.
+    private(set) var deliveryReport: DeliveryReport?
     private(set) var captionRenderer: CaptionRenderer?
     private(set) var mark: Watermark?
     /// The video as shown and saved, in pixels; zero for audio.
@@ -90,6 +92,8 @@ final class RecordingEditorModel {
     static let maxTimelineZoom: Double = 8
     private(set) var isAddingClip = false
     var clipError: String?
+    /// The delivery report's details are part of Pro.
+    var hasPro = false
     /// Free users' videos carry the mark; Pro removes it.
     var showsMark = true {
         didSet { if showsMark != oldValue { refreshOverlays() } }
@@ -271,6 +275,8 @@ final class RecordingEditorModel {
             editList = newEditList
         }
         captionLines = editList.captionLines(for: recording, analyses: analyses, script: script)
+        let report = DeliveryReport(recording: recording, analyses: analyses, script: script)
+        deliveryReport = report.isEmpty ? nil : report
         let signature = Self.signature(of: recording, editList: editList)
         if composed != nil, signature == composedSignature {
             refreshOverlays()
@@ -662,6 +668,45 @@ final class RecordingEditorModel {
         let length = max(longest, analysisLength)
         sourceDurations[file] = length
         return length
+    }
+
+    // MARK: Delivery
+
+    /// Where a moment of a take sits on the timeline now, after trims and Remove Pauses.
+    func timelineTime(of moment: DeliveryReport.Moment) -> Double? {
+        editList.nearestTimelineTime(piece: moment.pieceID, source: moment.source)
+    }
+
+    func timelineTime(of sample: DeliveryReport.PaceSample) -> Double? {
+        editList.nearestTimelineTime(piece: sample.pieceID, source: sample.source)
+    }
+
+    /// Plays from a little before a moment, so it's heard in context.
+    func play(from time: Double) {
+        seek(to: max(0, time - 0.8))
+        player.play()
+        isPlaying = true
+    }
+
+    /// The pace of the recording made before this one, of the same script when there is one,
+    /// from the words kept with its takes.
+    func previousPace() -> Double? {
+        let earlier = RecordingLibrary.shared.recordings
+            .filter { $0.id != recording.id && $0.createdAt < recording.createdAt }
+            .sorted { $0.createdAt > $1.createdAt }
+        let sameScript = earlier.filter { $0.scriptID != nil && $0.scriptID == recording.scriptID }
+        for candidate in (sameScript.isEmpty ? earlier : sameScript).prefix(5) {
+            var analyses: [String: TakeAnalysis] = [:]
+            for file in Set(candidate.pieces.map(\.file)) {
+                if let cached = RecordingStore.cachedAnalysis(for: candidate.folder.appendingPathComponent(file)) {
+                    analyses[file] = cached
+                }
+            }
+            if let pace = DeliveryReport(recording: candidate, analyses: analyses, script: ScriptWords(text: "")).wordsPerMinute {
+                return pace
+            }
+        }
+        return nil
     }
 
     // MARK: Pickups

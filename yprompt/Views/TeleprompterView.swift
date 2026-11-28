@@ -1885,6 +1885,9 @@ struct TeleprompterView: View {
                                                  recordingID: selection?.recordingID)
                     let pending = RecordingStore.beginPiece(target, kind: kind, startProgress: viewModel.progress)
                     try? FileManager.default.copyItem(at: source, to: pending.url)
+                    // Word timings saved beside the file, for simulators whose speech model won't load.
+                    try? FileManager.default.copyItem(at: source.appendingPathExtension("analysis.json"),
+                                                      to: pending.url.appendingPathExtension("analysis.json"))
                     guard let (recording, piece) = await RecordingStore.finishPiece(pending, endProgress: 1) else { return }
                     selection = RecordingSelection(recordingID: recording.id, pieceID: piece.id)
                 }
