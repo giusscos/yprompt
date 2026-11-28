@@ -9,10 +9,9 @@ enum TextFormat {
     case bold, italic, underline, strikethrough
 }
 
-/// Script editor on the Mac (and Vision Pro), with bold, italic, underline and strikethrough:
-/// SwiftUI's `TextEditor` on macOS 26 and later. Before that, where it can't format a
-/// selection, the text is edited plainly, keeping the formatting already there.
-/// iPhone and iPad use `ScriptTextEditor`.
+/// Script editor on Vision Pro: SwiftUI's `TextEditor`, formatting where the system allows it,
+/// otherwise plain editing that keeps the formatting already there. iPhone and iPad use
+/// `ScriptTextEditor`, the Mac `MacScriptTextEditor`.
 struct MarkdownEditorView: View {
     @Binding var text: AttributedString
     /// Set by the host (e.g. the macOS toolbar) to format the current selection; cleared once applied.

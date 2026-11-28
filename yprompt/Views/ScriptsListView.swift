@@ -412,7 +412,7 @@ struct ScriptsListView: View {
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
         #if os(iOS)
-        .onAppear(perform: removeEmptyUntitledScripts)
+        .onAppear { removeEmptyUntitledScripts() }
         // From iOS 26 the toolbar tips point at their buttons: New Script at +, Write Script at
         // the sparkles. Not while onboarding covers the list, nor while selecting, when the
         // buttons aren't there.
@@ -446,6 +446,11 @@ struct ScriptsListView: View {
         #else
         List(selection: $macSelectedIDs) {
             listRows
+        }
+        .onAppear { removeEmptyUntitledScripts() }
+        // Moving on from a new script left empty.
+        .onChange(of: selectedScript?.id) { oldID, _ in
+            if oldID != nil { removeEmptyUntitledScripts() }
         }
         .onChange(of: macSelectedIDs) { oldIDs, newIDs in
             if newIDs.count == 1, let id = newIDs.first,
@@ -627,17 +632,34 @@ struct ScriptsListView: View {
         }
     }
 
-    #if os(iOS)
-    /// A new script left without a title or a word: + opens a page straight away, so backing
-    /// out of it shouldn't leave an empty "Untitled Script" behind.
+    #if os(iOS) || os(macOS)
+    /// A new script left without a title or a word: + opens a page straight away, so leaving
+    /// it shouldn't leave an empty "Untitled Script" behind. A moment later, once the editor's
+    /// own save has run, and never the script that's open.
     private func removeEmptyUntitledScripts() {
-        let empty = scripts.filter {
-            $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                && ScriptTextStyle.isDefaultTitle($0.title)
+        Task {
+            try? await Task.sleep(for: .milliseconds(1500))
+            let empty = scripts.filter {
+                $0.id != openScriptID
+                    && $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    && Self.isDefaultTitle($0.title)
+            }
+            guard !empty.isEmpty else { return }
+            empty.forEach(modelContext.delete)
+            try? modelContext.save()
         }
-        guard !empty.isEmpty else { return }
-        empty.forEach(modelContext.delete)
-        try? modelContext.save()
+    }
+
+    private var openScriptID: UUID? {
+        #if os(macOS)
+        selectedScript?.id
+        #else
+        nil
+        #endif
+    }
+
+    private static func isDefaultTitle(_ title: String) -> Bool {
+        title == "Untitled Script" || title == String(localized: "Untitled Script")
     }
     #endif
 
@@ -647,7 +669,7 @@ struct ScriptsListView: View {
             showingPaywall = true
             return
         }
-        #if os(iOS)
+        #if os(iOS) || os(macOS)
         // The title is typed at the top of the new page, which opens with the cursor there.
         createScript(title: "")
         #else

@@ -166,6 +166,24 @@ struct EditorView: View {
                 wordCountBar
             }
         }
+        #elseif os(macOS)
+        VStack(spacing: 0) {
+            // Keeps the page from reaching under the toolbar, whose glass would sample it and
+            // draw the title and buttons dark.
+            Color.clear.frame(height: 1)
+            MacScriptTextEditor(
+                text: $attrText,
+                title: Binding(get: { script.title }, set: { newTitle in
+                    script.title = newTitle
+                    scheduleSave(attributedText: attrText)
+                }),
+                formatRequest: $formatRequest,
+                focusOnAppear: script.content.isEmpty
+            )
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            wordCountBar
+        }
         #else
         MarkdownEditorView(
             text: $attrText,
@@ -259,12 +277,13 @@ struct EditorView: View {
             .help("Read this script with the camera on, ready to record")
             .disabled(script.content.isEmpty)
 
-            if MarkdownEditorView.supportsFormatting {
-                Button { formatRequest = .bold } label: { Label("Bold", systemImage: "bold") }
-                Button { formatRequest = .italic } label: { Label("Italic", systemImage: "italic") }
-                Button { formatRequest = .underline } label: { Label("Underline", systemImage: "underline") }
-                Button { formatRequest = .strikethrough } label: { Label("Strikethrough", systemImage: "strikethrough") }
-            }
+            Button { formatRequest = .bold } label: { Label("Bold", systemImage: "bold") }
+                .help("Bold (⌘B)")
+            Button { formatRequest = .italic } label: { Label("Italic", systemImage: "italic") }
+                .help("Italic (⌘I)")
+            Button { formatRequest = .underline } label: { Label("Underline", systemImage: "underline") }
+                .help("Underline (⌘U)")
+            Button { formatRequest = .strikethrough } label: { Label("Strikethrough", systemImage: "strikethrough") }
         }
 
         // Secondary group 1: Rename + Customize

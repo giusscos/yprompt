@@ -39,9 +39,10 @@ struct ScriptTextEditor: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    func makeUIView(context: Context) -> ScriptTextView {
+    func makeUIView(context: Context) -> ScriptPageContainer {
         let coordinator = context.coordinator
-        let view = ScriptTextView()
+        let container = ScriptPageContainer()
+        let view = container.textView
         view.delegate = coordinator
         view.backgroundColor = .clear
         view.font = ScriptTextStyle.bodyFont
@@ -70,10 +71,11 @@ struct ScriptTextEditor: UIViewRepresentable {
                 }
             }
         }
-        return view
+        return container
     }
 
-    func updateUIView(_ view: ScriptTextView, context: Context) {
+    func updateUIView(_ container: ScriptPageContainer, context: Context) {
+        let view = container.textView
         context.coordinator.parent = self
         controller.coordinator = context.coordinator
         // A title set from outside (an imported file's name), unless it's being typed.
@@ -367,7 +369,6 @@ final class ScriptTextView: UITextView {
         // Formatting is for the script: without its own (empty) accessory the title would get
         // the script's format bar, as the keyboard asks up the chain of views.
         titleField.inputAccessoryView = UIView(frame: .zero)
-        addSubview(titleField)
 
         placeholder.text = String(localized: "Type or paste your script here…")
         placeholder.font = ScriptTextStyle.bodyFont
@@ -384,7 +385,10 @@ final class ScriptTextView: UITextView {
         let side = max(24, (bounds.width - Self.maxTextWidth) / 2)
         let width = max(0, bounds.width - side * 2)
         let titleHeight = ceil((titleField.font?.lineHeight ?? 41) + 8)
-        titleField.frame = CGRect(x: side, y: Self.topPadding, width: width, height: titleHeight)
+        // The title lives beside the text view (see `ScriptPageContainer`) and moves with its
+        // scrolling, as if it were the first line of the page. This runs on every scroll.
+        titleField.frame = CGRect(x: frame.minX + side, y: frame.minY + Self.topPadding - contentOffset.y,
+                                  width: width, height: titleHeight)
 
         let padding = textContainer.lineFragmentPadding
         let inset = UIEdgeInsets(top: Self.topPadding + titleHeight + Self.titleGap, left: side - padding,
@@ -398,19 +402,28 @@ final class ScriptTextView: UITextView {
         placeholder.isHidden = !attributedText.string.isEmpty
     }
 
-    /// Taps on the title go to the title, not to the script's caret.
-    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if !(gestureRecognizer is UIPanGestureRecognizer),
-           titleField.frame.contains(gestureRecognizer.location(in: self)) {
-            return false
-        }
-        return super.gestureRecognizerShouldBegin(gestureRecognizer)
-    }
-
     override func paste(_ sender: Any?) {
         super.paste(sender)
         onPaste?()
     }
+}
+
+/// The text view and, above it, the title field. The title isn't a subview of the text view:
+/// a text view is a single accessibility element, so VoiceOver couldn't reach a field inside it.
+final class ScriptPageContainer: UIView {
+    let textView = ScriptTextView()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        clipsToBounds = true
+        textView.frame = bounds
+        textView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(textView)
+        addSubview(textView.titleField)
+        accessibilityElements = [textView.titleField, textView]
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
 /// The script page's type, and the way between the script's `AttributedString` (SwiftUI fonts
