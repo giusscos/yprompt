@@ -26,6 +26,7 @@ enum AppConstants {
     static let lyricsStyleKey = "lyricsStyleEnabled"
     static let paywallWindowID = "paywall"
     static let mainWindowID = "main"
+    static let appTourWindowID = "appTour"
     static let notchAlignmentKey = "notch.verticalAlignment"
     static let mirrorCameraKey = "camera.mirrorPreview"
 

@@ -135,6 +135,15 @@ struct ypromptApp: App {
         }
         .windowResizability(.contentSize)
 
+        // Settings › Show App Tour: a window of its own, free to move and resize.
+        Window("App Tour", id: AppConstants.appTourWindowID) {
+            OnboardingView(isOnDemand: true)
+                .environment(storeKit)
+                .frame(minWidth: 460, idealWidth: 520, minHeight: 600, idealHeight: 720)
+        }
+        .defaultSize(width: 520, height: 720)
+        .windowResizability(.contentMinSize)
+
         MenuBarExtra("yPrompt", systemImage: "scroll") {
             MenuBarScriptsLoader()
                 .environment(storeKit)

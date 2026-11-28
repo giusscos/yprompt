@@ -16,6 +16,8 @@ final class ScriptEditorController {
     fileprivate(set) var canUndo = false
     /// On for the selection, or for what's typed next.
     fileprivate(set) var activeFormats: Set<TextFormat> = []
+    /// Words in the script, for the count beside the format buttons.
+    fileprivate(set) var wordCount = 0
     @ObservationIgnored fileprivate weak var coordinator: ScriptTextEditor.Coordinator?
 
     func toggle(_ format: TextFormat) { coordinator?.toggle(format) }
@@ -201,6 +203,8 @@ struct ScriptTextEditor: UIViewRepresentable {
         func refresh() {
             guard let textView else { return }
             let controller = parent.controller
+            let words = textView.text.split(whereSeparator: { $0.isWhitespace || $0.isNewline }).count
+            if controller.wordCount != words { controller.wordCount = words }
             let formats = Set(TextFormat.allCases.filter(isActive))
             if controller.activeFormats != formats { controller.activeFormats = formats }
             let canUndo = activeUndoManager?.canUndo ?? false
@@ -289,32 +293,48 @@ struct ScriptTextEditor: UIViewRepresentable {
 /// Bold, italic, underline and strikethrough above the keyboard, in one bar; what's on is
 /// filled with the accent color.
 struct FormatBar: View {
-    static let height: CGFloat = 64
+    static let height: CGFloat = 60
     let controller: ScriptEditorController
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(TextFormat.allCases, id: \.self) { format in
-                let isOn = controller.activeFormats.contains(format)
-                Button { controller.toggle(format) } label: {
-                    Image(systemName: format.symbol)
-                        .font(.system(size: 18, weight: isOn ? .bold : .medium))
-                        .foregroundStyle(isOn ? Color.white : Color.primary)
-                        .frame(width: 42, height: 42)
-                        .background {
-                            if isOn { Circle().fill(Color.accentColor) }
-                        }
-                        .contentShape(Circle())
+        HStack(spacing: 12) {
+            HStack(spacing: 2) {
+                ForEach(TextFormat.allCases, id: \.self) { format in
+                    let isOn = controller.activeFormats.contains(format)
+                    Button { controller.toggle(format) } label: {
+                        Image(systemName: format.symbol)
+                            .font(.system(size: 17, weight: isOn ? .bold : .medium))
+                            .foregroundStyle(isOn ? Color.white : Color.primary)
+                            .frame(width: 40, height: 40)
+                            .background {
+                                if isOn { Circle().fill(Color.accentColor) }
+                            }
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(format.title)
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
                 }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity)
-                .accessibilityLabel(format.title)
-                .accessibilityAddTraits(isOn ? .isSelected : [])
             }
+            .padding(4)
+            .ypGlassEffect(cornerRadius: 24)
+
+            Spacer(minLength: 0)
+
+            // The same count as under the page when the keyboard is down.
+            let minutes = max(1, Int((Double(controller.wordCount) / 130).rounded(.up)))
+            (controller.wordCount == 1
+                ? Text("1 word  ·  ~\(minutes) min")
+                : Text("\(controller.wordCount) words  ·  ~\(minutes) min"))
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .ypGlassEffect(cornerRadius: 16)
+                .opacity(controller.wordCount == 0 ? 0 : 1)
         }
-        .padding(5)
-        .ypGlassEffect(cornerRadius: 26)
-        .frame(maxWidth: 420)
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .animation(.snappy(duration: 0.2), value: controller.activeFormats)
@@ -421,6 +441,27 @@ final class ScriptPageContainer: UIView {
         addSubview(textView)
         addSubview(textView.titleField)
         accessibilityElements = [textView.titleField, textView]
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(_:)),
+                                               name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(_:)),
+                                               name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    /// The page ignores the keyboard in its layout (so nothing under it jumps about while the
+    /// keyboard comes and goes), and makes room for it here instead: the text scrolls clear of
+    /// the keyboard and the format bar.
+    @objc private func keyboardChanged(_ notification: Notification) {
+        guard let window,
+              let end = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        else { return }
+        let hiding = notification.name == UIResponder.keyboardWillHideNotification
+        let keyboard = convert(window.convert(end, from: nil), from: window)
+        let overlap = hiding ? 0 : max(0, bounds.maxY - keyboard.minY - safeAreaInsets.bottom)
+        textView.contentInset.bottom = overlap
+        textView.verticalScrollIndicatorInsets.bottom = overlap
+        if overlap > 0, textView.isFirstResponder {
+            textView.scrollRangeToVisible(textView.selectedRange)
+        }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }

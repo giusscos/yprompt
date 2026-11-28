@@ -10,6 +10,9 @@ import StoreKit
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
     @Environment(StoreKitService.self) private var storeKit
     @Query private var settingsArray: [AppSettings]
 
@@ -388,7 +391,7 @@ struct SettingsView: View {
             }
             Divider()
             HStack {
-                Button("Show App Tour") { showingOnboarding = true }
+                Button("Show App Tour") { showAppTour() }
                 Spacer()
             }
         }
@@ -477,6 +480,15 @@ struct SettingsView: View {
     }
     #endif
 
+    /// On the Mac the tour has a window of its own, to move and resize; elsewhere it's a sheet.
+    private func showAppTour() {
+        #if os(macOS)
+        openWindow(id: AppConstants.appTourWindowID)
+        #else
+        showingOnboarding = true
+        #endif
+    }
+
     // MARK: - iOS Settings
 
     private var iOSSettings: some View {
@@ -487,7 +499,7 @@ struct SettingsView: View {
             accessibilitySection
             scriptsSection
             aboutSection
-            #if DEBUG
+                #if DEBUG
             debugSection
             #endif
             dangerSection
@@ -628,7 +640,7 @@ struct SettingsView: View {
             }
             Button("Rate yPrompt") { openURL(RatingService.writeReviewURL) }
             Button("Send Feedback") { sendFeedback() }
-            Button("Show App Tour") { showingOnboarding = true }
+            Button("Show App Tour") { showAppTour() }
         }
     }
 

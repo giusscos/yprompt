@@ -161,11 +161,14 @@ struct EditorView: View {
             focusOnAppear: script.content.isEmpty
         )
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            // Out of the way while typing, except to paste or import into an empty script.
-            if !editor.isEditing || wordCount == 0 {
+            // While typing, the count sits beside the format buttons instead.
+            if !editor.isEditing {
                 wordCountBar
             }
         }
+        // The text view makes room for the keyboard itself, so the count stays at the bottom
+        // of the page and never lands where the keyboard used to be.
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         #elseif os(macOS)
         VStack(spacing: 0) {
             // Keeps the page from reaching under the toolbar, whose glass would sample it and
