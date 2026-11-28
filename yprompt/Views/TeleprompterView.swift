@@ -160,11 +160,12 @@ struct TeleprompterView: View {
     @State private var showingPaywall = false
     #if os(iOS)
     @StateObject private var pip = TeleprompterPiP()
-    /// Which reading tip's turn it is, mirrored from `TipState.readingStep` so the anchors update.
-    @State private var readingTipStep = TipState.readingStep
+    /// This visit's tip, picked once the screen has settled. At most one per visit.
+    @State private var readingTip: ReadingTip?
     private let voiceScrollProTip = VoiceScrollProTip()
     private let voiceScrollFreeTip = VoiceScrollFreeTip()
     private let backgroundModesTip = BackgroundModesTip()
+    private let underCameraTip = UnderCameraTip()
     private let textDisplayTip = TextDisplayTip()
     private let pictureInPictureTip = PictureInPictureTip()
     #endif
@@ -209,6 +210,8 @@ struct TeleprompterView: View {
     @State private var lastCrossedCueProgress: Double = -1
     @State private var showDisplayAdjustments = false
     @State private var showCameraSettings = false
+    /// The Background menu is open: the controls stay up until it closes.
+    @State private var isBackgroundMenuOpen = false
     @State private var isExitingPlayMode = false
     @State private var didRestoreTabBar = false
     @State private var didRestoreProgress = false
@@ -665,6 +668,8 @@ struct TeleprompterView: View {
             }
         }
         .onChange(of: usesWordStyle) { _, usesWords in viewModel.setWordMode(usesWords) }
+        // Reading comes first: a tip still up when the script starts goes away until next time.
+        .onChange(of: viewModel.isPlaying) { _, playing in if playing { readingTip = nil } }
         .onChange(of: pipStyle) { _, style in pip.update(style: style) }
         .onChange(of: storeKit.isPremium) { _, premium in pip.setAutoStart(premium) }
         .navigationBarTitleDisplayMode(.inline)
@@ -672,13 +677,15 @@ struct TeleprompterView: View {
         .background(NavigationInteractivePopGestureDisabler(disabled: true))
         .toolbarColorScheme(isBackgroundDark ? .dark : .light, for: .navigationBar)
         .toolbar { iOSToolbar }
-        .overlay(alignment: .topTrailing) { toolbarTipAnchors }
-        .task { await TipState.playerOpened.donate() }
-        // One tip at a time: each closed tip lets the next one in.
-        .task { await advance(after: voiceScrollProTip, to: 1) }
-        .task { await advance(after: voiceScrollFreeTip, to: 1) }
-        .task { await advance(after: backgroundModesTip, to: 2) }
-        .task { await advance(after: textDisplayTip, to: 3) }
+        .overlay(alignment: .topTrailing) {
+            if #unavailable(iOS 26.0) { toolbarTipAnchors }
+        }
+        .task {
+            TipState.readingOpened()
+            // Once the background and mode are restored and the screen has settled.
+            try? await Task.sleep(for: .milliseconds(600))
+            await pickReadingTip()
+        }
         .toolbar(controlsVisible ? .visible : .hidden, for: .navigationBar)
         .onChange(of: verticalSizeClass) {
             // Rotating changes the toolbar's height, so show it to measure the new space.
@@ -750,7 +757,14 @@ struct TeleprompterView: View {
             if pickup != nil { showPickupBanner() }
         }
         .onChange(of: cameraService.isRecording) { _, recording in
-            if recording { collapsePickupBanner() }
+            if recording {
+                collapsePickupBanner()
+                // Started from the Watch or a shortcut with a tip up: it would stay over the
+                // take, and keep the editor from opening when the take ends.
+                readingTip = nil
+            } else {
+                TipState.takeRecorded(withCamera: backgroundMode == .camera)
+            }
         }
         // The Watch shows record or stop from this.
         .onChange(of: watchRecordingState, initial: true) { _, state in
@@ -813,15 +827,18 @@ struct TeleprompterView: View {
             .disabled(isExitingPlayMode || cameraService.isRecording)
         }
         ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                backgroundMenuItems
-                    // Hiding the toolbar would close the menu. iOS doesn't report the menu
-                    // closing, so this is a long delay rather than a hold until it does.
-                    .onAppear { if viewModel.isPlaying { viewModel.showControlsTemporarily(for: 15) } }
-            } label: {
-                Image(systemName: backgroundIcon)
-            }
-            .accessibilityLabel("Background")
+            // A UIKit menu, which says when it closes: hiding the toolbar would close it, so
+            // the controls stay up while it's open and get their usual few seconds after.
+            MenuButton(systemImage: backgroundIcon, accessibilityLabel: String(localized: "Background"),
+                       menu: backgroundMenu,
+                       onOpen: { isBackgroundMenuOpen = true },
+                       onClose: {
+                           isBackgroundMenuOpen = false
+                           if viewModel.isPlaying { viewModel.showControlsTemporarily() }
+                       })
+            .modifier(ToolbarTip(tip: readingTip == .underCamera ? underCameraTip
+                                     : readingTip == .background ? backgroundModesTip : nil,
+                                 action: handleReadingTip))
             .background {
                 // Separate anchor: a menu can't host the popover it opens.
                 Color.clear
@@ -840,6 +857,8 @@ struct TeleprompterView: View {
                     Image(systemName: pip.isActive ? "pip.exit" : "pip.enter")
                 }
                 .accessibilityLabel(pip.isActive ? "Stop Picture in Picture" : "Picture in Picture")
+                .modifier(ToolbarTip(tip: readingTip == .pictureInPicture ? pictureInPictureTip : nil,
+                                     action: handleReadingTip))
                 // The camera can't keep recording behind another app.
                 .disabled(cameraService.isRecording)
             }
@@ -847,11 +866,12 @@ struct TeleprompterView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 showDisplayAdjustments.toggle()
-                textDisplayTip.invalidate(reason: .actionPerformed)
+                textDisplayTip.done()
             } label: {
                 Image(systemName: "textformat.size")
             }
             .accessibilityLabel("Display adjustments")
+            .modifier(ToolbarTip(tip: readingTip == .display ? textDisplayTip : nil, action: handleReadingTip))
             .popover(isPresented: $showDisplayAdjustments, arrowEdge: .top) {
                 // Scrolls only when it doesn't fit, such as on a phone held sideways.
                 ViewThatFits(in: .vertical) {
@@ -864,72 +884,56 @@ struct TeleprompterView: View {
         }
     }
 
-    @ViewBuilder
-    private var backgroundMenuItems: some View {
-        Button {
-            selectBackground(.solidColor)
-        } label: {
-            Label("Color", systemImage: "paintpalette.fill")
-            if backgroundMode == .solidColor {
-                Image(systemName: "checkmark")
-            }
+    /// Color, Camera or Audio Only, and for the camera its layout and settings. Built each
+    /// time the menu opens, so the checkmarks and choices are current.
+    private func backgroundMenu() -> UIMenu {
+        func action(_ title: String.LocalizationValue, image: String, checked: Bool = false,
+                    disabled: Bool = false, _ handler: @escaping () -> Void) -> UIAction {
+            UIAction(title: String(localized: title), image: UIImage(systemName: image),
+                     attributes: disabled ? .disabled : [], state: checked ? .on : .off) { _ in handler() }
         }
-        Button {
-            selectBackground(.camera)
-        } label: {
-            Label("Camera", systemImage: "camera.fill")
-            if backgroundMode == .camera {
-                Image(systemName: "checkmark")
-            }
+        var sections: [UIMenuElement] = [
+            UIMenu(options: .displayInline, children: [
+                action("Color", image: "paintpalette.fill", checked: backgroundMode == .solidColor) { selectBackground(.solidColor) },
+                action("Camera", image: "camera.fill", checked: backgroundMode == .camera) { selectBackground(.camera) },
+                action("Audio Only", image: "mic.fill", checked: backgroundMode == .audio) { selectBackground(.audio) },
+            ])
+        ]
+        guard backgroundMode == .camera else { return UIMenu(children: sections) }
+
+        func setLayout(_ layout: CameraLayout) {
+            if layout == .underCamera { underCameraTip.done() }
+            withAnimation(surfaceAnimation) { cameraLayout = layout }
         }
-        Button {
-            selectBackground(.audio)
-        } label: {
-            Label("Audio Only", systemImage: "mic.fill")
-            if backgroundMode == .audio {
-                Image(systemName: "checkmark")
-            }
+        var layouts: [UIMenuElement] = [
+            action("Under the Camera", image: "rectangle.topthird.inset.filled",
+                   checked: cameraLayout == .underCamera) { setLayout(.underCamera) },
+            action("Full Screen", image: "text.below.photo", checked: cameraLayout == .fullScreen) { setLayout(.fullScreen) },
+        ]
+        if canSplitCamera {
+            layouts.append(action("Split Screen", image: "rectangle.split.2x1",
+                                  checked: cameraLayout == .split) { setLayout(.split) })
         }
-        if backgroundMode == .camera {
-            Divider()
-            Picker("Layout", selection: Binding(
-                get: { cameraLayout },
-                set: { newLayout in withAnimation(surfaceAnimation) { cameraLayout = newLayout } }
-            )) {
-                Label("Under the Camera", systemImage: "rectangle.topthird.inset.filled").tag(CameraLayout.underCamera)
-                Label("Full Screen", systemImage: "text.below.photo").tag(CameraLayout.fullScreen)
-                if canSplitCamera {
-                    Label("Split Screen", systemImage: "rectangle.split.2x1").tag(CameraLayout.split)
-                }
-            }
-            .pickerStyle(.inline)
-            if cameraLayout == .split {
-                Button {
+        sections.append(UIMenu(title: String(localized: "Layout"), options: [.displayInline, .singleSelection],
+                               children: layouts))
+        if cameraLayout == .split {
+            sections.append(UIMenu(options: .displayInline, children: [
+                action("Swap Sides", image: "arrow.left.arrow.right") {
                     withAnimation(surfaceAnimation) { promptOnLeading.toggle() }
-                } label: {
-                    Label("Swap Sides", systemImage: "arrow.left.arrow.right")
                 }
-            }
-            Divider()
-            if cameraService.canSwitchCamera {
-                Button {
-                    cameraService.switchCamera()
-                } label: {
-                    Label(
-                        cameraService.cameraPosition == .front ? "Use Back Camera" : "Use Front Camera",
-                        systemImage: "arrow.triangle.2.circlepath.camera"
-                    )
-                }
-                .disabled(cameraService.isRecording)
-            }
-            if cameraService.isCameraActive {
-                Button {
-                    showCameraSettings = true
-                } label: {
-                    Label("Camera Settings…", systemImage: "camera.aperture")
-                }
-            }
+            ]))
         }
+        var camera: [UIMenuElement] = []
+        if cameraService.canSwitchCamera {
+            camera.append(action(cameraService.cameraPosition == .front ? "Use Back Camera" : "Use Front Camera",
+                                 image: "arrow.triangle.2.circlepath.camera",
+                                 disabled: cameraService.isRecording) { cameraService.switchCamera() })
+        }
+        if cameraService.isCameraActive {
+            camera.append(action("Camera Settings…", image: "camera.aperture") { showCameraSettings = true })
+        }
+        if !camera.isEmpty { sections.append(UIMenu(options: .displayInline, children: camera)) }
+        return UIMenu(children: sections)
     }
 
     // MARK: - Under-camera layout
@@ -995,7 +999,7 @@ struct TeleprompterView: View {
     /// Reading comes first: while the script plays the controls get out of the way.
     private var controlsVisible: Bool {
         viewModel.showControls || !viewModel.isPlaying || viewModel.isScrubbing
-            || showDisplayAdjustments || showCameraSettings
+            || showDisplayAdjustments || showCameraSettings || isBackgroundMenuOpen
             || teleprompterMode == .tap || voiceOverEnabled
     }
 
@@ -1126,36 +1130,89 @@ struct TeleprompterView: View {
         }
     }
 
-    /// iOS doesn't present tips from toolbar buttons, so these sit just under the toolbar,
-    /// below the button each tip is about: Background (then Picture in Picture, then Display).
+    /// Before iOS 26 a tip doesn't present from a toolbar button, so these sit just under the
+    /// toolbar, below the button each tip is about: Background, Picture in Picture, Display.
     private var toolbarTipAnchors: some View {
         HStack(spacing: 0) {
-            // Each anchor joins only on its tip's turn: a fresh anchor presents reliably,
-            // where a popover on an anchor that's been there all along may not.
-            tipAnchor(step: 1) { $0.popoverTip(backgroundModesTip, arrowEdge: .top) }
+            // Each anchor joins only on its tip's turn: a fresh anchor presents reliably.
+            tipAnchor(readingTip == .underCamera ? underCameraTip : readingTip == .background ? backgroundModesTip : nil)
             if TeleprompterPiP.isSupported {
-                tipAnchor(step: 3) { $0.popoverTip(pictureInPictureTip, arrowEdge: .top) }
+                tipAnchor(readingTip == .pictureInPicture ? pictureInPictureTip : nil)
             }
-            tipAnchor(step: 2) { $0.popoverTip(textDisplayTip, arrowEdge: .top) }
+            tipAnchor(readingTip == .display ? textDisplayTip : nil)
         }
         .padding(.trailing, 16)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 
-    private func advance(after tip: some Tip, to step: Int) async {
-        await TipState.advanceReadingTips(after: tip, to: step)
-        // Let the closing popover finish before the next anchor appears.
-        try? await Task.sleep(for: .milliseconds(400))
-        readingTipStep = TipState.readingStep
-    }
-
     @ViewBuilder
-    private func tipAnchor(step: Int, @ViewBuilder tip: (Color) -> some View) -> some View {
-        if readingTipStep == step {
-            tip(Color.clear).frame(width: 56, height: 1).id(step)
+    private func tipAnchor(_ tip: (any Tip)?) -> some View {
+        if let tip {
+            Color.clear.frame(width: 56, height: 1)
+                .ypPopoverTip(tip, arrowEdge: .top, action: handleReadingTip)
         } else {
             Color.clear.frame(width: 56, height: 1)
+        }
+    }
+
+    /// The first tip that fits this visit, of those not yet closed or acted on.
+    private func pickReadingTip() async {
+        guard readingTip == nil, !viewModel.isPlaying, !cameraService.isRecording,
+              cameraService.finished == nil else { return }
+        #if DEBUG
+        // A demo take opens the editor straight away, as a real one only does after recording.
+        if ProcessInfo.processInfo.arguments.contains("-ypDemoTake") { return }
+        #endif
+        let visits = TipState.readingVisits
+        var candidates: [(ReadingTip, any Tip)] = []
+        if storeKit.isPremium {
+            if teleprompterMode != .voice { candidates.append((.voice, voiceScrollProTip)) }
+        } else if TipState.speedChanges >= 3 || TipState.finishedReads >= 1 || visits >= 3 {
+            // Once the speed has been a bother, or the reader keeps coming back.
+            candidates.append((.voice, voiceScrollFreeTip))
+        }
+        if visits >= 2, TipState.takes == 0, backgroundMode == .solidColor {
+            candidates.append((.background, backgroundModesTip))
+        }
+        if backgroundMode == .camera, cameraLayout == .fullScreen, TipState.cameraTakes >= 1 {
+            candidates.append((.underCamera, underCameraTip))
+        }
+        if TipState.finishedReads >= 1 || visits >= 3 {
+            candidates.append((.display, textDisplayTip))
+        }
+        if storeKit.isPremium, TeleprompterPiP.isSupported, visits >= 4 {
+            candidates.append((.pictureInPicture, pictureInPictureTip))
+        }
+        let picked = await TipState.first(of: candidates)
+        // Not if reading or recording began meanwhile, or the editor opened.
+        guard !viewModel.isPlaying, !cameraService.isRecording, cameraService.finished == nil else { return }
+        readingTip = picked
+    }
+
+    /// A tip's button: the tip closes first, then what it offers opens.
+    private func handleReadingTip(_ action: Tip.Action) {
+        switch readingTip {
+        case .voice: voiceScrollProTip.done(); voiceScrollFreeTip.done()
+        case .background: backgroundModesTip.done()
+        case .underCamera: underCameraTip.done()
+        case .display: textDisplayTip.done()
+        case .pictureInPicture: pictureInPictureTip.done()
+        case nil: break
+        }
+        let id = action.id
+        Task {
+            try? await Task.sleep(for: .milliseconds(350))
+            switch id {
+            case "voice": selectMode(.voice)
+            case "camera": selectBackground(.camera)
+            case "underCamera":
+                if backgroundMode != .camera { selectBackground(.camera) }
+                withAnimation(surfaceAnimation) { cameraLayout = .underCamera }
+            case "display": showDisplayAdjustments = true
+            case "pip": togglePictureInPicture()
+            default: break
+            }
         }
     }
 
@@ -1166,8 +1223,8 @@ struct TeleprompterView: View {
             isLocked: { !storeKit.isPremium && ($0 == .voice || $0 == .timed) },
             onSelect: selectMode
         )
-        .popoverTip(voiceScrollProTip)
-        .background { Color.clear.popoverTip(voiceScrollFreeTip) }
+        .ypPopoverTip(readingTip == .voice ? (storeKit.isPremium ? voiceScrollProTip : voiceScrollFreeTip) as any Tip : nil,
+                    action: handleReadingTip)
     }
 
     /// The one setting that matters for the current mode.
@@ -1250,6 +1307,7 @@ struct TeleprompterView: View {
         let stepped = ((viewModel.scrollSpeed + amount) * 10).rounded() / 10
         viewModel.scrollSpeed = min(AppConstants.maxScrollSpeed, max(AppConstants.minScrollSpeed, stepped))
         ReadingPreferences.speed = viewModel.scrollSpeed
+        TipState.speedChanged()
         if viewModel.isPlaying { viewModel.showControlsTemporarily() }
     }
 
@@ -1561,7 +1619,7 @@ struct TeleprompterView: View {
 
     /// Floats the script over other apps: Camera, Instagram, a FaceTime or Zoom call. Pro.
     private func togglePictureInPicture() {
-        pictureInPictureTip.invalidate(reason: .actionPerformed)
+        pictureInPictureTip.done()
         guard storeKit.isPremium else {
             showingPaywall = true
             return
@@ -1782,8 +1840,8 @@ struct TeleprompterView: View {
 
     private func selectMode(_ mode: TeleprompterMode) {
         if mode == .voice {
-            voiceScrollProTip.invalidate(reason: .actionPerformed)
-            voiceScrollFreeTip.invalidate(reason: .actionPerformed)
+            voiceScrollProTip.done()
+            voiceScrollFreeTip.done()
         }
         guard mode != teleprompterMode else { return }
         if (mode == .voice || mode == .timed) && !storeKit.isPremium {
@@ -1902,7 +1960,7 @@ struct TeleprompterView: View {
     // MARK: - Background
 
     private func selectBackground(_ mode: BackgroundMode) {
-        backgroundModesTip.invalidate(reason: .actionPerformed)
+        if mode != .solidColor { backgroundModesTip.done() }
         if viewModel.isPlaying { viewModel.showControlsTemporarily() }
         guard mode != backgroundMode, !cameraService.isRecording else { return }
         // A video can't take an audio piece, nor an audio recording a video one.
@@ -2461,3 +2519,84 @@ private struct CameraPreviewRepresentable: UIViewRepresentable {
 }
 #endif
 
+#if os(iOS)
+/// A tip on a toolbar button. From iOS 26 it presents from the button itself; before that,
+/// `toolbarTipAnchors` stands in.
+private struct ToolbarTip: ViewModifier {
+    let tip: (any Tip)?
+    let action: (Tip.Action) -> Void
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.popoverTip(tip, arrowEdge: .top, action: action)
+        } else {
+            content
+        }
+    }
+}
+#endif
+
+#if os(iOS)
+/// A toolbar button whose menu is UIKit's, so it can say when the menu opens and closes,
+/// which a SwiftUI `Menu` doesn't.
+private struct MenuButton: UIViewRepresentable {
+    let systemImage: String
+    let accessibilityLabel: String
+    /// Asked each time the menu opens.
+    let menu: () -> UIMenu
+    let onOpen: () -> Void
+    let onClose: () -> Void
+
+    func makeUIView(context: Context) -> ReportingMenuButton {
+        let button = ReportingMenuButton(type: .system)
+        button.showsMenuAsPrimaryAction = true
+        // Not greyed out while a tip or popover is up, like the SwiftUI buttons beside it.
+        button.tintAdjustmentMode = .normal
+        button.menu = UIMenu(children: [UIDeferredMenuElement.uncached { [weak button] completion in
+            completion(button?.makeMenu?().children ?? [])
+        }])
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        update(button)
+        return button
+    }
+
+    func updateUIView(_ button: ReportingMenuButton, context: Context) {
+        update(button)
+    }
+
+    private func update(_ button: ReportingMenuButton) {
+        button.makeMenu = menu
+        button.onOpen = onOpen
+        button.onClose = onClose
+        button.accessibilityLabel = accessibilityLabel
+        button.setImage(UIImage(systemName: systemImage,
+                                withConfiguration: UIImage.SymbolConfiguration(textStyle: .body, scale: .large)),
+                        for: .normal)
+        button.tintColor = .label
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: ReportingMenuButton, context: Context) -> CGSize? {
+        CGSize(width: 44, height: 44)
+    }
+}
+
+private final class ReportingMenuButton: UIButton {
+    var makeMenu: (() -> UIMenu)?
+    var onOpen: (() -> Void)?
+    var onClose: (() -> Void)?
+
+    override func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                         willDisplayMenuFor configuration: UIContextMenuConfiguration,
+                                         animator: (any UIContextMenuInteractionAnimating)?) {
+        super.contextMenuInteraction(interaction, willDisplayMenuFor: configuration, animator: animator)
+        onOpen?()
+    }
+
+    override func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                         willEndFor configuration: UIContextMenuConfiguration,
+                                         animator: (any UIContextMenuInteractionAnimating)?) {
+        super.contextMenuInteraction(interaction, willEndFor: configuration, animator: animator)
+        onClose?()
+    }
+}
+#endif

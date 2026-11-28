@@ -8,6 +8,7 @@ import AVFoundation
 import CoreTransferable
 import PhotosUI
 import SwiftUI
+import TipKit
 import UniformTypeIdentifiers
 #if os(macOS)
 import AppKit
@@ -141,6 +142,7 @@ final class RecordingEditorModel {
     }
 
     func zoomTimeline(by factor: Double) {
+        TimelineTip().done()
         let range = timelineZoomRange
         let zoom = min(max(timelineZoom, range.lowerBound), range.upperBound) * factor
         withAnimation(.snappy(duration: 0.25)) {
@@ -435,6 +437,7 @@ final class RecordingEditorModel {
     // MARK: Scrubbing
 
     func beginScrub() {
+        TimelineTip().done()
         resumeAfterScrub = player.timeControlStatus != .paused
         player.pause()
         isPlaying = false
@@ -785,6 +788,7 @@ final class RecordingEditorModel {
                     recording.savedAt = Date()
                     RecordingLibrary.shared.save(recording, keepingFiles: true)
                     RatingService.shared.recordRecordingSaved()
+                    if mark != nil { TipState.savedWithMark() }
                     renderState = .saved
                     try? await Task.sleep(for: .seconds(1.5))
                     if renderState == .saved { renderState = .idle }

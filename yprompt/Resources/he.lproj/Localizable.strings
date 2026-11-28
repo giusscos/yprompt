@@ -546,9 +546,6 @@
 "Add Your First Script" = "הוסיפו את התסריט הראשון";
 "Type or paste your text, or import a file. Then press play." = "הקלידו או הדביקו טקסט, או ייבאו קובץ. אחר כך לחצו על הפעלה.";
 "Let Your Voice Lead" = "תנו לקול להוביל";
-"Choose Voice: the script follows your words and waits when you pause." = "בחרו קול: התסריט עוקב אחרי המילים שלכם ומחכה כשאתם עוצרים.";
-"Try Voice Scroll" = "נסו גלילה בקול";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "במצב קול התסריט עוקב אחרי המילים שלכם. זה חלק מ-Pro ואפשר לנסות בחינם.";
 "Read Over Any App" = "קריאה מעל כל אפליקציה";
 "Add Captions in One Tap" = "כתוביות בהקשה אחת";
 "Lyrics or Clean: captions are spelled exactly like your script." = "מילות שיר או נקי: הכתוביות כתובות בדיוק כמו התסריט.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "קריאה ממש מתחת למצלמה";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "הצגה פותחת את התסריט במגרעת, ליד המצלמה. אפשר לבחור מגרעת או חלון צף בהגדרות.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "הצגה פותחת את התסריט בחלון צף ממש מתחת למצלמה, כך שאתם מביטים לעדשה.";
-"Camera, Audio or Color" = "מצלמה, שמע או צבע";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "צלמו את עצמכם עם התסריט מתחת לעדשה, הקליטו רק את הקול, או קראו על רקע צבע אחיד.";
 "Make It Easy to Read" = "קריאה נוחה";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "שנו את גודל הטקסט, הגופן והריווח כך שיתאימו לעיניים ולמרחק שלכם.";
 
@@ -637,3 +632,51 @@
 "To" = "עד";
 "Stretch" = "קטע";
 "Words per minute" = "מילים לדקה";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "צריכים תסריט? בקשו טיוטה";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "ספרו על מה, כמה זמן ובאיזה טון. Apple Intelligence כותב טיוטה במכשיר שלכם.";
+"Write a Draft" = "כתיבת טיוטה";
+"Read It Out Loud" = "הקריאו בקול";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "פותח את הטלפרומפטר. הפעילו שם את המצלמה כדי לצלם את עצמכם בזמן הקריאה.";
+"With Voice, the script follows your words and waits when you pause." = "במצב קול, התסריט עוקב אחרי המילים שלכם ומחכה כשאתם עוצרים.";
+"Use Voice" = "שימוש בקול";
+"Stop Chasing the Speed" = "די לרדוף אחרי המהירות";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "במצב קול, התסריט עוקב אחרי המילים שלכם ומחכה כשאתם עוצרים. זה חלק מ-Pro, ואפשר לנסות בחינם.";
+"Try Voice" = "לנסות את קול";
+"Record While You Read" = "הקליטו בזמן הקריאה";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "צלמו את עצמכם כשהתסריט ליד העדשה, או הקליטו רק את הקול. הכתוביות נוצרות מהתסריט שלכם.";
+"Turn On the Camera" = "הפעלת המצלמה";
+"Keep Your Eyes Near the Lens" = "שמרו על המבט ליד העדשה";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "מתחת למצלמה מציג כמה שורות ממש מתחת לעדשה, כך שתסתכלו אליה בזמן הקריאה.";
+"Use Under the Camera" = "שימוש במתחת למצלמה";
+"Adjust the Text" = "התאמת הטקסט";
+"Try It" = "לנסות";
+"Add Lyrics Captions" = "הוספת כתוביות מילות שיר";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "יש בטייק הזה הפסקה ארוכה. הסרת הפסקות חותכת את השקט בין המשפטים.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "הפסקות ארוכות בטייק הזה: %lld. הסרת הפסקות חותכת את השקט בין המשפטים.";
+"Move Through Your Recording" = "ניווט בהקלטה";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "גללו הצידה או גררו כדי לנווט, וצבטו כדי להגדיל. לחצו לחיצה ארוכה על קטע כדי להזיז אותו.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "החליקו כדי לנווט וצבטו כדי להגדיל. לחצו לחיצה ארוכה על קטע כדי להזיז אותו.";
+"Try Pro Free" = "לנסות את Pro בחינם";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "הקצב, מילות המילוי, ההפסקות הארוכות והשורות שדילגתם עליהן, כל אחד בהקשה אחת.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "הקצב, מילות המילוי, ההפסקות הארוכות והשורות שדילגתם עליהן, כל אחד בהקשה אחת. חלק מ-Pro.";
+"Show the Report" = "הצגת הדוח";
+"Learn More" = "מידע נוסף";
+"Make the Captions Yours" = "כתוביות בסגנון שלכם";
+"Pick a font, colors and a background, or box just the word being said." = "בחרו גופן, צבעים ורקע, או סמנו במסגרת רק את המילה שנאמרת.";
+"Open Caption Style" = "פתיחת סגנון כתוביות";
+"Add Clips" = "הוספת קליפים";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "הוסיפו צילומים מ״תמונות״ או מ״קבצים״, או הקליטו קטע נוסף, אחרי הקטע שבחרתם.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "כתיבה מאפס, הדבקת כל טקסט, ייבוא קובץ או טיוטה ראשונה מ-Apple Intelligence. מאורגן עם תגיות וחיפוש.";
+"A one-minute intro for my cooking channel" = "פתיח של דקה לערוץ הבישול שלי";
+"1 min · Conversational" = "דקה · שיחתי";
+"Record, Edit\nand Share" = "הקליטו, ערכו\nושתפו";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "קראו ממש מתחת למצלמה, ואז קצרו את הטייקים, הוסיפו קליפים וכתוביות וגלו איך דיברתם.";
+"Thank you for being here" = "תודה שאתם כאן";
+"Add Clips to Your Recordings" = "הוספת קליפים להקלטות";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "הוסיפו צילומים מ״תמונות״ או מ״קבצים״ ונווטו בהקלטה על ציר זמן שאפשר להחליק ולהגדיל.";
+"A Roomier Script Editor" = "עורך תסריטים מרווח יותר";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "הכותרת בראש העמוד, יותר מרווח בין השורות ועיצוב טקסט ממש מעל המקלדת.";

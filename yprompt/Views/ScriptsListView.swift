@@ -12,6 +12,18 @@ struct ScriptsListView: View {
     @Environment(StoreKitService.self) private var storeKit
     @Query(sort: \Script.modifiedAt, order: .reverse) private var scripts: [Script]
     private let newScriptTip = NewScriptTip()
+    private let writeScriptTip = WriteScriptTip()
+    /// Offered once a script of one's own has been made and read, where Apple Intelligence can write.
+    @State private var offersWriteTip = false
+
+    /// From iOS 26 a tip points at its toolbar button; before that the New Script tip sits in the list.
+    private static var tipsPointAtToolbar: Bool {
+        #if os(iOS)
+        if #available(iOS 26.0, *) { true } else { false }
+        #else
+        false
+        #endif
+    }
     @Query private var settingsArray: [AppSettings]
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
@@ -104,36 +116,44 @@ struct ScriptsListView: View {
         .searchable(text: $searchText, prompt: "Search")
         #endif
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                #if os(iOS) || os(visionOS)
-                if editMode == .active {
+            #if os(iOS) || os(visionOS)
+            if editMode == .active {
+                ToolbarItem(placement: .primaryAction) {
                     Button(role: .destructive) { showDeleteSelectedConfirm = true } label: {
                         Label("Delete Selected", systemImage: "trash")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
                     .disabled(selectedIDs.isEmpty)
-                } else {
+                }
+            } else {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: requestCreateScript) {
                         Label("New Script", systemImage: "plus")
                     }
                 }
-                #else
+            }
+            #else
+            ToolbarItem(placement: .primaryAction) {
                 Button(action: requestCreateScript) {
                     Label("New Script", systemImage: "plus")
                 }
-                .popoverTip(newScriptTip)
-                #endif
+                .popoverTip(newScriptTip, action: newScriptTipAction)
             }
+            #endif
             if ScriptWriter.isAvailable {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        writeScriptTip.done()
                         guard canCreateScript else { showingPaywall = true; return }
                         showingDraft = true
                     } label: {
                         Label("Write with Apple Intelligence", systemImage: "sparkles")
                     }
                     .help("Write with Apple Intelligence")
+                    #if !os(iOS)
+                    .modifier(ToolbarTipAnchor(tip: offersWriteTip ? writeScriptTip : nil, action: writeScriptTipAction))
+                    #endif
                 }
             }
             if let tag = selectedTag, !filtered.isEmpty {
@@ -180,6 +200,11 @@ struct ScriptsListView: View {
         .sheet(isPresented: $showingPaywall) {
             PaywallView().environment(storeKit)
         }
+        .task {
+            try? await Task.sleep(for: .milliseconds(600))
+            offersWriteTip = ScriptWriter.isAvailable && TipState.scriptsCreated >= 1 && TipState.finishedReads >= 1
+        }
+
         #if DEBUG
         // For App Store screenshots: `-ypShotDraft` opens Write Script with a sample draft.
         .onAppear {
@@ -375,16 +400,37 @@ struct ScriptsListView: View {
     private var listContent: some View {
         #if os(iOS) || os(visionOS)
         List(selection: $selectedIDs) {
-            // On iPhone and iPad the tip sits in the list: a popover from a toolbar button
-            // doesn't reliably appear there.
-            TipView(newScriptTip)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                .listRowSeparator(.hidden)
+            // Before iOS 26 a tip can't point at a toolbar button, so it sits in the list.
+            if !Self.tipsPointAtToolbar {
+                TipView(newScriptTip, action: newScriptTipAction)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                    .listRowSeparator(.hidden)
+            }
             listRows
         }
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
+        #if os(iOS)
+        .onAppear(perform: removeEmptyUntitledScripts)
+        // From iOS 26 the toolbar tips point at their buttons: New Script at +, Write Script at
+        // the sparkles. Not while onboarding covers the list, nor while selecting, when the
+        // buttons aren't there.
+        .background {
+            if Self.tipsPointAtToolbar {
+                ZStack {
+                    BarItemTip(tip: newScriptTip, itemTitle: String(localized: "New Script"),
+                               isEnabled: hasSeenOnboarding && editMode != .active, action: newScriptTipAction)
+                    if ScriptWriter.isAvailable {
+                        BarItemTip(tip: writeScriptTip, itemTitle: String(localized: "Write with Apple Intelligence"),
+                                   isEnabled: offersWriteTip && hasSeenOnboarding && editMode != .active,
+                                   action: writeScriptTipAction)
+                    }
+                }
+                .frame(width: 0, height: 0)
+            }
+        }
+        #endif
         .navigationDestination(for: Script.self) { script in
             EditorView(script: script)
                 .environment(storeKit)
@@ -562,13 +608,52 @@ struct ScriptsListView: View {
     }
     #endif
 
+    /// The New Script tip's Create Script button. The page opens once the popover has closed:
+    /// pushed while it's still closing, the page's bar keeps showing the script's name.
+    private func newScriptTipAction(_ action: Tips.Action) {
+        newScriptTip.invalidate(reason: .actionPerformed)
+        Task {
+            try? await Task.sleep(for: .milliseconds(650))
+            requestCreateScript()
+        }
+    }
+
+    /// The Write Script tip's Write a Draft button, once the popover has closed.
+    private func writeScriptTipAction(_ action: Tips.Action) {
+        writeScriptTip.done()
+        Task {
+            try? await Task.sleep(for: .milliseconds(650))
+            if canCreateScript { showingDraft = true } else { showingPaywall = true }
+        }
+    }
+
+    #if os(iOS)
+    /// A new script left without a title or a word: + opens a page straight away, so backing
+    /// out of it shouldn't leave an empty "Untitled Script" behind.
+    private func removeEmptyUntitledScripts() {
+        let empty = scripts.filter {
+            $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && ScriptTextStyle.isDefaultTitle($0.title)
+        }
+        guard !empty.isEmpty else { return }
+        empty.forEach(modelContext.delete)
+        try? modelContext.save()
+    }
+    #endif
+
     private func requestCreateScript() {
+        newScriptTip.invalidate(reason: .actionPerformed)
         guard canCreateScript else {
             showingPaywall = true
             return
         }
+        #if os(iOS)
+        // The title is typed at the top of the new page, which opens with the cursor there.
+        createScript(title: "")
+        #else
         newScriptTitle = ""
         showingNewScriptAlert = true
+        #endif
     }
 
     private func createScript(title: String) {
@@ -1087,3 +1172,15 @@ struct ScriptRowView: View {
         }
     }
 }
+
+#if !os(iOS)
+/// A tip on a toolbar button on the Mac. (On iPhone and iPad, `BarItemTip`.)
+private struct ToolbarTipAnchor: ViewModifier {
+    let tip: (any Tip)?
+    let action: @MainActor @Sendable (Tips.Action) -> Void
+
+    func body(content: Content) -> some View {
+        content.ypPopoverTip(tip, arrowEdge: .top, action: action)
+    }
+}
+#endif

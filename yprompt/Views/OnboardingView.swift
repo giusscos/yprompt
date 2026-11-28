@@ -201,7 +201,9 @@ struct OnboardingView: View {
                     Text("One Place.")
                         .font(.largeTitle.bold())
                         .foregroundStyle(.blue)
-                    Text("Write from scratch, paste any text, or import a file. Organised with tags and search.")
+                    (ScriptWriter.isAvailable
+                        ? Text("Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search.")
+                        : Text("Write from scratch, paste any text, or import a file. Organised with tags and search."))
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -209,6 +211,12 @@ struct OnboardingView: View {
                 }
                 .padding(.top, 36)
                 .padding(.horizontal, 24)
+
+                if ScriptWriter.isAvailable {
+                    draftPromptMockup
+                        .padding(.horizontal, 16)
+                        .padding(.top, 18)
+                }
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -276,6 +284,32 @@ struct OnboardingView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) { navCTABar(next: .modes) }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
+    }
+
+    /// Write Script in a line: a topic typed in, and the length and tone it's asked for.
+    private var draftPromptMockup: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .font(.title3)
+                .foregroundStyle(.purple)
+                .frame(width: 36, height: 36)
+                .background(Color.purple.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("A one-minute intro for my cooking channel")
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(2)
+                Text("1 min · Conversational")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            Image(systemName: "arrow.up.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.accentColor)
+        }
+        .padding(12)
+        .ypGlassEffect(cornerRadius: 16)
+        .accessibilityHidden(true)
     }
 
     private func dummyTagPill(_ title: String, selected: Bool) -> some View {
@@ -418,28 +452,106 @@ struct OnboardingView: View {
     private var platformPage: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 28) {
-                cameraMockup
-                    .frame(maxWidth: 460)
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
+                VStack(spacing: 12) {
+                    cameraMockup
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
+                    editorMockup
+                }
+                .frame(maxWidth: 460)
                 VStack(spacing: 10) {
-                    Text("Record\nAs You Read")
+                    Text("Record, Edit\nand Share")
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
-                    Text("Your script sits right under the camera, so you look straight into the lens. Nothing but you ends up in the video.")
+                    Text("Read right under the camera, then trim your takes, add clips and captions, and see how you spoke.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
             }
             .padding(.horizontal, 28)
-            .padding(.top, 56)
+            .padding(.top, 32)
             .padding(.bottom, 24)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { navCTABar(next: .pro) }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
+    }
+
+    /// The recording editor in small: a caption boxing the word being said, the timeline with
+    /// an added clip, and the delivery report's pace, filler words and pauses.
+    private var editorMockup: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            captionMockup
+                .frame(maxWidth: .infinity)
+            GeometryReader { geometry in
+                let width = geometry.size.width - 12
+                HStack(spacing: 4) {
+                    clipTile([.orange, .pink], width: width * 0.34)
+                    clipTile([.pink, .purple], width: width * 0.22)
+                    // An added clip, from Photos.
+                    clipTile([.teal, .blue], width: width * 0.18, icon: "photo.on.rectangle")
+                    clipTile([.purple, .indigo], width: width * 0.26)
+                }
+                .overlay(alignment: .leading) {
+                    // The playhead.
+                    Capsule()
+                        .fill(.white)
+                        .frame(width: 3)
+                        .padding(.vertical, -3)
+                        .shadow(color: .black.opacity(0.3), radius: 2)
+                        .offset(x: width * 0.45)
+                }
+            }
+            .frame(height: 40)
+            HStack(spacing: 14) {
+                Label { Text("\(138) wpm") } icon: { Image(systemName: "gauge.with.dots.needle.50percent") }
+                Label { Text(verbatim: "2") } icon: { Image(systemName: "text.bubble") }
+                Label { Text(verbatim: "1") } icon: { Image(systemName: "pause.circle") }
+                Spacer(minLength: 0)
+            }
+            .font(.caption.weight(.semibold).monospacedDigit())
+            .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .ypGlassEffect(cornerRadius: 18)
+        .accessibilityHidden(true)
+    }
+
+    /// A caption with the Word background on the third word.
+    private var captionMockup: some View {
+        let words = String(localized: "Thank you for being here").split(separator: " ").map(String.init)
+        return HStack(spacing: 5) {
+            ForEach(Array(words.enumerated()), id: \.offset) { index, word in
+                Text(word)
+                    .font(.subheadline.weight(.heavy))
+                    .foregroundStyle(index == min(2, words.count - 1) ? .black : .white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background {
+                        if index == min(2, words.count - 1) {
+                            RoundedRectangle(cornerRadius: 5).fill(.yellow)
+                        }
+                    }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.black.opacity(0.85), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func clipTile(_ colors: [Color], width: CGFloat, icon: String? = nil) -> some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(LinearGradient(colors: colors, startPoint: .leading, endPoint: .trailing))
+            .overlay {
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                }
+            }
+            .frame(width: max(0, width))
     }
 
     /// The Under the Camera layout: a few lines right below the lens, over a clear picture.

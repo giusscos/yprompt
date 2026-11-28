@@ -546,9 +546,6 @@
 "Add Your First Script" = "İlk Metninizi Ekleyin";
 "Type or paste your text, or import a file. Then press play." = "Metninizi yazın veya yapıştırın ya da bir dosya içe aktarın. Sonra oynat'a dokunun.";
 "Let Your Voice Lead" = "Sesiniz Yönetsin";
-"Choose Voice: the script follows your words and waits when you pause." = "Ses'i seçin: metin sözlerinizi takip eder, durduğunuzda bekler.";
-"Try Voice Scroll" = "Sesle Kaydırmayı Deneyin";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Ses modunda metin sözlerinizi takip eder. Pro'nun bir parçasıdır ve ücretsiz deneyebilirsiniz.";
 "Read Over Any App" = "Her Uygulamanın Üzerinde Okuyun";
 "Add Captions in One Tap" = "Tek Dokunuşla Altyazı";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Şarkı Sözü veya Sade: altyazılar metninizle birebir aynı yazılır.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "Kameranızın Hemen Altında Okuyun";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Sun, metninizi kameranın yanındaki çentikte açar. Çentiği veya yüzen pencereyi Ayarlar'dan seçin.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Sun, metninizi kameranın hemen altındaki yüzen bir pencerede açar; böylece objektife bakarsınız.";
-"Camera, Audio or Color" = "Kamera, Ses veya Renk";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Metin objektifin altındayken kendinizi çekin, yalnızca sesinizi kaydedin veya düz bir renk üzerinde okuyun.";
 "Make It Easy to Read" = "Rahat Okuyun";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Metin boyutunu, yazı tipini ve aralığı gözlerinize ve mesafenize göre değiştirin.";
 
@@ -637,3 +632,51 @@
 "To" = "Bitiş";
 "Stretch" = "Bölüm";
 "Words per minute" = "Dakikada sözcük";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Metne mi ihtiyacınız var? Taslak isteyin";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Konuyu, uzunluğu ve tonu söyleyin. Apple Intelligence aygıtınızda bir taslak yazar.";
+"Write a Draft" = "Taslak Yaz";
+"Read It Out Loud" = "Sesli Okuyun";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Prompter’ı açar. Okurken kendinizi çekmek için orada kamerayı açın.";
+"With Voice, the script follows your words and waits when you pause." = "Ses ile metin sözlerinizi takip eder ve duraksadığınızda bekler.";
+"Use Voice" = "Ses’i Kullan";
+"Stop Chasing the Speed" = "Hızın Peşinden Koşmayın";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Ses ile metin sözlerinizi takip eder ve duraksadığınızda bekler. Pro’nun parçasıdır ve ücretsiz deneyebilirsiniz.";
+"Try Voice" = "Ses’i Dene";
+"Record While You Read" = "Okurken Kaydedin";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Metin objektifin yanındayken kendinizi çekin veya yalnızca sesinizi kaydedin. Altyazılar metninizden oluşturulur.";
+"Turn On the Camera" = "Kamerayı Aç";
+"Keep Your Eyes Near the Lens" = "Gözünüz Objektife Yakın Olsun";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Kameranın Altında, birkaç satırı objektifin hemen altına koyar; böylece okurken objektife bakarsınız.";
+"Use Under the Camera" = "Kameranın Altında’yı Kullan";
+"Adjust the Text" = "Metni Ayarla";
+"Try It" = "Dene";
+"Add Lyrics Captions" = "Şarkı Sözü Altyazısı Ekle";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Bu çekimde uzun bir duraklama var. Duraklamaları Kaldır, cümleleriniz arasındaki sessizlikleri keser.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Bu çekimde %lld uzun duraklama var. Duraklamaları Kaldır, cümleleriniz arasındaki sessizlikleri keser.";
+"Move Through Your Recording" = "Kaydınızda Gezinin";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Gezinmek için yana kaydırın veya sürükleyin, yakınlaştırmak için iki parmakla açın. Bir parçayı taşımak için basılı tutun.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Gezinmek için kaydırın, yakınlaştırmak için iki parmakla açın. Bir parçayı taşımak için basılı tutun.";
+"Try Pro Free" = "Pro’yu Ücretsiz Dene";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Hızınız, dolgu sözcükleri, uzun duraklamalar ve atlanan satırlar; her biri bir dokunuş uzağınızda.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Hızınız, dolgu sözcükleri, uzun duraklamalar ve atlanan satırlar; her biri bir dokunuş uzağınızda. Pro’nun parçası.";
+"Show the Report" = "Raporu Göster";
+"Learn More" = "Daha Fazla Bilgi";
+"Make the Captions Yours" = "Altyazıları Kendinize Göre Ayarlayın";
+"Pick a font, colors and a background, or box just the word being said." = "Yazı tipi, renkler ve arka plan seçin ya da yalnızca söylenen sözcüğü kutu içine alın.";
+"Open Caption Style" = "Altyazı Stilini Aç";
+"Add Clips" = "Klip Ekle";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Seçtiğiniz parçanın ardına Fotoğraflar’dan veya Dosyalar’dan görüntü ekleyin ya da yeni bir parça kaydedin.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Sıfırdan yazın, herhangi bir metni yapıştırın, bir dosya içe aktarın ya da ilk taslağı Apple Intelligence yazsın. Etiketler ve aramayla düzenleyin.";
+"A one-minute intro for my cooking channel" = "Yemek kanalım için bir dakikalık giriş";
+"1 min · Conversational" = "1 dk · Samimi";
+"Record, Edit\nand Share" = "Kaydedin, Düzenleyin\nve Paylaşın";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Kameranın hemen altından okuyun, sonra çekimlerinizi kırpın, klip ve altyazı ekleyin, nasıl konuştuğunuzu görün.";
+"Thank you for being here" = "Burada olduğunuz için teşekkürler";
+"Add Clips to Your Recordings" = "Kayıtlarınıza Klip Ekleyin";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Fotoğraflar’dan veya Dosyalar’dan görüntü ekleyin, kaydırıp yakınlaştırabildiğiniz zaman çizelgesinde gezinin.";
+"A Roomier Script Editor" = "Daha Ferah Bir Metin Düzenleyici";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Başlığınız sayfanın en üstünde, satırlar arasında daha fazla boşluk ve biçimlendirme klavyenin hemen üstünde.";

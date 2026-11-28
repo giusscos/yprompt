@@ -546,9 +546,6 @@
 "Add Your First Script" = "添加你的第一个脚本";
 "Type or paste your text, or import a file. Then press play." = "输入或粘贴文本，或导入文件。然后点按播放。";
 "Let Your Voice Lead" = "让声音带领节奏";
-"Choose Voice: the script follows your words and waits when you pause." = "选择“语音”：脚本跟随你的话语，你停顿时它也会等待。";
-"Try Voice Scroll" = "试试语音滚动";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "在“语音”模式下，脚本会跟随你的话语。这是 Pro 功能，可免费试用。";
 "Read Over Any App" = "在任何 App 上方阅读";
 "Add Captions in One Tap" = "一点即可添加字幕";
 "Lyrics or Clean: captions are spelled exactly like your script." = "选择“歌词”或“简洁”：字幕与脚本的写法完全一致。";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "就在相机下方阅读";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "“演示”会在刘海区域打开脚本，紧挨着相机。可在设置中选择刘海或浮动窗口。";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "“演示”会在相机正下方的浮动窗口中打开脚本，让你看着镜头阅读。";
-"Camera, Audio or Color" = "相机、音频或纯色";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "在镜头下方显示脚本拍摄自己、只录制声音，或在纯色背景上阅读。";
 "Make It Easy to Read" = "读得更轻松";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "根据你的视力和距离调整文字大小、字体和间距。";
 
@@ -637,3 +632,51 @@
 "To" = "到";
 "Stretch" = "片段";
 "Words per minute" = "词/分钟";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "需要稿子？让它帮你写个草稿";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "说出主题、时长和语气，Apple 智能会在你的设备上写出草稿。";
+"Write a Draft" = "撰写草稿";
+"Read It Out Loud" = "大声读出来";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "打开提词器。在那里打开相机，就能边读边拍下自己。";
+"With Voice, the script follows your words and waits when you pause." = "使用“语音”时，稿子会跟着你的话走，你停顿时它也会等你。";
+"Use Voice" = "使用语音";
+"Stop Chasing the Speed" = "不用再追着速度跑";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "使用“语音”时，稿子会跟着你的话走，你停顿时它也会等你。这是 Pro 功能，可免费试用。";
+"Try Voice" = "试用语音";
+"Record While You Read" = "边读边录";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "让稿子贴近镜头，拍下自己，或者只录声音。字幕根据你的稿子生成。";
+"Turn On the Camera" = "打开相机";
+"Keep Your Eyes Near the Lens" = "让视线靠近镜头";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "“相机下方”会把几行字放在镜头正下方，让你读的时候看着镜头。";
+"Use Under the Camera" = "使用“相机下方”";
+"Adjust the Text" = "调整文字";
+"Try It" = "试一试";
+"Add Lyrics Captions" = "添加歌词字幕";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "这个镜次里有一处长停顿。“移除停顿”会剪掉句子之间的静音。";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "这个镜次里有 %lld 处长停顿。“移除停顿”会剪掉句子之间的静音。";
+"Move Through Your Recording" = "浏览你的录制";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "横向滚动或拖移来移动，双指捏合可放大。按住片段即可移动它。";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "轻扫来移动，双指捏合可放大。按住片段即可移动它。";
+"Try Pro Free" = "免费试用 Pro";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "语速、口头禅、长停顿和跳过的句子，轻点一下就能查看。";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "语速、口头禅、长停顿和跳过的句子，轻点一下就能查看。属于 Pro 功能。";
+"Show the Report" = "查看报告";
+"Learn More" = "了解更多";
+"Make the Captions Yours" = "打造你的专属字幕";
+"Pick a font, colors and a background, or box just the word being said." = "选择字体、颜色和背景，或只框出正在说的那个词。";
+"Open Caption Style" = "打开字幕样式";
+"Add Clips" = "添加片段";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "在所选片段之后，加入“照片”或“文件”中的视频，或再录一段。";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "从头写、粘贴任意文字、导入文件，或让 Apple 智能写出初稿。用标签和搜索整理。";
+"A one-minute intro for my cooking channel" = "为我的烹饪频道写一段一分钟开场";
+"1 min · Conversational" = "1 分钟 · 亲切自然";
+"Record, Edit\nand Share" = "录制、编辑\n与分享";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "就在相机下方阅读，然后剪辑镜次、加入片段和字幕，并看看你说得怎么样。";
+"Thank you for being here" = "感谢大家的到来";
+"Add Clips to Your Recordings" = "为录制添加片段";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "加入“照片”或“文件”中的视频，并在可轻扫和缩放的时间线上浏览录制内容。";
+"A Roomier Script Editor" = "更宽敞的稿子编辑器";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "标题在页面顶部，行与行之间更宽松，格式按钮就在键盘上方。";

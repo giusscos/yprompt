@@ -588,9 +588,6 @@
 "Add Your First Script" = "Tambahkan Naskah Pertamamu";
 "Type or paste your text, or import a file. Then press play." = "Ketik atau tempel teksmu, atau impor file. Lalu tekan putar.";
 "Let Your Voice Lead" = "Biarkan Suaramu Memandu";
-"Choose Voice: the script follows your words and waits when you pause." = "Pilih Suara: naskah mengikuti ucapanmu dan menunggu saat kamu jeda.";
-"Try Voice Scroll" = "Coba Gulir dengan Suara";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Dengan Suara, naskah mengikuti ucapanmu. Fitur ini bagian dari Pro, dan bisa dicoba gratis.";
 "Read Over Any App" = "Baca di Atas App Apa Pun";
 "Add Captions in One Tap" = "Teks dengan Satu Ketukan";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Lirik atau Polos: teks ditulis persis seperti naskahmu.";
@@ -601,8 +598,6 @@
 "Read Right Under Your Camera" = "Baca Tepat di Bawah Kamera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Tampilkan membuka naskah di notch, di samping kamera. Pilih notch atau jendela mengambang di Pengaturan.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Tampilkan membuka naskah di jendela mengambang tepat di bawah kamera, jadi kamu menatap lensa.";
-"Camera, Audio or Color" = "Kamera, Audio, atau Warna";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rekam dirimu dengan naskah di bawah lensa, rekam suaramu saja, atau baca di atas warna polos.";
 "Make It Easy to Read" = "Baca dengan Nyaman";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Ubah ukuran, font, dan jarak teks sesuai mata dan jarakmu.";
 
@@ -679,3 +674,51 @@
 "To" = "Sampai";
 "Stretch" = "Bagian";
 "Words per minute" = "Kata per menit";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Butuh Naskah? Minta Draf";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Sebutkan topik, durasi, dan nadanya. Apple Intelligence menulis draf di perangkatmu.";
+"Write a Draft" = "Tulis Draf";
+"Read It Out Loud" = "Bacakan dengan Lantang";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Membuka teleprompter. Nyalakan kamera di sana untuk merekam dirimu sambil membaca.";
+"With Voice, the script follows your words and waits when you pause." = "Dengan Suara, naskah mengikuti ucapanmu dan menunggu saat kamu berhenti sejenak.";
+"Use Voice" = "Gunakan Suara";
+"Stop Chasing the Speed" = "Tak Perlu Mengejar Kecepatan";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Dengan Suara, naskah mengikuti ucapanmu dan menunggu saat kamu berhenti sejenak. Ini bagian dari Pro, dan bisa dicoba gratis.";
+"Try Voice" = "Coba Suara";
+"Record While You Read" = "Rekam Sambil Membaca";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Rekam dirimu dengan naskah di dekat lensa, atau rekam suaramu saja. Teks dibuat dari naskahmu.";
+"Turn On the Camera" = "Nyalakan Kamera";
+"Keep Your Eyes Near the Lens" = "Jaga Pandangan Dekat Lensa";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Di Bawah Kamera menaruh beberapa baris tepat di bawah lensa, jadi kamu menatap lensa sambil membaca.";
+"Use Under the Camera" = "Gunakan Di Bawah Kamera";
+"Adjust the Text" = "Atur Teks";
+"Try It" = "Coba";
+"Add Lyrics Captions" = "Tambah Teks Lirik";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Ada satu jeda panjang di rekaman ini. Hapus Jeda memotong keheningan di antara kalimatmu.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Ada %lld jeda panjang di rekaman ini. Hapus Jeda memotong keheningan di antara kalimatmu.";
+"Move Through Your Recording" = "Jelajahi Rekamanmu";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Gulir ke samping atau seret untuk bergerak, dan cubit untuk memperbesar. Tahan satu bagian untuk memindahkannya.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Geser untuk bergerak dan cubit untuk memperbesar. Tahan satu bagian untuk memindahkannya.";
+"Try Pro Free" = "Coba Pro Gratis";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Tempo, kata pengisi, jeda panjang, dan baris yang terlewat, semuanya cukup satu ketukan.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Tempo, kata pengisi, jeda panjang, dan baris yang terlewat, semuanya cukup satu ketukan. Bagian dari Pro.";
+"Show the Report" = "Tampilkan Laporan";
+"Learn More" = "Pelajari Lebih Lanjut";
+"Make the Captions Yours" = "Buat Teks Sesuai Gayamu";
+"Pick a font, colors and a background, or box just the word being said." = "Pilih font, warna, dan latar, atau beri kotak hanya pada kata yang sedang diucapkan.";
+"Open Caption Style" = "Buka Gaya Subtitel";
+"Add Clips" = "Tambah Klip";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Sisipkan video dari Foto atau File, atau rekam bagian lain, setelah bagian yang kamu pilih.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Tulis dari awal, tempel teks, impor file, atau biarkan Apple Intelligence menulis draf pertama. Rapi dengan tag dan pencarian.";
+"A one-minute intro for my cooking channel" = "Intro satu menit untuk kanal masakku";
+"1 min · Conversational" = "1 mnt · Santai";
+"Record, Edit\nand Share" = "Rekam, Edit\ndan Bagikan";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Baca tepat di bawah kamera, lalu pangkas rekamanmu, tambahkan klip dan teks, dan lihat cara kamu bicara.";
+"Thank you for being here" = "Terima kasih sudah hadir";
+"Add Clips to Your Recordings" = "Tambah Klip ke Rekamanmu";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Sisipkan video dari Foto atau File, dan jelajahi rekamanmu di linimasa yang bisa digeser dan diperbesar.";
+"A Roomier Script Editor" = "Editor Naskah yang Lebih Lega";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Judul di atas halaman, ruang lebih lega antarbaris, dan format teks tepat di atas papan ketik.";

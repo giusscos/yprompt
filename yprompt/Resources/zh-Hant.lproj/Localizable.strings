@@ -546,9 +546,6 @@
 "Add Your First Script" = "加入你的第一個腳本";
 "Type or paste your text, or import a file. Then press play." = "輸入或貼上文字，或匯入檔案。然後點一下播放。";
 "Let Your Voice Lead" = "讓聲音帶領節奏";
-"Choose Voice: the script follows your words and waits when you pause." = "選擇「語音」：腳本跟著你的話語，你停頓時它也會等待。";
-"Try Voice Scroll" = "試試語音捲動";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "在「語音」模式下，腳本會跟著你的話語。這是 Pro 功能，可免費試用。";
 "Read Over Any App" = "在任何 App 上方閱讀";
 "Add Captions in One Tap" = "點一下就加上字幕";
 "Lyrics or Clean: captions are spelled exactly like your script." = "選擇「歌詞」或「簡潔」：字幕與腳本的寫法完全一致。";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "就在相機下方閱讀";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "「簡報」會在瀏海區域打開腳本，緊鄰相機。可在設定中選擇瀏海或浮動視窗。";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "「簡報」會在相機正下方的浮動視窗中打開腳本，讓你看著鏡頭閱讀。";
-"Camera, Audio or Color" = "相機、音訊或純色";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "在鏡頭下方顯示腳本拍攝自己、只錄製聲音，或在純色背景上閱讀。";
 "Make It Easy to Read" = "讀得更輕鬆";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "依照你的視力和距離調整文字大小、字體和間距。";
 
@@ -637,3 +632,51 @@
 "To" = "到";
 "Stretch" = "片段";
 "Words per minute" = "字／分鐘";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "需要稿子？請它幫你寫個草稿";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "說出主題、長度和語氣，Apple Intelligence 會在你的裝置上寫出草稿。";
+"Write a Draft" = "撰寫草稿";
+"Read It Out Loud" = "大聲讀出來";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "打開提詞器。在那裡開啟相機，就能邊讀邊拍下自己。";
+"With Voice, the script follows your words and waits when you pause." = "使用「語音」時，稿子會跟著你的話走，你停頓時它也會等你。";
+"Use Voice" = "使用語音";
+"Stop Chasing the Speed" = "不必再追著速度跑";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "使用「語音」時，稿子會跟著你的話走，你停頓時它也會等你。這是 Pro 功能，可免費試用。";
+"Try Voice" = "試用語音";
+"Record While You Read" = "邊讀邊錄";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "讓稿子貼近鏡頭拍下自己，或只錄聲音。字幕會依據你的稿子產生。";
+"Turn On the Camera" = "開啟相機";
+"Keep Your Eyes Near the Lens" = "讓視線靠近鏡頭";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "「鏡頭下方」會把幾行字放在鏡頭正下方，讓你閱讀時看著鏡頭。";
+"Use Under the Camera" = "使用「鏡頭下方」";
+"Adjust the Text" = "調整文字";
+"Try It" = "試試看";
+"Add Lyrics Captions" = "加入歌詞字幕";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "這個鏡次有一處長停頓。「移除停頓」會剪掉句子之間的靜音。";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "這個鏡次有 %lld 處長停頓。「移除停頓」會剪掉句子之間的靜音。";
+"Move Through Your Recording" = "瀏覽你的錄製內容";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "橫向捲動或拖移來移動，雙指撐開可放大。按住片段即可移動它。";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "滑動來移動，雙指撐開可放大。按住片段即可移動它。";
+"Try Pro Free" = "免費試用 Pro";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "語速、口頭禪、長停頓和跳過的句子，點一下就能查看。";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "語速、口頭禪、長停頓和跳過的句子，點一下就能查看。屬於 Pro 功能。";
+"Show the Report" = "查看報告";
+"Learn More" = "瞭解更多";
+"Make the Captions Yours" = "打造你的專屬字幕";
+"Pick a font, colors and a background, or box just the word being said." = "選擇字體、顏色和背景，或只框出正在說的那個字詞。";
+"Open Caption Style" = "打開字幕樣式";
+"Add Clips" = "加入片段";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "在所選片段之後，加入「照片」或「檔案」中的影片，或再錄一段。";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "從頭寫、貼上任意文字、匯入檔案，或讓 Apple Intelligence 寫出初稿。用標籤和搜尋整理。";
+"A one-minute intro for my cooking channel" = "為我的料理頻道寫一段一分鐘開場";
+"1 min · Conversational" = "1 分鐘 · 親切自然";
+"Record, Edit\nand Share" = "錄製、編輯\n與分享";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "就在鏡頭下方閱讀，然後剪輯鏡次、加入片段和字幕，並看看你說得如何。";
+"Thank you for being here" = "感謝大家的到來";
+"Add Clips to Your Recordings" = "為錄製內容加入片段";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "加入「照片」或「檔案」中的影片，並在可滑動和縮放的時間軸上瀏覽錄製內容。";
+"A Roomier Script Editor" = "更寬敞的稿子編輯器";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "標題在頁面頂端，行與行之間更寬鬆，格式按鈕就在鍵盤上方。";

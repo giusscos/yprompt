@@ -8,7 +8,7 @@ import SwiftUI
 enum WhatsNew {
     static let seenKey = "whatsNew.seen"
     /// Change this only when the rows below change, so a bug-fix update doesn't show them again.
-    static let release = "1.0.8"
+    static let release = "1.0.10"
 }
 
 /// Shown once to people who update. New installs get the onboarding instead.
@@ -51,21 +51,15 @@ struct WhatsNewView: View {
 
     @ViewBuilder
     private var rows: some View {
-        #if os(macOS)
-        row("record.circle", .red, "Record While You Read", "Record video or audio from the notch or the floating prompter, with a camera preview you can move and resize.")
-        row("film.stack", .orange, "Edit Your Takes", "Trim, split and caption your recordings, then save them as video files or share them.")
-        if ScriptWriter.isAvailable {
-            row("sparkles", .purple, "Write with Apple Intelligence", "Describe your topic, pick a length and a tone, and get a first draft written on your Mac.")
-        }
-        row("menubar.rectangle", .blue, "A Simpler Menu Bar", "Reading, recording and display settings, laid out more clearly.")
-        row("mic.fill", .green, "Siri and Shortcuts", "Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app.")
-        #else
-        row("pip.enter", .blue, "Picture in Picture", "Keep your script floating over the Camera app, social apps or a video call. Play, pause and skip from the window.", isPro: true)
-        if ScriptWriter.isAvailable {
-            row("sparkles", .purple, "Write with Apple Intelligence", "Describe your topic, pick a length and a tone, and get a first draft written on your iPhone.")
-        }
-        row("applewatch", .red, "Record from Apple Watch", "Start and stop a take from your wrist while the camera is ready.")
-        row("mic.fill", .green, "Siri and Shortcuts", "Start the teleprompter or a recording from Siri, Spotlight or the Shortcuts app.")
+        row("film.stack", .orange, "Add Clips to Your Recordings",
+            "Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch.")
+        row("textformat", .pink, "Make the Captions Yours",
+            "Pick a font, colors and a background, or box just the word being said.")
+        row("chart.bar.xaxis", .mint, "See How You Spoke",
+            "Your pace, filler words, pauses and skipped lines after every take.", isPro: true)
+        #if os(iOS)
+        row("square.and.pencil", .blue, "A Roomier Script Editor",
+            "Your title at the top of the page, more space around every line, and formatting right above the keyboard.")
         #endif
     }
 

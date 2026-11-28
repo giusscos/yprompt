@@ -546,9 +546,6 @@
 "Add Your First Script" = "첫 대본을 추가하세요";
 "Type or paste your text, or import a file. Then press play." = "텍스트를 입력하거나 붙여넣거나 파일을 가져오세요. 그다음 재생을 누르세요.";
 "Let Your Voice Lead" = "목소리로 이끌어 보세요";
-"Choose Voice: the script follows your words and waits when you pause." = "음성을 선택하면 대본이 말을 따라오고 멈추면 기다립니다.";
-"Try Voice Scroll" = "음성 스크롤을 써 보세요";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "음성 모드에서는 대본이 말을 따라옵니다. Pro 기능이며 무료로 체험할 수 있습니다.";
 "Read Over Any App" = "어떤 앱 위에서든 읽기";
 "Add Captions in One Tap" = "탭 한 번으로 자막";
 "Lyrics or Clean: captions are spelled exactly like your script." = "가사 또는 심플: 자막이 대본과 똑같은 표기로 들어갑니다.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "카메라 바로 아래에서 읽기";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "발표를 누르면 대본이 카메라 옆 노치에 열립니다. 노치나 떠 있는 창은 설정에서 고르세요.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "발표를 누르면 대본이 카메라 바로 아래 떠 있는 창에 열려 렌즈를 보며 읽을 수 있습니다.";
-"Camera, Audio or Color" = "카메라, 오디오 또는 색상";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "렌즈 아래에 대본을 두고 촬영하거나, 목소리만 녹음하거나, 단색 배경에서 읽을 수 있습니다.";
 "Make It Easy to Read" = "편하게 읽기";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "눈과 거리에 맞게 글자 크기, 글꼴, 간격을 바꿔 보세요.";
 
@@ -637,3 +632,51 @@
 "To" = "끝";
 "Stretch" = "구간";
 "Words per minute" = "분당 단어 수";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "대본이 필요하세요? 초안을 요청하세요";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "주제, 길이, 어조를 말해 주세요. Apple Intelligence가 기기에서 초안을 작성합니다.";
+"Write a Draft" = "초안 작성";
+"Read It Out Loud" = "소리 내어 읽어 보세요";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "프롬프터를 엽니다. 그곳에서 카메라를 켜면 읽으면서 자신을 촬영할 수 있습니다.";
+"With Voice, the script follows your words and waits when you pause." = "음성을 사용하면 대본이 말을 따라가고, 잠시 멈추면 기다립니다.";
+"Use Voice" = "음성 사용";
+"Stop Chasing the Speed" = "속도를 맞추느라 애쓰지 마세요";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "음성을 사용하면 대본이 말을 따라가고, 잠시 멈추면 기다립니다. Pro에 포함되어 있으며 무료로 체험할 수 있습니다.";
+"Try Voice" = "음성 체험";
+"Record While You Read" = "읽으면서 녹화하세요";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "렌즈 옆에 대본을 띄우고 자신을 촬영하거나 목소리만 녹음하세요. 자막은 대본으로 만들어집니다.";
+"Turn On the Camera" = "카메라 켜기";
+"Keep Your Eyes Near the Lens" = "시선을 렌즈 가까이에";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "카메라 아래는 몇 줄을 렌즈 바로 아래에 표시해, 읽는 동안 렌즈를 바라보게 합니다.";
+"Use Under the Camera" = "카메라 아래 사용";
+"Adjust the Text" = "텍스트 조절";
+"Try It" = "체험하기";
+"Add Lyrics Captions" = "가사 자막 추가";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "이 테이크에 긴 쉼이 하나 있습니다. 쉬는 구간 제거로 문장 사이의 침묵을 잘라냅니다.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "이 테이크에 긴 쉼이 %lld개 있습니다. 쉬는 구간 제거로 문장 사이의 침묵을 잘라냅니다.";
+"Move Through Your Recording" = "녹화 둘러보기";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "옆으로 스크롤하거나 드래그해 이동하고, 핀치해 확대하세요. 조각을 길게 눌러 옮길 수 있습니다.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "쓸어서 이동하고 핀치해 확대하세요. 조각을 길게 눌러 옮길 수 있습니다.";
+"Try Pro Free" = "Pro 무료 체험";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "속도, 군말, 긴 쉼, 건너뛴 줄을 탭 한 번으로 확인하세요.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "속도, 군말, 긴 쉼, 건너뛴 줄을 탭 한 번으로 확인하세요. Pro 기능입니다.";
+"Show the Report" = "리포트 보기";
+"Learn More" = "더 알아보기";
+"Make the Captions Yours" = "나만의 자막 만들기";
+"Pick a font, colors and a background, or box just the word being said." = "서체, 색상, 배경을 고르거나 말하고 있는 단어만 상자로 강조하세요.";
+"Open Caption Style" = "자막 스타일 열기";
+"Add Clips" = "클립 추가";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "선택한 조각 뒤에 사진이나 파일의 영상을 넣거나 새 조각을 녹화하세요.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "처음부터 쓰거나, 텍스트를 붙여넣거나, 파일을 가져오거나, Apple Intelligence에게 초안을 맡기세요. 태그와 검색으로 정리할 수 있습니다.";
+"A one-minute intro for my cooking channel" = "요리 채널의 1분짜리 인트로";
+"1 min · Conversational" = "1분 · 친근하게";
+"Record, Edit\nand Share" = "녹화하고, 편집하고,\n공유하세요";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "카메라 바로 아래에서 읽고, 테이크를 다듬고, 클립과 자막을 넣고, 말하기를 확인하세요.";
+"Thank you for being here" = "와 주셔서 감사합니다";
+"Add Clips to Your Recordings" = "녹화에 클립 추가";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "사진이나 파일의 영상을 넣고, 쓸어 넘기고 확대할 수 있는 타임라인에서 녹화를 둘러보세요.";
+"A Roomier Script Editor" = "더 여유로운 대본 편집기";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "페이지 맨 위의 제목, 넉넉한 줄 간격, 키보드 바로 위의 서식 버튼.";

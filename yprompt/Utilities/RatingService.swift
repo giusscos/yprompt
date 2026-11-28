@@ -69,7 +69,7 @@ final class RatingService {
     func recordSessionCompleted() {
         completedSessions += 1
         moments += 1
-        Task { await TipState.readFinished.donate() }
+        TipState.readFinished()
     }
 
     func recordRecordingSaved() {

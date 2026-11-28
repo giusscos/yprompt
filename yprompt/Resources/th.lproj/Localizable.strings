@@ -546,9 +546,6 @@
 "Add Your First Script" = "เพิ่มสคริปต์แรกของคุณ";
 "Type or paste your text, or import a file. Then press play." = "พิมพ์หรือวางข้อความ หรือนำเข้าไฟล์ แล้วกดเล่น";
 "Let Your Voice Lead" = "ให้เสียงของคุณนำ";
-"Choose Voice: the script follows your words and waits when you pause." = "เลือก เสียง: สคริปต์จะตามคำพูดของคุณและรอเมื่อคุณหยุด";
-"Try Voice Scroll" = "ลองเลื่อนด้วยเสียง";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "ในโหมด เสียง สคริปต์จะตามคำพูดของคุณ เป็นส่วนหนึ่งของ Pro และทดลองใช้ได้ฟรี";
 "Read Over Any App" = "อ่านได้บนทุกแอป";
 "Add Captions in One Tap" = "ใส่คำบรรยายในแตะเดียว";
 "Lyrics or Clean: captions are spelled exactly like your script." = "เนื้อเพลง หรือ เรียบง่าย: คำบรรยายสะกดตรงกับสคริปต์ทุกคำ";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "อ่านใต้กล้องพอดี";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "นำเสนอ จะเปิดสคริปต์ในรอยบาก ข้างกล้อง เลือกรอยบากหรือหน้าต่างลอยได้ในการตั้งค่า";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "นำเสนอ จะเปิดสคริปต์ในหน้าต่างลอยใต้กล้องพอดี เพื่อให้คุณมองเข้าเลนส์";
-"Camera, Audio or Color" = "กล้อง เสียง หรือสี";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "อัดตัวเองโดยมีสคริปต์อยู่ใต้เลนส์ อัดเฉพาะเสียง หรืออ่านบนพื้นสีเรียบ";
 "Make It Easy to Read" = "อ่านได้สบายตา";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "ปรับขนาด ฟอนต์ และระยะห่างของข้อความให้เหมาะกับสายตาและระยะที่คุณนั่ง";
 
@@ -637,3 +632,51 @@
 "To" = "ถึง";
 "Stretch" = "ช่วง";
 "Words per minute" = "คำต่อนาที";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "ต้องการบทพูดไหม ขอให้ช่วยร่างได้";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "บอกหัวข้อ ความยาว และน้ำเสียง แล้ว Apple Intelligence จะร่างบทบนอุปกรณ์ของคุณ";
+"Write a Draft" = "ร่างบท";
+"Read It Out Loud" = "อ่านออกเสียง";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "เปิดเทเลพรอมป์เตอร์ แล้วเปิดกล้องที่นั่นเพื่อถ่ายตัวเองขณะอ่าน";
+"With Voice, the script follows your words and waits when you pause." = "เมื่อใช้เสียง บทจะเลื่อนตามคำพูดของคุณ และรอเมื่อคุณหยุด";
+"Use Voice" = "ใช้เสียง";
+"Stop Chasing the Speed" = "ไม่ต้องไล่ตามความเร็วอีกต่อไป";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "เมื่อใช้เสียง บทจะเลื่อนตามคำพูดของคุณ และรอเมื่อคุณหยุด เป็นส่วนหนึ่งของ Pro และทดลองใช้ได้ฟรี";
+"Try Voice" = "ลองใช้เสียง";
+"Record While You Read" = "บันทึกขณะอ่าน";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "ถ่ายตัวเองโดยมีบทอยู่ใกล้เลนส์ หรือบันทึกเฉพาะเสียง คำบรรยายสร้างจากบทของคุณ";
+"Turn On the Camera" = "เปิดกล้อง";
+"Keep Your Eyes Near the Lens" = "ให้สายตาอยู่ใกล้เลนส์";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "ใต้กล้องจะแสดงข้อความไม่กี่บรรทัดใต้เลนส์พอดี คุณจึงมองเลนส์ขณะอ่าน";
+"Use Under the Camera" = "ใช้ใต้กล้อง";
+"Adjust the Text" = "ปรับข้อความ";
+"Try It" = "ลองเลย";
+"Add Lyrics Captions" = "เพิ่มคำบรรยายแบบเนื้อเพลง";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "เทคนี้มีช่วงหยุดยาวหนึ่งช่วง ตัดช่วงหยุด จะตัดช่วงเงียบระหว่างประโยค";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "เทคนี้มีช่วงหยุดยาว %lld ช่วง ตัดช่วงหยุด จะตัดช่วงเงียบระหว่างประโยค";
+"Move Through Your Recording" = "เลื่อนดูการบันทึกของคุณ";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "เลื่อนไปด้านข้างหรือลากเพื่อเลื่อนดู และถ่างนิ้วเพื่อซูม แตะค้างที่ส่วนหนึ่งเพื่อย้าย";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "ปัดเพื่อเลื่อนดู และถ่างนิ้วเพื่อซูม แตะค้างที่ส่วนหนึ่งเพื่อย้าย";
+"Try Pro Free" = "ทดลองใช้ Pro ฟรี";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "จังหวะ คำติดปาก ช่วงหยุดยาว และบรรทัดที่ข้าม ดูได้ในแตะเดียว";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "จังหวะ คำติดปาก ช่วงหยุดยาว และบรรทัดที่ข้าม ดูได้ในแตะเดียว เป็นส่วนหนึ่งของ Pro";
+"Show the Report" = "แสดงรายงาน";
+"Learn More" = "เรียนรู้เพิ่มเติม";
+"Make the Captions Yours" = "ปรับคำบรรยายในแบบของคุณ";
+"Pick a font, colors and a background, or box just the word being said." = "เลือกแบบอักษร สี และพื้นหลัง หรือใส่กรอบเฉพาะคำที่กำลังพูด";
+"Open Caption Style" = "เปิดรูปแบบคำบรรยาย";
+"Add Clips" = "เพิ่มคลิป";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "ใส่วิดีโอจากรูปภาพหรือไฟล์ หรือบันทึกส่วนใหม่ ต่อจากส่วนที่คุณเลือก";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "เขียนตั้งแต่ต้น วางข้อความใดก็ได้ นำเข้าไฟล์ หรือให้ Apple Intelligence ร่างบทแรกให้ จัดระเบียบด้วยแท็กและการค้นหา";
+"A one-minute intro for my cooking channel" = "อินโทรหนึ่งนาทีสำหรับช่องทำอาหารของฉัน";
+"1 min · Conversational" = "1 นาที · เป็นกันเอง";
+"Record, Edit\nand Share" = "บันทึก แก้ไข\nและแชร์";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "อ่านใต้กล้องพอดี แล้วตัดเทค เพิ่มคลิปและคำบรรยาย และดูว่าคุณพูดเป็นอย่างไร";
+"Thank you for being here" = "ขอบคุณที่มาในวันนี้";
+"Add Clips to Your Recordings" = "เพิ่มคลิปในการบันทึก";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "ใส่วิดีโอจากรูปภาพหรือไฟล์ และเลื่อนดูการบันทึกบนไทม์ไลน์ที่ปัดและซูมได้";
+"A Roomier Script Editor" = "ตัวแก้ไขบทที่โปร่งขึ้น";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "ชื่อเรื่องอยู่บนสุดของหน้า เว้นระยะบรรทัดมากขึ้น และปุ่มจัดรูปแบบอยู่เหนือแป้นพิมพ์";

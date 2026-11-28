@@ -588,9 +588,6 @@
 "Add Your First Script" = "Adicione seu primeiro roteiro";
 "Type or paste your text, or import a file. Then press play." = "Digite ou cole seu texto, ou importe um arquivo. Depois toque em reproduzir.";
 "Let Your Voice Lead" = "Deixe sua voz guiar";
-"Choose Voice: the script follows your words and waits when you pause." = "Escolha Voz: o roteiro acompanha suas palavras e espera quando você pausa.";
-"Try Voice Scroll" = "Experimente a rolagem por voz";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Com Voz, o roteiro acompanha suas palavras. Faz parte do Pro e você pode testar grátis.";
 "Read Over Any App" = "Leia sobre qualquer app";
 "Add Captions in One Tap" = "Legendas com um toque";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Letra ou Simples: as legendas saem escritas exatamente como seu roteiro.";
@@ -601,8 +598,6 @@
 "Read Right Under Your Camera" = "Leia logo abaixo da câmera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Apresentar abre seu roteiro no notch, ao lado da câmera. Escolha o notch ou uma janela flutuante em Ajustes.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Apresentar abre seu roteiro numa janela flutuante logo abaixo da câmera, para você olhar para a lente.";
-"Camera, Audio or Color" = "Câmera, áudio ou cor";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Grave-se com o roteiro sob a lente, grave só a sua voz ou leia sobre uma cor lisa.";
 "Make It Easy to Read" = "Leia com conforto";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Mude o tamanho, a fonte e o espaçamento do texto para seus olhos e sua distância.";
 
@@ -679,3 +674,51 @@
 "To" = "Até";
 "Stretch" = "Trecho";
 "Words per minute" = "Palavras por minuto";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Precisa de um roteiro? Peça um rascunho";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Diga o assunto, a duração e o tom. O Apple Intelligence escreve um rascunho no seu dispositivo.";
+"Write a Draft" = "Escrever um rascunho";
+"Read It Out Loud" = "Leia em voz alta";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Abre o teleprompter. Ative a câmera lá para se filmar enquanto lê.";
+"With Voice, the script follows your words and waits when you pause." = "Com Voz, o roteiro segue suas palavras e espera quando você faz uma pausa.";
+"Use Voice" = "Usar Voz";
+"Stop Chasing the Speed" = "Pare de correr atrás da velocidade";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Com Voz, o roteiro segue suas palavras e espera quando você faz uma pausa. Faz parte do Pro, e você pode testar grátis.";
+"Try Voice" = "Testar Voz";
+"Record While You Read" = "Grave enquanto lê";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Filme-se com o roteiro perto da lente, ou grave só a sua voz. As legendas vêm do seu roteiro.";
+"Turn On the Camera" = "Ativar a câmera";
+"Keep Your Eyes Near the Lens" = "Mantenha os olhos perto da lente";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Abaixo da câmera mostra algumas linhas logo abaixo da lente, para você olhar para ela enquanto lê.";
+"Use Under the Camera" = "Usar Abaixo da câmera";
+"Adjust the Text" = "Ajustar o texto";
+"Try It" = "Experimentar";
+"Add Lyrics Captions" = "Adicionar legendas Letra";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Há uma pausa longa nesta gravação. Remover pausas corta os silêncios entre as frases.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Há %lld pausas longas nesta gravação. Remover pausas corta os silêncios entre as frases.";
+"Move Through Your Recording" = "Navegue pela gravação";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Role para o lado ou arraste para navegar, e faça pinça para ampliar. Toque e segure um trecho para movê-lo.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Deslize para navegar e faça pinça para ampliar. Toque e segure um trecho para movê-lo.";
+"Try Pro Free" = "Testar o Pro grátis";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Seu ritmo, vícios de linguagem, pausas longas e linhas puladas, cada um a um toque.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Seu ritmo, vícios de linguagem, pausas longas e linhas puladas, cada um a um toque. Parte do Pro.";
+"Show the Report" = "Mostrar o relatório";
+"Learn More" = "Saiba mais";
+"Make the Captions Yours" = "Deixe as legendas do seu jeito";
+"Pick a font, colors and a background, or box just the word being said." = "Escolha fonte, cores e fundo, ou destaque só a palavra sendo dita.";
+"Open Caption Style" = "Abrir Estilo das Legendas";
+"Add Clips" = "Adicionar clipes";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Insira vídeos do Fotos ou Arquivos, ou grave outro trecho, depois do selecionado.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Escreva do zero, cole qualquer texto, importe um arquivo ou deixe o Apple Intelligence escrever um primeiro rascunho. Organizado com etiquetas e busca.";
+"A one-minute intro for my cooking channel" = "Uma introdução de um minuto para meu canal de culinária";
+"1 min · Conversational" = "1 min · Descontraído";
+"Record, Edit\nand Share" = "Grave, edite\ne compartilhe";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Leia logo abaixo da câmera, depois corte suas gravações, adicione clipes e legendas e veja como você falou.";
+"Thank you for being here" = "Obrigado por estarem aqui";
+"Add Clips to Your Recordings" = "Adicione clipes às gravações";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Insira vídeos do Fotos ou Arquivos e navegue pela gravação numa linha do tempo que você desliza e amplia.";
+"A Roomier Script Editor" = "Um editor de roteiro mais arejado";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Seu título no topo da página, mais espaço entre as linhas e a formatação logo acima do teclado.";

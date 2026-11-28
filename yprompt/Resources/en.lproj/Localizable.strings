@@ -588,9 +588,6 @@
 "Add Your First Script" = "Add Your First Script";
 "Type or paste your text, or import a file. Then press play." = "Type or paste your text, or import a file. Then press play.";
 "Let Your Voice Lead" = "Let Your Voice Lead";
-"Choose Voice: the script follows your words and waits when you pause." = "Choose Voice: the script follows your words and waits when you pause.";
-"Try Voice Scroll" = "Try Voice Scroll";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "With Voice, the script follows your words. It's part of Pro, and you can try it free.";
 "Read Over Any App" = "Read Over Any App";
 "Add Captions in One Tap" = "Add Captions in One Tap";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Lyrics or Clean: captions are spelled exactly like your script.";
@@ -601,8 +598,6 @@
 "Read Right Under Your Camera" = "Read Right Under Your Camera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Present opens your script in a floating window just below your camera, so you look into the lens.";
-"Camera, Audio or Color" = "Camera, Audio or Color";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film yourself with the script under the lens, record just your voice, or read on a plain color.";
 "Make It Easy to Read" = "Make It Easy to Read";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Change the text size, font and spacing to suit your eyes and how far you sit.";
 
@@ -679,3 +674,51 @@
 "To" = "To";
 "Stretch" = "Stretch";
 "Words per minute" = "Words per minute";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Need a Script? Ask for a Draft";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device.";
+"Write a Draft" = "Write a Draft";
+"Read It Out Loud" = "Read It Out Loud";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Opens the teleprompter. Turn on the camera there to film yourself while you read.";
+"With Voice, the script follows your words and waits when you pause." = "With Voice, the script follows your words and waits when you pause.";
+"Use Voice" = "Use Voice";
+"Stop Chasing the Speed" = "Stop Chasing the Speed";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free.";
+"Try Voice" = "Try Voice";
+"Record While You Read" = "Record While You Read";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Film yourself with the script by the lens, or record just your voice. Captions are made from your script.";
+"Turn On the Camera" = "Turn On the Camera";
+"Keep Your Eyes Near the Lens" = "Keep Your Eyes Near the Lens";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Under the Camera puts a few lines right below the lens, so you look into it as you read.";
+"Use Under the Camera" = "Use Under the Camera";
+"Adjust the Text" = "Adjust the Text";
+"Try It" = "Try It";
+"Add Lyrics Captions" = "Add Lyrics Captions";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "There's a long pause in this take. Remove Pauses cuts the silences between your sentences.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences.";
+"Move Through Your Recording" = "Move Through Your Recording";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Swipe to move through it and pinch to zoom. Hold a piece to move it.";
+"Try Pro Free" = "Try Pro Free";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Your pace, filler words, long pauses and skipped lines, each one a tap away.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro.";
+"Show the Report" = "Show the Report";
+"Learn More" = "Learn More";
+"Make the Captions Yours" = "Make the Captions Yours";
+"Pick a font, colors and a background, or box just the word being said." = "Pick a font, colors and a background, or box just the word being said.";
+"Open Caption Style" = "Open Caption Style";
+"Add Clips" = "Add Clips";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Put in footage from Photos or Files, or record another piece, after the one you've picked.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search.";
+"A one-minute intro for my cooking channel" = "A one-minute intro for my cooking channel";
+"1 min · Conversational" = "1 min · Conversational";
+"Record, Edit\nand Share" = "Record, Edit\nand Share";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Read right under the camera, then trim your takes, add clips and captions, and see how you spoke.";
+"Thank you for being here" = "Thank you for being here";
+"Add Clips to Your Recordings" = "Add Clips to Your Recordings";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch.";
+"A Roomier Script Editor" = "A Roomier Script Editor";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Your title at the top of the page, more space around every line, and formatting right above the keyboard.";

@@ -546,9 +546,6 @@
 "Add Your First Script" = "Thêm kịch bản đầu tiên";
 "Type or paste your text, or import a file. Then press play." = "Nhập hoặc dán văn bản, hoặc nhập một tệp. Sau đó nhấn phát.";
 "Let Your Voice Lead" = "Để giọng nói dẫn dắt";
-"Choose Voice: the script follows your words and waits when you pause." = "Chọn Giọng nói: kịch bản theo lời bạn nói và chờ khi bạn ngừng.";
-"Try Voice Scroll" = "Thử cuộn bằng giọng nói";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Với Giọng nói, kịch bản theo lời bạn nói. Tính năng thuộc Pro và bạn có thể dùng thử miễn phí.";
 "Read Over Any App" = "Đọc trên mọi ứng dụng";
 "Add Captions in One Tap" = "Phụ đề chỉ với một chạm";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Lời bài hát hoặc Đơn giản: phụ đề viết đúng như kịch bản của bạn.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "Đọc ngay dưới camera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Trình bày mở kịch bản ở tai thỏ, cạnh camera. Chọn tai thỏ hoặc cửa sổ nổi trong Cài đặt.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Trình bày mở kịch bản trong cửa sổ nổi ngay dưới camera, để bạn nhìn vào ống kính.";
-"Camera, Audio or Color" = "Camera, âm thanh hoặc màu";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Quay chính bạn với kịch bản dưới ống kính, chỉ ghi giọng nói, hoặc đọc trên nền màu trơn.";
 "Make It Easy to Read" = "Đọc dễ dàng hơn";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Đổi cỡ chữ, phông chữ và khoảng cách cho hợp với mắt và khoảng cách của bạn.";
 
@@ -637,3 +632,51 @@
 "To" = "Đến";
 "Stretch" = "Đoạn";
 "Words per minute" = "Từ mỗi phút";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Cần kịch bản? Hãy nhờ viết bản nháp";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Nói chủ đề, độ dài và giọng điệu. Apple Intelligence viết bản nháp ngay trên thiết bị của bạn.";
+"Write a Draft" = "Viết bản nháp";
+"Read It Out Loud" = "Đọc to lên";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Mở máy nhắc chữ. Bật camera ở đó để quay bản thân khi đọc.";
+"With Voice, the script follows your words and waits when you pause." = "Với Giọng nói, kịch bản chạy theo lời bạn và chờ khi bạn ngừng.";
+"Use Voice" = "Dùng Giọng nói";
+"Stop Chasing the Speed" = "Không cần đuổi theo tốc độ";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Với Giọng nói, kịch bản chạy theo lời bạn và chờ khi bạn ngừng. Đây là tính năng Pro và bạn có thể dùng thử miễn phí.";
+"Try Voice" = "Thử Giọng nói";
+"Record While You Read" = "Vừa đọc vừa ghi";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Quay bản thân với kịch bản ngay cạnh ống kính, hoặc chỉ ghi giọng. Phụ đề được tạo từ kịch bản của bạn.";
+"Turn On the Camera" = "Bật camera";
+"Keep Your Eyes Near the Lens" = "Giữ ánh mắt gần ống kính";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Dưới camera đặt vài dòng ngay dưới ống kính, để bạn nhìn vào đó khi đọc.";
+"Use Under the Camera" = "Dùng Dưới camera";
+"Adjust the Text" = "Chỉnh văn bản";
+"Try It" = "Thử ngay";
+"Add Lyrics Captions" = "Thêm phụ đề Lời bài hát";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Lần quay này có một khoảng dừng dài. Bỏ khoảng lặng cắt những khoảng im lặng giữa các câu.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Lần quay này có %lld khoảng dừng dài. Bỏ khoảng lặng cắt những khoảng im lặng giữa các câu.";
+"Move Through Your Recording" = "Di chuyển trong bản ghi";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Cuộn ngang hoặc kéo để di chuyển, và chụm để thu phóng. Chạm và giữ một đoạn để di chuyển nó.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Vuốt để di chuyển và chụm để thu phóng. Chạm và giữ một đoạn để di chuyển nó.";
+"Try Pro Free" = "Dùng thử Pro miễn phí";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Tốc độ, từ đệm, khoảng dừng dài và dòng bị bỏ qua, xem chỉ với một chạm.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Tốc độ, từ đệm, khoảng dừng dài và dòng bị bỏ qua, xem chỉ với một chạm. Thuộc Pro.";
+"Show the Report" = "Xem báo cáo";
+"Learn More" = "Tìm hiểu thêm";
+"Make the Captions Yours" = "Phụ đề theo phong cách của bạn";
+"Pick a font, colors and a background, or box just the word being said." = "Chọn phông chữ, màu và nền, hoặc chỉ đóng khung từ đang được nói.";
+"Open Caption Style" = "Mở Kiểu phụ đề";
+"Add Clips" = "Thêm clip";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Chèn video từ Ảnh hoặc Tệp, hoặc ghi thêm một đoạn, sau đoạn bạn đã chọn.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Viết từ đầu, dán văn bản bất kỳ, nhập tệp hoặc để Apple Intelligence viết bản nháp đầu tiên. Sắp xếp bằng thẻ và tìm kiếm.";
+"A one-minute intro for my cooking channel" = "Phần mở đầu một phút cho kênh nấu ăn của tôi";
+"1 min · Conversational" = "1 phút · Thân mật";
+"Record, Edit\nand Share" = "Quay, chỉnh sửa\nvà chia sẻ";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Đọc ngay dưới camera, rồi cắt lần quay, thêm clip và phụ đề, và xem bạn đã nói thế nào.";
+"Thank you for being here" = "Cảm ơn mọi người đã đến";
+"Add Clips to Your Recordings" = "Thêm clip vào bản ghi";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Chèn video từ Ảnh hoặc Tệp, và di chuyển trong bản ghi trên dòng thời gian có thể vuốt và thu phóng.";
+"A Roomier Script Editor" = "Trình soạn kịch bản thoáng hơn";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Tiêu đề ở đầu trang, dòng chữ thoáng hơn và định dạng ngay phía trên bàn phím.";

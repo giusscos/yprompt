@@ -9,8 +9,10 @@ enum TextFormat {
     case bold, italic, underline, strikethrough
 }
 
-/// Script editor. Rich text with formatting on iOS / macOS 26 and later;
-/// plain text on older systems, where `TextEditor` has no attributed-text selection.
+/// Script editor on the Mac (and Vision Pro), with bold, italic, underline and strikethrough:
+/// SwiftUI's `TextEditor` on macOS 26 and later. Before that, where it can't format a
+/// selection, the text is edited plainly, keeping the formatting already there.
+/// iPhone and iPad use `ScriptTextEditor`.
 struct MarkdownEditorView: View {
     @Binding var text: AttributedString
     /// Set by the host (e.g. the macOS toolbar) to format the current selection; cleared once applied.
@@ -19,11 +21,24 @@ struct MarkdownEditorView: View {
     var focusOnAppear = false
 
     static var supportsFormatting: Bool {
-        if #available(iOS 26.0, macOS 26.0, *) { true } else { false }
+        #if os(iOS)
+        true
+        #else
+        if #available(macOS 26.0, *) { true } else { false }
+        #endif
+    }
+
+    /// `-ypLegacyEditor` tries the pre-26 editor on a newer Mac.
+    private static var forcesLegacy: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-ypLegacyEditor")
+        #else
+        false
+        #endif
     }
 
     var body: some View {
-        if #available(iOS 26.0, macOS 26.0, *) {
+        if #available(iOS 26.0, macOS 26.0, *), !Self.forcesLegacy {
             RichTextEditor(text: $text, formatRequest: $formatRequest, focusOnAppear: focusOnAppear)
         } else {
             PlainTextEditor(text: $text, focusOnAppear: focusOnAppear)
@@ -72,9 +87,6 @@ private struct RichTextEditor: View {
                 apply(format)
                 formatRequest = nil
             }
-            #if os(iOS)
-            .toolbar { keyboardToolbar }
-            #endif
             #if os(macOS)
             .modifier(BelowToolbar())
             #endif
@@ -107,45 +119,9 @@ private struct RichTextEditor: View {
         }
     }
 
-    // MARK: - iOS Keyboard Toolbar (`.keyboard` placement unavailable on visionOS)
-
-    #if os(iOS)
-    @ToolbarContentBuilder
-    private var keyboardToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .keyboard) {
-            formatButton("bold",          label: "Bold",          isActive: isBold)          { apply(.bold) }
-            formatButton("italic",        label: "Italic",        isActive: isItalic)        { apply(.italic) }
-            formatButton("underline",     label: "Underline",     isActive: isUnderline)     { apply(.underline) }
-            formatButton("strikethrough", label: "Strikethrough", isActive: isStrikethrough) { apply(.strikethrough) }
-            Spacer()
-            Button {
-                isFocused = false
-            } label: {
-                Image(systemName: "keyboard.chevron.compact.down")
-                    .foregroundStyle(.secondary)
-            }
-            .accessibilityLabel("Hide Keyboard")
-        }
-    }
-
-    private func formatButton(
-        _ systemImage: String,
-        label: LocalizedStringKey,
-        isActive: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .fontWeight(isActive ? .semibold : .regular)
-        }
-        .tint(isActive ? Color.accentColor : Color.primary)
-        .accessibilityLabel(Text(label))
-        .accessibilityAddTraits(isActive ? .isSelected : [])
-    }
-    #endif
 }
 
-// MARK: - Plain text (older systems)
+// MARK: - Plain text (macOS 14 and 15)
 
 private struct PlainTextEditor: View {
     @Binding var text: AttributedString
@@ -155,25 +131,12 @@ private struct PlainTextEditor: View {
     var body: some View {
         TextEditor(text: Binding(
             get: { String(text.characters) },
-            set: { text = AttributedString($0) }
+            // Only the part that changed is replaced: formatting made on another device stays.
+            set: { text = text.replacingCharacters(with: $0) }
         ))
         .font(.body)
         .focused($isFocused)
         .onAppear { if focusOnAppear { isFocused = true } }
-        #if os(iOS)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button {
-                    isFocused = false
-                } label: {
-                    Image(systemName: "keyboard.chevron.compact.down")
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityLabel("Hide Keyboard")
-            }
-        }
-        #endif
     }
 }
 
@@ -189,3 +152,23 @@ private struct BelowToolbar: ViewModifier {
     }
 }
 #endif
+
+extension AttributedString {
+    /// This text changed to `new` with as little replaced as possible: what's the same at the
+    /// start and the end keeps its attributes, and only the middle is swapped for plain text.
+    func replacingCharacters(with new: String) -> AttributedString {
+        let old = Array(characters)
+        let updated = Array(new)
+        guard old != updated else { return self }
+        var prefix = 0
+        while prefix < old.count, prefix < updated.count, old[prefix] == updated[prefix] { prefix += 1 }
+        var suffix = 0
+        while suffix < old.count - prefix, suffix < updated.count - prefix,
+              old[old.count - 1 - suffix] == updated[updated.count - 1 - suffix] { suffix += 1 }
+        var result = self
+        let start = result.characters.index(result.startIndex, offsetBy: prefix)
+        let end = result.characters.index(result.endIndex, offsetBy: -suffix)
+        result.replaceSubrange(start..<end, with: AttributedString(String(updated[prefix..<(updated.count - suffix)])))
+        return result
+    }
+}

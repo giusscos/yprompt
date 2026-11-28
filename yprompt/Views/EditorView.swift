@@ -36,6 +36,10 @@ struct EditorView: View {
 
     @State private var attrText = AttributedString()
     @State private var formatRequest: TextFormat?
+    #if os(iOS)
+    /// Whether the page is being typed in, and its Undo and Done.
+    @State private var editor = ScriptEditorController()
+    #endif
 
     @State private var showingCustomization = false
     @State private var isSaving = false
@@ -71,7 +75,12 @@ struct EditorView: View {
 
     var body: some View {
         editorArea
-            #if os(iOS) || os(visionOS)
+            #if os(iOS)
+            // The title is the page's heading, so the bar only names it for the back menu.
+            .navigationTitle(script.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .modifier(HiddenNavigationTitle())
+            #elseif os(visionOS)
             .navigationTitle(script.title)
             .navigationBarTitleDisplayMode(.inline)
             #elseif os(macOS)
@@ -139,7 +148,25 @@ struct EditorView: View {
 
     // MARK: - Editor Area
 
+    @ViewBuilder
     private var editorArea: some View {
+        #if os(iOS)
+        ScriptTextEditor(
+            text: $attrText,
+            title: Binding(get: { script.title }, set: { newTitle in
+                script.title = newTitle
+                scheduleSave(attributedText: attrText)
+            }),
+            controller: editor,
+            focusOnAppear: script.content.isEmpty
+        )
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            // Out of the way while typing, except to paste or import into an empty script.
+            if !editor.isEditing || wordCount == 0 {
+                wordCountBar
+            }
+        }
+        #else
         MarkdownEditorView(
             text: $attrText,
             formatRequest: $formatRequest,
@@ -164,6 +191,7 @@ struct EditorView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             wordCountBar
         }
+        #endif
     }
 
     private var wordCountBar: some View {
@@ -191,7 +219,18 @@ struct EditorView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
+        #if os(iOS)
+        // The page fades out under it rather than meeting a bar.
+        .background {
+            LinearGradient(stops: [.init(color: Color(.systemBackground).opacity(0), location: 0),
+                                   .init(color: Color(.systemBackground), location: 0.6)],
+                           startPoint: .top, endPoint: .bottom)
+                .padding(.top, -12)
+                .ignoresSafeArea(edges: .bottom)
+        }
+        #else
         .background(.bar)
+        #endif
     }
 
     // MARK: - Navigation Toolbar
@@ -251,55 +290,82 @@ struct EditorView: View {
             }
             .disabled(script.content.isEmpty)
         }
+        #elseif os(iOS)
+        // While typing: Undo, More and Done, as in Notes. Otherwise More and Present.
+        if editor.isEditing {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { editor.undo() } label: {
+                    Label("Undo", systemImage: "arrow.uturn.backward")
+                }
+                .disabled(!editor.canUndo)
+            }
+            ToolbarItem(placement: .topBarTrailing) { moreMenu }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { editor.endEditing() } label: {
+                    Label("Done", systemImage: "checkmark")
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        } else {
+            ToolbarItem(placement: .topBarTrailing) { moreMenu }
+            ToolbarItem(placement: .topBarTrailing) { presentButton }
+        }
         #else
-        // iOS / visionOS: Play button — hide tab bar with a slide-down before pushing play mode
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                #if os(iOS)
-                TabBarAnimator.setHidden(true, animated: true)
-                #endif
-                showingTeleprompter = true
-            } label: {
-                Label("Present", systemImage: "play.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .popoverTip(presentTip)
-            .disabled(script.content.isEmpty)
-        }
-
-        // iOS / visionOS: More menu — Rename + Customize + Import/Export
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button {
-                    renameText = script.title
-                    showingRename = true
-                } label: {
-                    Label("Rename", systemImage: "pencil")
-                }
-                
-                Button { showingCustomization = true } label: {
-                    Label("Customize", systemImage: "paintpalette")
-                }
-                
-                Divider()
-                
-                Button { showingImporter = true } label: {
-                    Label("Import File", systemImage: "square.and.arrow.down")
-                }
-                
-                Button {
-                    rtfDocument = RichTextFile(data: cachedRTFData)
-                    showingRTFExporter = true
-                } label: {
-                    Label("Export Rich Text", systemImage: "square.and.arrow.up")
-                }
-                .disabled(script.content.isEmpty)
-            } label: {
-                Label("More", systemImage: "ellipsis")
-            }
-        }
+        ToolbarItem(placement: .topBarTrailing) { presentButton }
+        ToolbarItem(placement: .topBarTrailing) { moreMenu }
         #endif
     }
+
+    #if !os(macOS)
+    /// Play: hides the tab bar with a slide down before the reading screen comes in.
+    private var presentButton: some View {
+        Button {
+            #if os(iOS)
+            TabBarAnimator.setHidden(true, animated: true)
+            #endif
+            showingTeleprompter = true
+        } label: {
+            Label("Present", systemImage: "play.fill")
+        }
+        .buttonStyle(.borderedProminent)
+        .popoverTip(presentTip)
+        .disabled(script.content.isEmpty)
+    }
+
+    /// Customize, Import and Export (and Rename on Vision Pro; elsewhere the title is typed in place).
+    private var moreMenu: some View {
+        Menu {
+            #if os(visionOS)
+            Button {
+                renameText = script.title
+                showingRename = true
+            } label: {
+                Label("Rename", systemImage: "pencil")
+            }
+            #endif
+
+            Button { showingCustomization = true } label: {
+                Label("Customize", systemImage: "paintpalette")
+            }
+
+            Divider()
+
+            Button { showingImporter = true } label: {
+                Label("Import File", systemImage: "square.and.arrow.down")
+            }
+
+            Button {
+                rtfDocument = RichTextFile(data: cachedRTFData)
+                showingRTFExporter = true
+            } label: {
+                Label("Export Rich Text", systemImage: "square.and.arrow.up")
+            }
+            .disabled(script.content.isEmpty)
+        } label: {
+            Label("More", systemImage: "ellipsis")
+        }
+    }
+    #endif
 
     // MARK: - Rename
 
@@ -432,3 +498,18 @@ struct EditorView: View {
         }
     }
 }
+
+#if os(iOS)
+/// Keeps the script's name out of the navigation bar, where the page's own heading already is.
+private struct HiddenNavigationTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.toolbar(removing: .title)
+        } else {
+            content.toolbar {
+                ToolbarItem(placement: .principal) { Text(verbatim: "") }
+            }
+        }
+    }
+}
+#endif

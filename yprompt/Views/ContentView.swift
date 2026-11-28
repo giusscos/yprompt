@@ -105,7 +105,7 @@ struct ContentView: View {
         guard !UserDefaults.standard.bool(forKey: key),
               scripts.contains(where: { $0.id != AppConstants.welcomeScriptID }) else { return }
         UserDefaults.standard.set(true, forKey: key)
-        Task { await TipState.scriptCreated.donate() }
+        TipState.createdScript()
     }
 
     // MARK: - Onboarding

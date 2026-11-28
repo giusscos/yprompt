@@ -546,9 +546,6 @@
 "Add Your First Script" = "أضف نصك الأول";
 "Type or paste your text, or import a file. Then press play." = "اكتب نصك أو الصقه، أو استورد ملفًا. ثم اضغط تشغيل.";
 "Let Your Voice Lead" = "دع صوتك يقود";
-"Choose Voice: the script follows your words and waits when you pause." = "اختر صوت: يتبع النص كلماتك وينتظر عندما تتوقف.";
-"Try Voice Scroll" = "جرّب التمرير بالصوت";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "مع صوت، يتبع النص كلماتك. إنه جزء من Pro ويمكنك تجربته مجانًا.";
 "Read Over Any App" = "اقرأ فوق أي تطبيق";
 "Add Captions in One Tap" = "ترجمة نصية بنقرة واحدة";
 "Lyrics or Clean: captions are spelled exactly like your script." = "كلمات الأغاني أو بسيط: الترجمة مكتوبة تمامًا مثل نصك.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "اقرأ أسفل الكاميرا مباشرةً";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "عرض تقديمي يفتح نصك في النوتش بجوار الكاميرا. اختر النوتش أو نافذة عائمة من الإعدادات.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "عرض تقديمي يفتح نصك في نافذة عائمة أسفل الكاميرا مباشرةً، لتنظر إلى العدسة.";
-"Camera, Audio or Color" = "كاميرا أو صوت أو لون";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "صوّر نفسك والنص أسفل العدسة، أو سجّل صوتك فقط، أو اقرأ على لون ثابت.";
 "Make It Easy to Read" = "قراءة مريحة";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "غيّر حجم النص وخطه وتباعده بما يناسب عينيك ومسافتك.";
 
@@ -637,3 +632,51 @@
 "To" = "إلى";
 "Stretch" = "مقطع";
 "Words per minute" = "كلمة في الدقيقة";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "تحتاج إلى نص؟ اطلب مسودة";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "قل موضوعه وطوله ونبرته، وسيكتب Apple Intelligence مسودة على جهازك.";
+"Write a Draft" = "كتابة مسودة";
+"Read It Out Loud" = "اقرأه بصوت عالٍ";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "يفتح الملقن. شغّل الكاميرا هناك لتصوّر نفسك أثناء القراءة.";
+"With Voice, the script follows your words and waits when you pause." = "مع وضع الصوت، يتبع النص كلماتك وينتظر عندما تتوقف.";
+"Use Voice" = "استخدام الصوت";
+"Stop Chasing the Speed" = "لا داعي لملاحقة السرعة";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "مع وضع الصوت، يتبع النص كلماتك وينتظر عندما تتوقف. إنه جزء من Pro، ويمكنك تجربته مجانًا.";
+"Try Voice" = "تجربة الصوت";
+"Record While You Read" = "سجّل وأنت تقرأ";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "صوّر نفسك والنص قرب العدسة، أو سجّل صوتك فقط. تُنشأ الترجمة المكتوبة من نصك.";
+"Turn On the Camera" = "تشغيل الكاميرا";
+"Keep Your Eyes Near the Lens" = "أبقِ عينيك قرب العدسة";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "يضع وضع أسفل الكاميرا بضعة أسطر أسفل العدسة مباشرة، لتنظر إليها وأنت تقرأ.";
+"Use Under the Camera" = "استخدام أسفل الكاميرا";
+"Adjust the Text" = "ضبط النص";
+"Try It" = "جرّبه";
+"Add Lyrics Captions" = "إضافة ترجمة كلمات الأغاني";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "في هذه اللقطة فترة توقف طويلة. إزالة فترات التوقف تقطع الصمت بين جملك.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "فترات التوقف الطويلة في هذه اللقطة: %lld. إزالة فترات التوقف تقطع الصمت بين جملك.";
+"Move Through Your Recording" = "تنقّل في تسجيلك";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "مرّر جانبيًا أو اسحب للتنقل، وقرّب بإصبعين للتكبير. اضغط مطولًا على جزء لنقله.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "اسحب للتنقل، وقرّب بإصبعين للتكبير. اضغط مطولًا على جزء لنقله.";
+"Try Pro Free" = "جرّب Pro مجانًا";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "سرعتك وكلمات الحشو وفترات التوقف الطويلة والأسطر المتجاوزة، كلها على بُعد نقرة.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "سرعتك وكلمات الحشو وفترات التوقف الطويلة والأسطر المتجاوزة، كلها على بُعد نقرة. جزء من Pro.";
+"Show the Report" = "عرض التقرير";
+"Learn More" = "معرفة المزيد";
+"Make the Captions Yours" = "اجعل الترجمة المكتوبة على ذوقك";
+"Pick a font, colors and a background, or box just the word being said." = "اختر الخط والألوان والخلفية، أو أحِط الكلمة التي تُقال فقط.";
+"Open Caption Style" = "فتح نمط الترجمة المكتوبة";
+"Add Clips" = "إضافة مقاطع";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "أدرج لقطات من الصور أو الملفات، أو سجّل جزءًا آخر، بعد الجزء الذي اخترته.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "اكتب من البداية، أو الصق أي نص، أو استورد ملفًا، أو دع Apple Intelligence يكتب مسودة أولى. منظّمة بالوسوم والبحث.";
+"A one-minute intro for my cooking channel" = "مقدمة مدتها دقيقة لقناتي عن الطبخ";
+"1 min · Conversational" = "دقيقة واحدة · ودّية";
+"Record, Edit\nand Share" = "سجّل وعدّل\nوشارك";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "اقرأ أسفل الكاميرا مباشرة، ثم قصّ لقطاتك وأضف مقاطع وترجمة مكتوبة، واعرف كيف تحدّثت.";
+"Thank you for being here" = "شكرًا لوجودكم هنا";
+"Add Clips to Your Recordings" = "أضف مقاطع إلى تسجيلاتك";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "أدرج لقطات من الصور أو الملفات، وتنقّل في تسجيلك على شريط زمني يمكنك تمريره وتكبيره.";
+"A Roomier Script Editor" = "محرر نصوص أكثر رحابة";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "العنوان أعلى الصفحة، ومساحة أكبر بين الأسطر، وأدوات التنسيق فوق لوحة المفاتيح مباشرة.";

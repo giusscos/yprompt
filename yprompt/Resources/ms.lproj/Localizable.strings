@@ -546,9 +546,6 @@
 "Add Your First Script" = "Tambah Skrip Pertama Anda";
 "Type or paste your text, or import a file. Then press play." = "Taip atau tampal teks anda, atau import fail. Kemudian tekan main.";
 "Let Your Voice Lead" = "Biar Suara Anda Memimpin";
-"Choose Voice: the script follows your words and waits when you pause." = "Pilih Suara: skrip mengikut kata-kata anda dan menunggu apabila anda berhenti.";
-"Try Voice Scroll" = "Cuba Tatal dengan Suara";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Dengan Suara, skrip mengikut kata-kata anda. Ia sebahagian daripada Pro, dan anda boleh mencubanya secara percuma.";
 "Read Over Any App" = "Baca di Atas Mana-mana App";
 "Add Captions in One Tap" = "Kapsyen dengan Satu Ketikan";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Lirik atau Ringkas: kapsyen dieja tepat seperti skrip anda.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "Baca Betul-betul di Bawah Kamera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Bentang membuka skrip di notch, di sebelah kamera. Pilih notch atau tetingkap terapung dalam Seting.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Bentang membuka skrip dalam tetingkap terapung betul-betul di bawah kamera, supaya anda memandang lensa.";
-"Camera, Audio or Color" = "Kamera, Audio atau Warna";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Rakam diri anda dengan skrip di bawah lensa, rakam suara sahaja, atau baca pada warna polos.";
 "Make It Easy to Read" = "Baca dengan Selesa";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Tukar saiz, fon dan jarak teks mengikut mata dan jarak anda.";
 
@@ -637,3 +632,51 @@
 "To" = "Hingga";
 "Stretch" = "Bahagian";
 "Words per minute" = "Patah perkataan seminit";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Perlukan Skrip? Minta Draf";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Nyatakan topik, tempoh dan nadanya. Apple Intelligence menulis draf pada peranti anda.";
+"Write a Draft" = "Tulis Draf";
+"Read It Out Loud" = "Bacakan dengan Kuat";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Membuka teleprompter. Hidupkan kamera di sana untuk merakam diri anda semasa membaca.";
+"With Voice, the script follows your words and waits when you pause." = "Dengan Suara, skrip mengikut kata-kata anda dan menunggu apabila anda berhenti seketika.";
+"Use Voice" = "Guna Suara";
+"Stop Chasing the Speed" = "Tak Perlu Mengejar Kelajuan";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Dengan Suara, skrip mengikut kata-kata anda dan menunggu apabila anda berhenti seketika. Ia sebahagian daripada Pro, dan anda boleh mencubanya secara percuma.";
+"Try Voice" = "Cuba Suara";
+"Record While You Read" = "Rakam Sambil Membaca";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Rakam diri anda dengan skrip dekat lensa, atau rakam suara anda sahaja. Kapsyen dibuat daripada skrip anda.";
+"Turn On the Camera" = "Hidupkan Kamera";
+"Keep Your Eyes Near the Lens" = "Pastikan Mata Dekat dengan Lensa";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Di Bawah Kamera meletakkan beberapa baris betul-betul di bawah lensa, jadi anda memandang lensa semasa membaca.";
+"Use Under the Camera" = "Guna Di Bawah Kamera";
+"Adjust the Text" = "Laraskan Teks";
+"Try It" = "Cuba";
+"Add Lyrics Captions" = "Tambah Kapsyen Lirik";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Ada satu jeda panjang dalam rakaman ini. Buang Jeda memotong kesenyapan antara ayat anda.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Ada %lld jeda panjang dalam rakaman ini. Buang Jeda memotong kesenyapan antara ayat anda.";
+"Move Through Your Recording" = "Gerak Merentasi Rakaman Anda";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Tatal ke tepi atau seret untuk bergerak, dan cubit untuk zum. Tahan satu bahagian untuk mengalihkannya.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Leret untuk bergerak dan cubit untuk zum. Tahan satu bahagian untuk mengalihkannya.";
+"Try Pro Free" = "Cuba Pro Secara Percuma";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Rentak, kata pengisi, jeda panjang dan baris yang terlangkau, semuanya hanya satu ketikan.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Rentak, kata pengisi, jeda panjang dan baris yang terlangkau, semuanya hanya satu ketikan. Sebahagian daripada Pro.";
+"Show the Report" = "Tunjukkan Laporan";
+"Learn More" = "Ketahui Lebih Lanjut";
+"Make the Captions Yours" = "Jadikan Kapsyen Milik Anda";
+"Pick a font, colors and a background, or box just the word being said." = "Pilih fon, warna dan latar, atau kotakkan hanya perkataan yang sedang disebut.";
+"Open Caption Style" = "Buka Gaya Kapsyen";
+"Add Clips" = "Tambah Klip";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Masukkan video daripada Foto atau Fail, atau rakam bahagian lain, selepas bahagian yang anda pilih.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Tulis dari awal, tampal apa-apa teks, import fail atau biar Apple Intelligence menulis draf pertama. Disusun dengan tag dan carian.";
+"A one-minute intro for my cooking channel" = "Intro satu minit untuk saluran masakan saya";
+"1 min · Conversational" = "1 min · Santai";
+"Record, Edit\nand Share" = "Rakam, Sunting\ndan Kongsi";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Baca betul-betul di bawah kamera, kemudian potong rakaman, tambah klip dan kapsyen, dan lihat cara anda bercakap.";
+"Thank you for being here" = "Terima kasih kerana hadir";
+"Add Clips to Your Recordings" = "Tambah Klip pada Rakaman";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Masukkan video daripada Foto atau Fail, dan gerak merentasi rakaman pada garis masa yang boleh dileret dan dizum.";
+"A Roomier Script Editor" = "Editor Skrip yang Lebih Lapang";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Tajuk di atas halaman, lebih ruang antara baris dan format teks betul-betul di atas papan kekunci.";

@@ -546,9 +546,6 @@
 "Add Your First Script" = "Voeg je eerste script toe";
 "Type or paste your text, or import a file. Then press play." = "Typ of plak je tekst, of importeer een bestand. Druk daarna op afspelen.";
 "Let Your Voice Lead" = "Laat je stem leiden";
-"Choose Voice: the script follows your words and waits when you pause." = "Kies Stem: het script volgt je woorden en wacht als je pauzeert.";
-"Try Voice Scroll" = "Probeer scrollen met je stem";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "Met Stem volgt het script je woorden. Het hoort bij Pro en je kunt het gratis proberen.";
 "Read Over Any App" = "Lees boven elke app";
 "Add Captions in One Tap" = "Ondertitels met één tik";
 "Lyrics or Clean: captions are spelled exactly like your script." = "Songtekst of Strak: ondertitels zijn precies gespeld zoals je script.";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "Lees vlak onder je camera";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "Presenteer opent je script in de notch, naast de camera. Kies de notch of een zwevend venster in Instellingen.";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "Presenteer opent je script in een zwevend venster vlak onder je camera, zodat je in de lens kijkt.";
-"Camera, Audio or Color" = "Camera, audio of kleur";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "Film jezelf met het script onder de lens, neem alleen je stem op of lees op een effen kleur.";
 "Make It Easy to Read" = "Lees met gemak";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "Pas tekstgrootte, lettertype en spatiëring aan op je ogen en je afstand.";
 
@@ -637,3 +632,51 @@
 "To" = "Tot";
 "Stretch" = "Stuk";
 "Words per minute" = "Woorden per minuut";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "Een script nodig? Vraag om een opzet";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "Zeg waar het over gaat, hoe lang en in welke toon. Apple Intelligence schrijft een opzet op je apparaat.";
+"Write a Draft" = "Schrijf een opzet";
+"Read It Out Loud" = "Lees het hardop";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "Opent de teleprompter. Zet daar de camera aan om jezelf te filmen terwijl je leest.";
+"With Voice, the script follows your words and waits when you pause." = "Met Stem volgt het script je woorden en wacht het als je pauzeert.";
+"Use Voice" = "Gebruik Stem";
+"Stop Chasing the Speed" = "Geen gejaag meer op de snelheid";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "Met Stem volgt het script je woorden en wacht het als je pauzeert. Het hoort bij Pro en je kunt het gratis proberen.";
+"Try Voice" = "Probeer Stem";
+"Record While You Read" = "Neem op terwijl je leest";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "Film jezelf met het script bij de lens, of neem alleen je stem op. De ondertitels komen uit je script.";
+"Turn On the Camera" = "Zet de camera aan";
+"Keep Your Eyes Near the Lens" = "Houd je ogen dicht bij de lens";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "Onder de camera zet een paar regels vlak onder de lens, zodat je erin kijkt terwijl je leest.";
+"Use Under the Camera" = "Gebruik Onder de camera";
+"Adjust the Text" = "Pas de tekst aan";
+"Try It" = "Probeer het";
+"Add Lyrics Captions" = "Voeg songtekstondertitels toe";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "Er zit een lange pauze in deze take. Verwijder pauzes knipt de stiltes tussen je zinnen weg.";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "Er zitten %lld lange pauzes in deze take. Verwijder pauzes knipt de stiltes tussen je zinnen weg.";
+"Move Through Your Recording" = "Beweeg door je opname";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "Scrol opzij of sleep om te bewegen, en knijp om in te zoomen. Houd een deel vast om het te verplaatsen.";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "Veeg om te bewegen en knijp om in te zoomen. Houd een deel vast om het te verplaatsen.";
+"Try Pro Free" = "Probeer Pro gratis";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "Je tempo, stopwoorden, lange pauzes en overgeslagen regels, elk één tik verwijderd.";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "Je tempo, stopwoorden, lange pauzes en overgeslagen regels, elk één tik verwijderd. Onderdeel van Pro.";
+"Show the Report" = "Toon het verslag";
+"Learn More" = "Meer informatie";
+"Make the Captions Yours" = "Maak de ondertitels van jou";
+"Pick a font, colors and a background, or box just the word being said." = "Kies een lettertype, kleuren en een achtergrond, of omlijst alleen het woord dat je zegt.";
+"Open Caption Style" = "Open ondertitelstijl";
+"Add Clips" = "Voeg clips toe";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "Voeg beelden uit Foto's of Bestanden in, of neem een volgend deel op, na het gekozen deel.";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "Schrijf vanaf nul, plak tekst, importeer een bestand of laat Apple Intelligence een eerste opzet schrijven. Geordend met tags en zoeken.";
+"A one-minute intro for my cooking channel" = "Een intro van een minuut voor mijn kookkanaal";
+"1 min · Conversational" = "1 min · Informeel";
+"Record, Edit\nand Share" = "Opnemen, bewerken\nen delen";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "Lees vlak onder de camera, knip daarna je takes bij, voeg clips en ondertitels toe en zie hoe je sprak.";
+"Thank you for being here" = "Bedankt dat jullie er zijn";
+"Add Clips to Your Recordings" = "Voeg clips toe aan je opnames";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "Voeg beelden uit Foto's of Bestanden in en beweeg door je opname op een tijdlijn die je veegt en zoomt.";
+"A Roomier Script Editor" = "Een ruimere scripteditor";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "Je titel boven aan de pagina, meer ruimte tussen de regels en opmaak vlak boven het toetsenbord.";

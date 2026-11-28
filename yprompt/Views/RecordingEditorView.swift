@@ -64,7 +64,6 @@ struct RecordingEditorView: View {
             self.model = model
         }
         .task(id: model == nil) { await model?.load() }
-        .task { await TipState.editorOpened.donate() }
         #if os(macOS)
         // Another recording was picked in the list, or the window closed.
         .onDisappear { model?.close() }
@@ -106,7 +105,16 @@ struct RecordingEditorView: View {
 private struct EditorContent: View {
     private let captionsTip = CaptionsTip()
     private let removePausesTip = RemovePausesTip()
+    private let timelineTip = TimelineTip()
     private let saveWithoutMarkTip = SaveWithoutMarkTip()
+    private var deliveryTip: DeliveryTip { DeliveryTip(isPro: model.hasPro) }
+    private let captionStyleTip = CaptionStyleTip()
+    private let addClipTip = AddClipTip()
+    /// This visit's tip. At most one per visit, picked once the recording has loaded, or once
+    /// its words have been heard if nothing fitted before.
+    @State private var editorTip: EditorTip?
+    @State private var waitedForWords = false
+    @State private var isPickingTip = false
     #if os(macOS)
     static let alwaysSideBySide = true
     #else
@@ -200,6 +208,89 @@ private struct EditorContent: View {
             let index = clipIndex
             Task { await model.addClip(from: url, at: index) }
         }
+        .task {
+            TipState.editorOpened()
+            try? await Task.sleep(for: .milliseconds(800))
+            await pickEditorTip()
+        }
+        .onChange(of: model.deliveryReport != nil) { _, hasReport in
+            if hasReport { Task { await pickEditorTip() } }
+        }
+        .onChange(of: model.isAnalyzing) { _, analyzing in
+            if !analyzing { Task { await pickEditorTip() } }
+        }
+    }
+
+    // MARK: Tips
+
+    /// The first tip that fits this visit, of those not yet closed or acted on.
+    private func pickEditorTip() async {
+        guard editorTip == nil, !model.isRendering, model.hasItem else { return }
+        let visits = TipState.editorVisits
+        let report = model.deliveryReport
+        var candidates: [(EditorTip, any Tip)] = []
+        if model.isVideo, model.recording.captionStyle == .off {
+            candidates.append((.captions, captionsTip))
+        }
+        if let report, !report.pauses.isEmpty, !model.recording.removePauses {
+            RemovePausesTip.pauses = report.pauses.count
+            candidates.append((.removePauses, removePausesTip))
+        }
+        candidates.append((.timeline, timelineTip))
+        if !model.hasPro, model.isVideo, TipState.markedSaves >= 1 {
+            candidates.append((.saveWithoutMark, saveWithoutMarkTip))
+        }
+        if report?.wordsPerMinute != nil, visits >= 2 {
+            candidates.append((.delivery, deliveryTip))
+        }
+        if model.isVideo, model.recording.captionStyle != .off, model.recording.look == CaptionLook(), visits >= 2 {
+            candidates.append((.captionStyle, captionStyleTip))
+        }
+        if visits >= 3, model.recording.pieces.count > 0 {
+            candidates.append((.addClip, addClipTip))
+        }
+        // The pauses aren't known until the words are: while they're being heard, wait for them
+        // rather than settle for the timeline tip.
+        if report == nil, model.speechStatus == nil, !waitedForWords {
+            waitedForWords = true
+            if await TipState.first(of: candidates) == .timeline { return }
+        }
+        guard editorTip == nil, !isPickingTip else { return }
+        isPickingTip = true
+        defer { isPickingTip = false }
+        let picked = await TipState.first(of: candidates)
+        guard editorTip == nil, !model.isRendering else { return }
+        editorTip = picked
+    }
+
+    private func tip(_ which: EditorTip) -> (any Tip)? {
+        guard editorTip == which else { return nil }
+        return switch which {
+        case .captions: captionsTip
+        case .removePauses: removePausesTip
+        case .timeline: timelineTip
+        case .saveWithoutMark: saveWithoutMarkTip
+        case .delivery: deliveryTip
+        case .captionStyle: captionStyleTip
+        case .addClip: addClipTip
+        }
+    }
+
+    /// A tip's button: the tip closes first, then what it offers happens.
+    private func handleEditorTip(_ action: Tip.Action) {
+        if let editorTip, let current = tip(editorTip) { current.done() }
+        let id = action.id
+        Task {
+            try? await Task.sleep(for: .milliseconds(350))
+            switch id {
+            case "lyrics": model.setCaptionStyle(.lyrics)
+            case "remove": model.setRemovePauses(true)
+            case "pro": onUpgrade(.removeMark)
+            case "report": if model.hasPro { showingDelivery = true } else { onUpgrade(.deliveryReport) }
+            case "style": showingCaptionStyle = true
+            default: break
+            }
+        }
     }
 
     private var strip: some View {
@@ -207,6 +298,7 @@ private struct EditorContent: View {
             addMenuItems(at: model.recording.pieces.count)
         }
         .frame(height: TimelineStripView<EmptyView>.height)
+        .ypPopoverTip(tip(.timeline), arrowEdge: .top, action: handleEditorTip)
         .disabled(model.isRendering)
         .alert("Couldn't Add the Clip", isPresented: Binding(
             get: { model.clipError != nil },
@@ -223,17 +315,19 @@ private struct EditorContent: View {
     @ViewBuilder
     private func addMenuItems(at index: Int) -> some View {
         if canRecordMore {
-            Button { onRecordMore(model.pickup(after: index - 1)) } label: {
+            Button { addClipTip.done(); onRecordMore(model.pickup(after: index - 1)) } label: {
                 Label("Record More", systemImage: model.isVideo ? "video.badge.plus" : "mic.badge.plus")
             }
         }
         Button {
+            addClipTip.done()
             clipIndex = index
             showingPhotoPicker = true
         } label: {
             Label("Add from Photos", systemImage: "photo.on.rectangle")
         }
         Button {
+            addClipTip.done()
             clipIndex = index
             showingFileImporter = true
         } label: {
@@ -467,6 +561,8 @@ private struct EditorContent: View {
                     toolLabel("Add After", icon: "plus.rectangle.on.rectangle")
                 }
                 .buttonStyle(.plain)
+                // On its own anchor: a menu can't host a popover.
+                .background { Color.clear.ypPopoverTip(tip(.addClip), arrowEdge: .bottom, action: handleEditorTip) }
                 #if os(macOS)
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
@@ -518,7 +614,10 @@ private struct EditorContent: View {
     private var options: some View {
         VStack(alignment: .leading, spacing: 10) {
             deliveryRow
-            Toggle(isOn: Binding(get: { model.recording.removePauses }, set: { model.setRemovePauses($0) })) {
+            Toggle(isOn: Binding(get: { model.recording.removePauses }, set: {
+                if $0 { removePausesTip.done() }
+                model.setRemovePauses($0)
+            })) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Remove Pauses")
                     Text("Cuts the silences between your sentences.")
@@ -527,7 +626,7 @@ private struct EditorContent: View {
                 }
             }
             .tint(.accentColor)
-            .popoverTip(removePausesTip)
+            .ypPopoverTip(tip(.removePauses), arrowEdge: .bottom, action: handleEditorTip)
 
             #if os(macOS)
             // Beside the video the column can be narrow: the controls go under the label then.
@@ -561,6 +660,7 @@ private struct EditorContent: View {
     private var deliveryRow: some View {
         if let report = model.deliveryReport {
             Button {
+                deliveryTip.done()
                 if model.hasPro { showingDelivery = true } else { onUpgrade(.deliveryReport) }
             } label: {
                 HStack(spacing: 10) {
@@ -587,6 +687,7 @@ private struct EditorContent: View {
             .accessibilityLabel("Delivery")
             .accessibilityValue(deliverySummary(report))
             .accessibilityHint(model.hasPro ? "Opens the delivery report" : "Part of yPrompt Pro")
+            .background { Color.clear.ypPopoverTip(tip(.delivery), arrowEdge: .bottom, action: handleEditorTip) }
             .popover(isPresented: $showingDelivery, arrowEdge: .bottom) {
                 DeliveryReportView(model: model)
             }
@@ -629,16 +730,22 @@ private struct EditorContent: View {
     private var captionControls: some View {
         if model.isVideo {
             Picker("Captions", selection: Binding(get: { model.recording.captionStyle },
-                                                  set: { model.setCaptionStyle($0) })) {
+                                                  set: {
+                                                      if $0 != .off { captionsTip.done() }
+                                                      model.setCaptionStyle($0)
+                                                  })) {
                 ForEach(CaptionStyle.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .frame(maxWidth: 220)
-            .popoverTip(captionsTip)
+            .ypPopoverTip(tip(.captions), arrowEdge: .bottom, action: handleEditorTip)
             if model.recording.captionStyle != .off {
                 // Font, size, position, colors and background.
-                Button { showingCaptionStyle = true } label: {
+                Button {
+                    captionStyleTip.done()
+                    showingCaptionStyle = true
+                } label: {
                     Image(systemName: "textformat")
                         .font(.title3)
                         .frame(width: 36, height: 32)
@@ -649,6 +756,7 @@ private struct EditorContent: View {
                 .help("Caption Style")
                 #endif
                 .accessibilityLabel("Caption Style")
+                .background { Color.clear.ypPopoverTip(tip(.captionStyle), arrowEdge: .bottom, action: handleEditorTip) }
                 .popover(isPresented: $showingCaptionStyle, arrowEdge: .bottom) {
                     CaptionStyleView(model: model)
                 }
@@ -745,7 +853,7 @@ private struct EditorContent: View {
                 .ypGlassProminentButtonStyle()
                 .disabled(!model.hasItem)
                 .keyboardShortcut("s", modifiers: .command)
-                .popoverTip(saveWithoutMarkTip)
+                .ypPopoverTip(tip(.saveWithoutMark), arrowEdge: .bottom, action: handleEditorTip)
                 #else
                 if model.isVideo {
                     Button { model.save() } label: {
@@ -757,7 +865,7 @@ private struct EditorContent: View {
                     }
                     .ypGlassProminentButtonStyle()
                     .disabled(!model.hasItem)
-                    .popoverTip(saveWithoutMarkTip)
+                    .ypPopoverTip(tip(.saveWithoutMark), arrowEdge: .bottom, action: handleEditorTip)
                 } else {
                     Button { model.share() } label: {
                         Label("Share Audio", systemImage: "square.and.arrow.up")

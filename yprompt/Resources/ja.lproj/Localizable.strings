@@ -546,9 +546,6 @@
 "Add Your First Script" = "最初の台本を追加しましょう";
 "Type or paste your text, or import a file. Then press play." = "テキストを入力するか貼り付け、またはファイルを読み込みます。あとは再生するだけ。";
 "Let Your Voice Lead" = "声で進めましょう";
-"Choose Voice: the script follows your words and waits when you pause." = "「音声」を選ぶと、話す言葉に合わせて台本が進み、止まると待ちます。";
-"Try Voice Scroll" = "音声スクロールを試す";
-"With Voice, the script follows your words. It's part of Pro, and you can try it free." = "「音声」では台本が話す言葉についてきます。Proの機能で、無料で試せます。";
 "Read Over Any App" = "どのAppの上でも読める";
 "Add Captions in One Tap" = "ワンタップで字幕";
 "Lyrics or Clean: captions are spelled exactly like your script." = "「歌詞」か「シンプル」：字幕は台本どおりの表記になります。";
@@ -559,8 +556,6 @@
 "Read Right Under Your Camera" = "カメラのすぐ下で読む";
 "Present opens your script in the notch, next to the camera. Pick the notch or a floating window in Settings." = "「プレゼン」で台本がカメラ横のノッチに表示されます。ノッチかフローティングウインドウかは設定で選べます。";
 "Present opens your script in a floating window just below your camera, so you look into the lens." = "「プレゼン」で台本がカメラのすぐ下のフローティングウインドウに表示され、レンズを見たまま読めます。";
-"Camera, Audio or Color" = "カメラ、オーディオ、カラー";
-"Film yourself with the script under the lens, record just your voice, or read on a plain color." = "レンズのすぐ下に台本を表示して撮影、声だけを録音、または単色の背景で読めます。";
 "Make It Easy to Read" = "読みやすく調整";
 "Change the text size, font and spacing to suit your eyes and how far you sit." = "文字の大きさ、フォント、間隔を目や距離に合わせて変更できます。";
 
@@ -637,3 +632,51 @@
 "To" = "終了";
 "Stretch" = "区間";
 "Words per minute" = "語/分";
+
+/* Tips */
+"Need a Script? Ask for a Draft" = "原稿が必要ですか？下書きを頼みましょう";
+"Say what it's about, how long and in what tone. Apple Intelligence writes a draft on your device." = "テーマ、長さ、トーンを伝えるだけ。Apple Intelligenceがデバイス上で下書きを書きます。";
+"Write a Draft" = "下書きを作成";
+"Read It Out Loud" = "声に出して読みましょう";
+"Opens the teleprompter. Turn on the camera there to film yourself while you read." = "プロンプターを開きます。そこでカメラをオンにすると、読みながら自分を撮影できます。";
+"With Voice, the script follows your words and waits when you pause." = "「音声」なら、原稿があなたの言葉に合わせて進み、間を取ると待ってくれます。";
+"Use Voice" = "音声を使う";
+"Stop Chasing the Speed" = "速さを追いかけなくて大丈夫";
+"With Voice, the script follows your words and waits when you pause. It's part of Pro, and you can try it free." = "「音声」なら、原稿があなたの言葉に合わせて進み、間を取ると待ってくれます。Proの機能で、無料で試せます。";
+"Try Voice" = "音声を試す";
+"Record While You Read" = "読みながら録画・録音";
+"Film yourself with the script by the lens, or record just your voice. Captions are made from your script." = "原稿をレンズのそばに表示して自分を撮影したり、声だけを録音したりできます。字幕は原稿から作られます。";
+"Turn On the Camera" = "カメラをオンにする";
+"Keep Your Eyes Near the Lens" = "視線をレンズの近くに";
+"Under the Camera puts a few lines right below the lens, so you look into it as you read." = "「カメラの下」は数行をレンズのすぐ下に表示するので、読みながらレンズを見られます。";
+"Use Under the Camera" = "「カメラの下」を使う";
+"Adjust the Text" = "テキストを調整";
+"Try It" = "試す";
+"Add Lyrics Captions" = "歌詞の字幕を追加";
+"There's a long pause in this take. Remove Pauses cuts the silences between your sentences." = "このテイクには長い間が1つあります。「間を削除」で文と文の間の無音をカットします。";
+"There are %lld long pauses in this take. Remove Pauses cuts the silences between your sentences." = "このテイクには長い間が%lld個あります。「間を削除」で文と文の間の無音をカットします。";
+"Move Through Your Recording" = "録画の中を移動";
+"Scroll sideways or drag to move through it, and pinch to zoom. Hold a piece to move it." = "横にスクロールするかドラッグして移動し、ピンチで拡大します。パートを長押しすると移動できます。";
+"Swipe to move through it and pinch to zoom. Hold a piece to move it." = "スワイプで移動し、ピンチで拡大します。パートを長押しすると移動できます。";
+"Try Pro Free" = "Proを無料で試す";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away." = "話す速さ、つなぎ言葉、長い間、飛ばした行を、それぞれタップひとつで確認できます。";
+"Your pace, filler words, long pauses and skipped lines, each one a tap away. Part of Pro." = "話す速さ、つなぎ言葉、長い間、飛ばした行を、それぞれタップひとつで確認できます。Proの機能です。";
+"Show the Report" = "レポートを表示";
+"Learn More" = "詳しく見る";
+"Make the Captions Yours" = "字幕を自分らしく";
+"Pick a font, colors and a background, or box just the word being said." = "フォント、色、背景を選んだり、話している単語だけを囲んだりできます。";
+"Open Caption Style" = "字幕のスタイルを開く";
+"Add Clips" = "クリップを追加";
+"Put in footage from Photos or Files, or record another piece, after the one you've picked." = "選んだパートの後ろに、写真やファイルから映像を入れたり、新しいパートを録ったりできます。";
+
+/* Onboarding and What's New */
+"Write from scratch, paste any text, import a file, or let Apple Intelligence write a first draft. Organised with tags and search." = "一から書くことも、テキストを貼り付けることも、ファイルを読み込むことも、Apple Intelligenceに下書きを書いてもらうこともできます。タグと検索で整理できます。";
+"A one-minute intro for my cooking channel" = "料理チャンネルの1分間のオープニング";
+"1 min · Conversational" = "1分 · 親しみやすく";
+"Record, Edit\nand Share" = "録って、編集して、\nシェア";
+"Read right under the camera, then trim your takes, add clips and captions, and see how you spoke." = "カメラのすぐ下で読み、テイクをトリミングし、クリップや字幕を加えて、話し方を確認できます。";
+"Thank you for being here" = "お集まりいただきありがとうございます";
+"Add Clips to Your Recordings" = "録画にクリップを追加";
+"Put in footage from Photos or Files, and move through your recording on a timeline you can swipe and pinch." = "写真やファイルから映像を入れ、スワイプやピンチで操作できるタイムラインで録画の中を移動できます。";
+"A Roomier Script Editor" = "ゆとりのある原稿エディタ";
+"Your title at the top of the page, more space around every line, and formatting right above the keyboard." = "ページの一番上にタイトル、行間にゆとり、そしてキーボードのすぐ上に書式ボタン。";
